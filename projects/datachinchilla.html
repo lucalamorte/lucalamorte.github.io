@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DataChinchilla · Luca Lamorte</title>
+<meta name="description" content="Case study: free, ordered study paths for tech careers, with a path built from your CV in the browser.">
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<article class="article">
+  <a class="back" href="../index.html#projects">← All projects</a>
+
+  <header>
+    <span class="eyebrow">Learning product · own product · 2026</span>
+    <h1>DataChinchilla</h1>
+    <p class="lede">Free study paths for tech careers. The best free material on the internet was put in the order that makes sense, for 14 roles: Data Engineer, Data Scientist, ML and AI Engineer, Cloud, Full Stack, QA and more. A personal path can be built straight from a CV, without the CV ever leaving the browser.</p>
+    <div class="cta">
+      <a class="btn solid" href="https://datachinchilla.com/" rel="noopener">Visit DataChinchilla</a>
+      <a class="btn" href="#cv">How the CV path works</a>
+    </div>
+  </header>
+
+  <div class="facts">
+    <div><b>23</b><span>study paths</span></div>
+    <div><b>350</b><span>steps, about 2,235 hours of material</span></div>
+    <div><b>14</b><span>roles, each one fully covered</span></div>
+    <div><b>139</b><span>interview practice problems</span></div>
+  </div>
+
+  <h2>The problem</h2>
+  <p>Good free material to learn data and tech exists, but it is scattered, and the hard part is the order: what comes first, what can be skipped, and what a given role really asks for. People who already know half of it still get sent through the whole catalog.</p>
+
+  <h2>What was built</h2>
+  <ul>
+    <li><strong>Ordered paths</strong> for Snowflake, dbt, Airflow, Big Data, SQL and Python, machine learning, MLOps, LLMs and agents, cloud certifications, CS50 and more. Long courses were split along the structure their authors publish, so a step fits in a week.</li>
+    <li><strong>A path builder</strong> where levels from any path are picked, reordered and saved as a personal path, with its own map, progress and a link to share it.</li>
+    <li><strong>A weekly planner</strong> that turns a path into this week's blocks of study.</li>
+    <li><strong>Interview practice</strong> with the Blind 75 and SQL interview queries, tracking what was solved.</li>
+    <li><strong>Progress that works without an account.</strong> Everything is saved in the browser; signing in only syncs it to another computer.</li>
+  </ul>
+
+  <h2 id="cv">A path from your CV</h2>
+  <p>A CV is pasted or uploaded, a target role is chosen, and what is left is the short list of what is missing, instead of the whole catalog.</p>
+  <div class="flow" aria-label="CV path flow">
+    <div class="step">A CV is pasted or a PDF is dropped<small>the PDF is read in the browser with pdf.js</small></div>
+    <div class="arrow"></div>
+    <div class="step code">The text is matched against a vocabulary of topics<small>each topic has its own signals: tools, techniques, synonyms</small></div>
+    <div class="arrow"></div>
+    <div class="step code">The level of each topic is estimated<small>by counting distinct signals, and skipping the ones written in the negative</small></div>
+    <div class="arrow"></div>
+    <div class="step code">The target role is compared against it<small>each role asks for topics with a weight</small></div>
+    <div class="arrow"></div>
+    <div class="step">The missing steps become a path<small>saved only if the person chooses to</small></div>
+  </div>
+  <div class="legend"><span><i class="c"></i>runs in the browser</span><span><i></i>what the person sees</span></div>
+
+  <h3>Privacy by construction</h3>
+  <p>The CV is never uploaded. It enters as text, is matched in the browser and produces a list of steps; nothing is sent anywhere and nothing is stored unless the person saves the path.</p>
+
+  <h3>Reading what a CV does not say</h3>
+  <p>The first version looked for a signal and, if it was there, marked the topic as known. It did not look at what surrounded it: <q>no experience with Spark</q> counted as Spark. Negative mentions are now detected before a topic is counted. And the level is estimated by counting distinct signals of the same topic: a CV that says <q>SQL</q> says less than one that says <q>SQL, Postgres, BigQuery and window functions</q>.</p>
+
+  <h2>Keeping a catalog honest</h2>
+  <p>A catalog of hundreds of external links decays on its own. So the checks were written as code:</p>
+  <ul>
+    <li><strong>A link checker</strong> runs over every link of the site. In its first run, 434 links were checked and 126 that had moved were pointed to their new place.</li>
+    <li><strong>A coverage report</strong> measures, for each role, how much of what it asks for has material behind it. A role that needs a topic with no steps cannot be completed, however many paths exist. Today every role is at 100%.</li>
+    <li>The catalog the pages use is generated by reading the pages themselves, so there is a single source of truth and no second list to keep in sync.</li>
+  </ul>
+
+  <h2>Stack</h2>
+  <ul class="stack">
+    <li>HTML</li><li>CSS</li><li>JavaScript</li><li>pdf.js</li><li>Python build scripts</li><li>Firebase Auth</li><li>Cloud Firestore</li><li>Cloudflare</li>
+  </ul>
+
+  <p class="note">Built and run end to end: content curation, product, front end and the scripts that keep the catalog consistent.</p>
+</article>
+<footer>Built by Luca Lamorte.</footer>
+</body>
+</html>
