@@ -30,16 +30,25 @@
 
 <main id="top">
   <section class="hero">
+    <button type="button" class="game-toggle" id="game" aria-pressed="false"><i></i>Game mode</button>
+    <div class="portrait">
+      <canvas id="portrait" role="img" aria-label="Portrait of Luca drawn with small dashes that move with the cursor"></canvas>
+      <p class="game-status" id="game-status" aria-live="polite"></p>
+    </div>
+    <div class="intro">
     <h1>hi, <b>luca</b> here.</h1>
     <p>Data Engineer in Buenos Aires. I build data platforms on Snowflake at Kimberly-Clark, and on my own time I ship GenAI products that real people use every day.</p>
     <div class="cta">
       <a class="btn" href="mailto:lclamorte@gmail.com?subject=Let's%20connect!"><svg><use href="#i-mail"/></svg>Say hi!</a>
       <a class="btn" href="#projects">See projects</a>
     </div>
+    </div>
   </section>
 
   <section id="about" class="about reveal">
     <h2><span>/</span> about me</h2>
+    <div class="about-grid">
+    <div>
     <p>I work on the North America Marketing data platform at Kimberly-Clark: a Composable CDP on Snowflake that replaced a vendor product and serves Customer 360 profiles for 65M users. Before that, I led the rollout of real-time machine data across 10 plants in 5 countries.</p>
     <p>Outside work I build and run my own products end to end, two of them on GenAI. That keeps me close to what putting language models in production really takes: deciding what the model may decide, testing against real conversations, and keeping the bill under control.</p>
     <p>Technologies I work with most:</p>
@@ -47,6 +56,9 @@
       <li>Python</li><li>SQL</li><li>Snowflake</li><li>dbt</li><li>Spark / PySpark</li><li>Airflow</li>
       <li>AWS · Azure · GCP</li><li>Postgres · pgvector</li><li>LLMs · RAG · agents</li>
     </ul>
+    </div>
+    <img class="photo" src="assets/luca.webp" alt="Luca Lamorte" width="400" height="400">
+    </div>
   </section>
 
   <section id="experience" class="reveal">
@@ -141,6 +153,7 @@
 
 <footer>Built by Luca Lamorte.</footer>
 
+<script src="portrait.js"></script>
 <script>
   // Pestañas de experiencia: una visible por vez, también con las flechas del teclado.
   const tabs = [...document.querySelectorAll('[role="tab"]')];
