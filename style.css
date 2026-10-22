@@ -70,8 +70,9 @@ h2 span { color: var(--accent); font-family: var(--mono); font-weight: 400; font
 
 /* ---------- sobre mí ---------- */
 .about p { max-width: 640px; margin: 0 0 16px; text-wrap: pretty; }
-/* Cortes de línea parejos en todo el texto corrido, sin justificar: justificado abre huecos entre palabras. */
-.article p, .article li, .card p, .panel li, .hero p { text-wrap: pretty; }
+/* Texto corrido justificado, con división en sílabas para que no se abran huecos entre palabras. */
+.about p, .panel li, .hero p, .card p, .article p, .article li, .fix p { text-align: justify; hyphens: auto; -webkit-hyphens: auto; text-wrap: pretty; }
+.article .note, .contact p { text-align: inherit; }
 h1, h2, h3 { text-wrap: balance; }
 .about-grid { display: grid; grid-template-columns: minmax(0, 1fr) 260px; gap: 48px; align-items: start; }
 .photo { width: 100%; max-width: 260px; height: auto; aspect-ratio: 1; object-fit: cover; border-radius: var(--radius); border: 1px solid var(--border); filter: grayscale(.15); transition: filter .3s; }
