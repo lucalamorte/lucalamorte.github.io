@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PrimeroLab · Luca Lamorte</title>
+<meta name="description" content="Case study: a study product with a tool-calling agent and retrieval over the user's documents, scoped by row-level security.">
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<article class="article">
+  <a class="back" href="../index.html#projects">← All projects</a>
+
+  <header>
+    <span class="eyebrow">GenAI · own product · 2025 · present</span>
+    <h1>PrimeroLab</h1>
+    <p class="lede">A study tool for any subject. Notes, PDFs or transcripts are uploaded, flashcards are generated from them, and retention is built with spaced repetition. A study assistant answers questions about the user's own material.</p>
+    <div class="cta">
+      <a class="btn solid" href="https://primerolab.com" rel="noopener">Visit PrimeroLab</a>
+      <a class="btn" href="#agent">How the assistant works</a>
+    </div>
+  </header>
+
+  <div class="facts">
+    <div><b>5</b><span>tools the agent can call</span></div>
+    <div><b>2</b><span>model providers, with fallback</span></div>
+    <div><b>224</b><span>automated tests</span></div>
+    <div><b>60</b><span>database migrations, each one documented</span></div>
+  </div>
+
+  <h2>The problem</h2>
+  <p>Generating flashcards from a document used to cut the text at 6,000 characters and drop the rest in silence. For an 80-page PDF, about 95% of the material never reached the model, and nothing on screen said so. The study assistant had a similar blind spot: it ran a keyword search on every message and pushed whatever matched into the prompt, whether or not the question was about the user's material.</p>
+
+  <h2>Retrieval over the whole document</h2>
+  <p>Making the cut larger would only move the limit. Instead, each document is split into overlapping chunks, every chunk is stored with its embedding in Postgres with pgvector, and only the passages closest to the request are retrieved. The size of a document no longer competes with the context window.</p>
+  <ul>
+    <li>Chunks of about 1,200 characters with 150 of overlap, so an idea split at a boundary is not lost.</li>
+    <li>An HNSW index for similarity search, with a documented fallback when the extension version does not support it.</li>
+    <li>The owner's id is repeated on every chunk so the security policy is resolved without a join, which would run per row as the table grows.</li>
+  </ul>
+
+  <h2 id="agent">An agent instead of guessing</h2>
+  <p>The assistant was turned into a tool-calling agent. The model is given tools and decides which to call: a question about what to review today reads the review queue instead of matching words against flashcards.</p>
+  <div class="flow" aria-label="Agent flow">
+    <div class="step">The user asks a question<small>inside a workspace or with a deck open</small></div>
+    <div class="arrow"></div>
+    <div class="step code">The route builds the tool context from the verified session<small>user id, workspace and deck come from the session, never from the model</small></div>
+    <div class="arrow"></div>
+    <div class="step model">The model chooses tools<small>search study material, list decks, cards due for review, study progress, search documents</small></div>
+    <div class="arrow"></div>
+    <div class="step code">Each tool queries Postgres with the user's own client<small>row-level security decides what comes back</small></div>
+    <div class="arrow"></div>
+    <div class="step model">The model answers with what the tools returned<small>at most 4 rounds of tool calls</small></div>
+  </div>
+  <div class="legend"><span><i class="m"></i>language model</span><span><i class="c"></i>code</span><span><i></i>user</span></div>
+
+  <h3>Security is structural, not remembered</h3>
+  <p>Every tool queries through the request's own Supabase client, the one carrying the signed-in user's session, so row-level security decides what comes back. The model never supplies a user id and there is no parameter through which it could. A model that asked for someone else's decks would get its own, because that is the only query the database will answer. Tool arguments are clamped on the way in, since they are generated text and not validated input.</p>
+
+  <h3>Bounded by design</h3>
+  <ul>
+    <li><strong>4 tool rounds at most:</strong> a loop without a ceiling is a bill without a ceiling.</li>
+    <li><strong>8 seconds per tool</strong> and <strong>6,000 characters per tool result</strong>, so one slow or huge answer cannot stall the conversation.</li>
+    <li>The loop mechanics (iteration guard, streamed tool-call fragments, argument clamping) are kept as pure functions so the parts that break silently can be tested.</li>
+  </ul>
+
+  <h2>Two providers, one call</h2>
+  <p>Gemini answers when the deployment is configured for it (through Vertex AI with a service account, or AI Studio with an API key), and OpenAI answers otherwise or when Gemini fails. Every reply records which provider actually answered and why a fallback happened: a silent fallback looks exactly like a provider that was never enabled. Falling back instead of failing is what makes it safe to try a new model on production traffic.</p>
+
+  <h2>Spaced repetition</h2>
+  <p>Reviews are scheduled with SM-2, kept as pure functions with no database or framework dependency so the rules can be tested directly. SM-2 was chosen over FSRS on purpose: FSRS retains better but needs a model trained on review history that does not exist yet, and the history SM-2 produces is what would make that migration possible later.</p>
+
+  <h2>Stack</h2>
+  <ul class="stack">
+    <li>Next.js 15</li><li>React 19</li><li>TypeScript</li><li>Supabase</li><li>Postgres</li><li>pgvector</li><li>Gemini (Vertex AI)</li><li>OpenAI</li><li>Tailwind</li><li>Vitest</li>
+  </ul>
+
+  <p class="note">Built and run end to end as the only engineer: product, data model, AI features, security and deployment.</p>
+</article>
+<footer>Built by Luca Lamorte.</footer>
+</body>
+</html>

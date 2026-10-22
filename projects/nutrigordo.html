@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nutrigordo · Luca Lamorte</title>
+<meta name="description" content="Case study: a nutrition assistant on Telegram where a language model interprets each message and code decides every number, date and change.">
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<article class="article">
+  <a class="back" href="../index.html#projects">← All projects</a>
+
+  <header>
+    <span class="eyebrow">GenAI · own product · 2026</span>
+    <h1>Nutrigordo</h1>
+    <p class="lede">A nutrition assistant that lives in Telegram. Meals are logged by text, photo or voice note; calories, macros, training and supplements are tracked; and reports for a nutritionist are generated as PDFs.</p>
+    <div class="cta">
+      <a class="btn solid" href="https://food-tracker-backend-cr8c.onrender.com/" rel="noopener">Try the web demo</a>
+      <a class="btn" href="#how">How it works</a>
+    </div>
+  </header>
+
+  <div class="facts">
+    <div><b>28</b><span>typed actions the model can ask for</span></div>
+    <div><b>136</b><span>automated tests, run before every deploy</span></div>
+    <div><b>67</b><span>scenarios built from real conversations</span></div>
+    <div><b>0</b><span>hardcoded lists of foods or words</span></div>
+  </div>
+
+  <h2>The problem</h2>
+  <p>Calorie trackers ask for grams and barcodes. People describe food the way they talk: <q>the usual toast</q>, <q>half an empanada from that place</q>, <q>two of these</q> with a photo, or a two-minute voice note with the whole day. The goal was a tracker that understands that, and still keeps exact numbers that a nutritionist can trust.</p>
+
+  <h2 id="how">How a message is processed</h2>
+  <div class="flow" aria-label="Message flow">
+    <div class="step">A message arrives in Telegram<small>text, photo, album or voice note</small></div>
+    <div class="arrow"></div>
+    <div class="step code">Webhook on the server (FastAPI)<small>secret and access are checked, Telegram gets an instant reply, the work continues in the background with a per-user lock</small></div>
+    <div class="arrow"></div>
+    <div class="step code">Context is read in parallel from Postgres<small>recent meals and workouts, routines, pending draft, supplements, recent conversation</small></div>
+    <div class="arrow"></div>
+    <div class="step model">The model interprets the message<small>voice notes are transcribed first; the reply is a list of typed actions validated against schemas</small></div>
+    <div class="arrow"></div>
+    <div class="step code">Code checks every action<small>dates, times, duplicates, undo and replacements; doubtful cases get a second, narrow judgement</small></div>
+    <div class="arrow"></div>
+    <div class="step model">Branded products are looked up on the web<small>sources ranked by reliability, values cached per user</small></div>
+    <div class="arrow"></div>
+    <div class="step code">Each action is executed and saved<small>every change is recorded so it can be undone</small></div>
+    <div class="arrow"></div>
+    <div class="step">Reply with buttons<small>Undo, Save as is, answers to tap, report periods</small></div>
+  </div>
+  <div class="legend"><span><i class="m"></i>language model</span><span><i class="c"></i>code</span><span><i></i>Telegram</span></div>
+
+  <h2>The design rule</h2>
+  <p><strong>The model interprets; the code decides.</strong> A language model is good at understanding <q>I had the usual, but with two eggs</q> and bad at adding numbers or keeping dates consistent. So the model is only asked for structured fields, and everything that has to be exact is done in code:</p>
+  <ul>
+    <li>Totals, averages, report periods and weekly habits are computed in code, never written by the model.</li>
+    <li>Changes that delete or overwrite something go through a second, narrow judgement before they are applied.</li>
+    <li>Every change made by a message can be undone with one tap.</li>
+    <li>No list of foods or keywords exists anywhere: rules are derived from each person's own history and from the order of what they said.</li>
+  </ul>
+
+  <h2>Failures that shaped it</h2>
+  <p>Every real failure was turned into a fixed test, so it cannot come back. A few of them:</p>
+  <div class="fix"><div class="was">A complaint undid a whole voice note</div><p><q>110 calories for one cookie is impossible</q> was read as "undo", and lunch, a snack and an afternoon meal disappeared. An undo request now needs a second judgement; when it fails, the message is read again with undo ruled out, and the complaint corrects that one food.</p></div>
+  <div class="fix"><div class="was">Midnight broke the calendar</div><p>After midnight, "today" and "yesterday" got mixed up and a dessert was filed as an afternoon snack. The day was made to end at 4 AM for logging, replies name the date late at night, and the meal type follows what the person calls it, not the clock.</p></div>
+  <div class="fix"><div class="was">A walk overwrote the only gym session of the week</div><p>A message about walking was taken as a correction of a back workout. Another kind of activity or another routine is now treated as a new session unless the person asks to replace it, so two workouts and a walk can live on the same day.</p></div>
+  <div class="fix"><div class="was">A product with several sizes got a random one</div><p>A can of soda was worth 66 or 106 kcal depending on which size the search found. When a product is sold in several sizes and none was said, the size is asked, with the real sizes as buttons.</p></div>
+  <div class="fix"><div class="was">The wrong photo was described</div><p>Asked about yesterday's dessert, the model looked at the most recent photo (a sandwich) and invented a cookie brand. Earlier photos now reach the model with their time and caption, and it asks for the photo when it does not have it.</p></div>
+
+  <h2>Testing and cost</h2>
+  <ul>
+    <li><strong>Fast tests</strong> (no model, no database) run on every push through a git hook and block the deploy if anything fails.</li>
+    <li><strong>Scenario tests</strong> replay real conversations against the real model. They cost money, so they are run by family, only for the area that changed.</li>
+    <li><strong>A conversation simulator</strong> stresses many flows at once, with a hard cap on paid requests.</li>
+    <li>Products that were not found on the web are remembered for 30 days, so they are not searched and paid for again.</li>
+  </ul>
+
+  <h2>Architecture</h2>
+  <ul>
+    <li><strong>Channel:</strong> Telegram Bot API through a webhook protected by a secret, with inline buttons for every confirmation.</li>
+    <li><strong>Server:</strong> a single FastAPI process on Render, deployed on every push to the main branch.</li>
+    <li><strong>Model:</strong> OpenAI with structured outputs validated by Pydantic, speech to text for voice notes, and web search for product lookups.</li>
+    <li><strong>Data:</strong> Supabase Postgres with row-level security. Each request carries a signed token for that one user, and the service key is never used.</li>
+    <li><strong>Access:</strong> closed beta with invitation codes validated on the server; the landing page and its interactive demo are served by the same app.</li>
+  </ul>
+  <ul class="stack">
+    <li>Python</li><li>FastAPI</li><li>Pydantic</li><li>OpenAI</li><li>Telegram Bot API</li><li>Supabase</li><li>Postgres</li><li>ReportLab</li><li>Render</li><li>pytest</li>
+  </ul>
+
+  <p class="note">The code is private. The web demo is a guided walkthrough of a real day with the assistant and does not need Telegram or an account.</p>
+</article>
+<footer>Built by Luca Lamorte.</footer>
+</body>
+</html>

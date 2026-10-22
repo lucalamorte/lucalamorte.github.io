@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Luca Lamorte · Data Engineer</title>
+<meta name="description" content="Luca Lamorte, Data Engineer in Buenos Aires. Data platforms on Snowflake and GenAI products in production.">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-mail" viewBox="0 0 24 24"><path fill="currentColor" d="M3 5h18a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1zm9 7.2L4 7.3V17h16V7.3l-8 4.9zM5.2 7l6.8 4.2L18.8 7H5.2z"/></symbol>
+  <symbol id="i-linkedin" viewBox="0 0 24 24"><path fill="currentColor" d="M4.98 3.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5zM3 9.75h4V21H3V9.75zm7 0h3.8v1.6h.06c.53-1 1.83-2.06 3.77-2.06 4.03 0 4.77 2.65 4.77 6.1V21h-4v-5c0-1.2-.02-2.74-1.67-2.74-1.67 0-1.93 1.3-1.93 2.65V21h-4V9.75z"/></symbol>
+  <symbol id="i-db" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8"><ellipse cx="12" cy="5.5" rx="7.5" ry="2.8"/><path d="M4.5 5.5v13c0 1.5 3.4 2.8 7.5 2.8s7.5-1.3 7.5-2.8v-13M4.5 12c0 1.5 3.4 2.8 7.5 2.8s7.5-1.3 7.5-2.8"/></g></symbol>
+  <symbol id="i-factory" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" d="M3 21V10l5 3V10l5 3V10l5 3V4h3v17H3zm4-4h2m4 0h2"/></symbol>
+</svg>
+
+<nav class="nav" aria-label="Main">
+  <a class="name" href="#top">Luca Lamorte</a>
+  <div class="links"><a href="#about">About</a><a href="#experience">Experience</a><a href="#projects">Projects</a></div>
+  <div class="icons">
+    <a href="mailto:lclamorte@gmail.com?subject=Let's%20connect!" aria-label="Email"><svg><use href="#i-mail"/></svg></a>
+    <a href="https://www.linkedin.com/in/lclamorte/" aria-label="LinkedIn" rel="noopener"><svg><use href="#i-linkedin"/></svg></a>
+  </div>
+</nav>
+
+<main id="top">
+  <section class="hero">
+    <h1>hi, <b>luca</b> here.</h1>
+    <p>Data Engineer in Buenos Aires. I build data platforms on Snowflake at Kimberly-Clark, and on my own time I ship GenAI products that real people use every day.</p>
+    <div class="cta">
+      <a class="btn" href="mailto:lclamorte@gmail.com?subject=Let's%20connect!"><svg><use href="#i-mail"/></svg>Say hi!</a>
+      <a class="btn" href="#projects">See projects</a>
+    </div>
+  </section>
+
+  <section id="about" class="about reveal">
+    <h2><span>/</span> about me</h2>
+    <p>I work on the North America Marketing data platform at Kimberly-Clark: a Composable CDP on Snowflake that replaced a vendor product and serves Customer 360 profiles for 65M users. Before that, I led the rollout of real-time machine data across 10 plants in 5 countries.</p>
+    <p>Outside work I build and run two GenAI products end to end. That keeps me close to what putting language models in production really takes: deciding what the model may decide, testing against real conversations, and keeping the bill under control.</p>
+    <p>Technologies I work with most:</p>
+    <ul class="tech">
+      <li>Python</li><li>SQL</li><li>Snowflake</li><li>dbt</li><li>Spark / PySpark</li><li>Airflow</li>
+      <li>AWS · Azure · GCP</li><li>Postgres · pgvector</li><li>LLMs · RAG · agents</li>
+    </ul>
+  </section>
+
+  <section id="experience" class="reveal">
+    <h2><span>/</span> experience</h2>
+    <div class="tabs">
+      <div class="tablist" role="tablist" aria-label="Roles">
+        <button role="tab" aria-selected="true" aria-controls="job-0" id="tab-0">Data Engineer</button>
+        <button role="tab" aria-selected="false" aria-controls="job-1" id="tab-1">Solution Engineer</button>
+        <button role="tab" aria-selected="false" aria-controls="job-2" id="tab-2">IT Trainee</button>
+      </div>
+      <div>
+        <div class="panel" role="tabpanel" id="job-0" aria-labelledby="tab-0">
+          <h3>Data Engineer <b>@ Kimberly-Clark</b></h3>
+          <p class="when">NOV 2025 · PRESENT</p>
+          <ul>
+            <li>Built an in-house Composable CDP on Snowflake for North America Marketing, replacing a vendor platform to deprecate a $260K/month dependency and project $5M in savings.</li>
+            <li>Architected ELT pipelines consolidating 12+ source systems from AWS S3 and APIs with Python and SageMaker, orchestrated via Azure Data Factory and Control-M for Hightouch activation.</li>
+            <li>Modeled Snowflake layers with daily incremental transformations across 35 dimension and fact tables, enabling identity resolution and Customer 360 profiles for 65M users.</li>
+            <li>Automated Snowflake CI/CD via Azure DevOps and configured Monte Carlo for data quality and anomaly detection.</li>
+          </ul>
+        </div>
+        <div class="panel" role="tabpanel" id="job-1" aria-labelledby="tab-1" hidden>
+          <h3>Solution Engineer <b>@ Kimberly-Clark</b></h3>
+          <p class="when">JUL 2023 · OCT 2025</p>
+          <ul>
+            <li>Led the rollout of real-time machine data collection and digital twins across 10 plants in 5 countries (North America and LATAM), driving end-to-end adoption for a $21.5M annual ROI.</li>
+            <li>Standardized metrics and replicated SAP and ERP data into Azure, establishing a unified reporting layer for Power BI.</li>
+          </ul>
+        </div>
+        <div class="panel" role="tabpanel" id="job-2" aria-labelledby="tab-2" hidden>
+          <h3>IT Trainee <b>@ Kimberly-Clark</b></h3>
+          <p class="when">AUG 2022 · JUN 2023</p>
+          <ul>
+            <li>Developed and configured ServiceNow workflows across North America, resolving IT requests for HR, R&amp;E and Legal teams.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="projects" class="reveal">
+    <h2><span>/</span> projects</h2>
+    <div class="projects">
+      <a class="card" href="projects/nutrigordo.html">
+        <div class="top"><img class="logo" src="assets/nutrigordo.webp" alt=""><span class="kind">GenAI · own product</span></div>
+        <h3>Nutrigordo</h3>
+        <p>A nutrition assistant on Telegram where meals are logged by text, photo or voice. Each message is interpreted by a language model into typed actions, and every number, date and change is decided by code.</p>
+        <div class="tags"><span>Python</span><span>FastAPI</span><span>OpenAI</span><span>Supabase</span><span>Telegram</span></div>
+        <span class="more">Read the case study →</span>
+      </a>
+      <a class="card" href="projects/primerolab.html">
+        <div class="top"><img class="logo" src="assets/primerolab.png" alt=""><span class="kind">GenAI · own product</span></div>
+        <h3>PrimeroLab</h3>
+        <p>A study tool where any material is turned into flashcards and spaced repetition. A tool-calling agent and retrieval over the user's own documents are scoped by row-level security, not by application code.</p>
+        <div class="tags"><span>Next.js</span><span>TypeScript</span><span>Supabase</span><span>pgvector</span><span>Gemini</span><span>OpenAI</span></div>
+        <span class="more">Read the case study →</span>
+      </a>
+      <a class="card" href="projects/cdp.html">
+        <div class="top"><span class="badge"><svg><use href="#i-db"/></svg></span><span class="kind">Data platform · Kimberly-Clark</span></div>
+        <h3>Composable CDP</h3>
+        <p>An in-house Customer Data Platform was built on Snowflake to replace a $260K/month vendor dependency, with identity resolution and Customer 360 profiles for 65M users.</p>
+        <div class="tags"><span>Snowflake</span><span>Python</span><span>SageMaker</span><span>Azure Data Factory</span><span>Hightouch</span></div>
+        <span class="more">Read the case study →</span>
+      </a>
+      <a class="card" href="projects/smom.html">
+        <div class="top"><span class="badge"><svg><use href="#i-factory"/></svg></span><span class="kind">Manufacturing data · Kimberly-Clark</span></div>
+        <h3>Smart Manufacturing Operations Management</h3>
+        <p>Real-time machine data and digital twins were rolled out across 10 plants in 5 countries, with a unified reporting layer on Azure and Power BI behind a $21.5M annual ROI.</p>
+        <div class="tags"><span>Azure</span><span>SAP</span><span>Power BI</span><span>Digital twins</span></div>
+        <span class="more">Read the case study →</span>
+      </a>
+    </div>
+  </section>
+
+  <section id="contact" class="contact reveal">
+    <h2>Get in touch</h2>
+    <p>Open to conversations about data engineering, data platforms and GenAI in production. The fastest way to reach me is email.</p>
+    <a class="btn" href="mailto:lclamorte@gmail.com?subject=Let's%20connect!"><svg><use href="#i-mail"/></svg>Say hi!</a>
+  </section>
+</main>
+
+<footer>Built by Luca Lamorte.</footer>
+
+<script>
+  // Pestañas de experiencia: una visible por vez, también con las flechas del teclado.
+  const tabs = [...document.querySelectorAll('[role="tab"]')];
+  function select(tab) {
+    tabs.forEach(other => {
+      const on = other === tab;
+      other.setAttribute('aria-selected', on);
+      other.tabIndex = on ? 0 : -1;
+      document.getElementById(other.getAttribute('aria-controls')).hidden = !on;
+    });
+  }
+  tabs.forEach((tab, index) => {
+    tab.tabIndex = index ? -1 : 0;
+    tab.addEventListener('click', () => select(tab));
+    tab.addEventListener('keydown', event => {
+      const step = { ArrowDown: 1, ArrowRight: 1, ArrowUp: -1, ArrowLeft: -1 }[event.key];
+      if (!step) return;
+      event.preventDefault();
+      const next = tabs[(index + step + tabs.length) % tabs.length];
+      select(next); next.focus();
+    });
+  });
+  // Cada bloque aparece al llegar a él.
+  if ('IntersectionObserver' in window) {
+    document.documentElement.classList.add('js');
+    const seen = new IntersectionObserver(entries => entries.forEach(entry => {
+      if (entry.isIntersecting) { entry.target.classList.add('in'); seen.unobserve(entry.target); }
+    }), { threshold: 0.12 });
+    document.querySelectorAll('.reveal').forEach(el => seen.observe(el));
+  }
+</script>
+</body>
+</html>
