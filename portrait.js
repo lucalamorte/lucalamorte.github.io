@@ -75,6 +75,7 @@
     toggle.classList.toggle('on', on);
     on ? startGame() : stopGame(false);
   });
+  document.addEventListener('keydown', event => { if (event.key === 'Escape' && playing) stopGame(false); });
   function moveRows() {
     const half = size / 2;
     rows.forEach(row => {

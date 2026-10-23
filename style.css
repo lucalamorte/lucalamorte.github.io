@@ -37,6 +37,10 @@ img { max-width: 100%; display: block; }
 .nav .icons a { color: var(--muted); display: grid; place-items: center; width: 36px; height: 36px; border-radius: 8px; transition: color .15s, background .15s; }
 .nav .icons a:hover { color: var(--text); background: var(--surface); }
 .nav .icons svg { width: 18px; height: 18px; }
+.nav .icons .resume { width: auto; padding: 0 12px; margin-right: 4px; font-size: .82rem; font-weight: 500; color: var(--text); border: 1px solid var(--border-strong); }
+.nav .icons .resume:hover { border-color: var(--accent-line); color: var(--accent); }
+.skip { position: absolute; left: 12px; top: -48px; z-index: 30; padding: 8px 14px; border-radius: 8px; background: var(--accent); color: var(--accent-ink); font-weight: 600; }
+.skip:focus { top: 12px; text-decoration: none; }
 
 main { max-width: 1040px; margin: 0 auto; padding: 0 clamp(16px, 5vw, 48px); }
 section { padding: 104px 0 24px; }
@@ -123,8 +127,28 @@ h1, h2, h3 { text-wrap: balance; }
 .contact { text-align: center; padding-bottom: 80px; }
 .contact h2 { justify-content: center; }
 .contact h2::after { display: none; }
-.contact p { max-width: 500px; margin: 0 auto 30px; }
+.contact p { max-width: 500px; margin: 0 auto 26px; }
+.contact .cta { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+.email { display: inline-flex; align-items: center; gap: 4px; margin-bottom: 22px; padding: 6px 6px 6px 16px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); font-family: var(--mono); font-size: .92rem; color: var(--text); }
+.copy { display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 12px; border: 0; border-radius: 8px; background: transparent; color: var(--muted); font-family: var(--sans); font-size: .8rem; font-weight: 500; cursor: pointer; }
+.copy:hover { background: var(--surface-2); color: var(--text); }
+.copy svg { width: 15px; height: 15px; }
+.btn.ghost { background: transparent; color: var(--text); border-color: var(--border-strong); }
+/* Formación: el título a la izquierda, las certificaciones verificables a la derecha. */
+.edu { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr); gap: 40px; align-items: start; }
+.degree h3 { margin: 4px 0 6px; color: var(--text); font-size: 1.2rem; font-weight: 600; letter-spacing: -.02em; line-height: 1.35; }
+.degree p { margin: 0; }
+.degree .when { font-family: var(--mono); font-size: .76rem; }
+.degree .langs { margin-top: 22px; }
+.certs { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+.certs li > a, .certs li:not(:has(a)) { display: grid; gap: 1px; padding: 11px 14px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); color: inherit; }
+.certs li > a:hover { border-color: var(--accent-line); text-decoration: none; }
+.certs b { color: var(--text); font-weight: 600; font-size: .9rem; }
+.certs span { font-family: var(--mono); font-size: .72rem; }
+.certs a span { color: var(--accent); }
 footer { text-align: center; font-size: .8rem; padding: 28px 16px 40px; border-top: 1px solid var(--border); }
+footer a { color: var(--muted); }
+footer a:hover { color: var(--text); }
 
 /* ---------- artículo de un proyecto ---------- */
 .article { max-width: 760px; margin: 0 auto; padding: 48px clamp(16px, 5vw, 32px) 56px; }
@@ -202,6 +226,9 @@ footer { text-align: center; font-size: .8rem; padding: 28px 16px 40px; border-t
   .projects.three > :last-child:nth-child(odd) { grid-column: 1 / -1; }
 }
 @media (max-width: 760px) {
+  .about p, .panel li, .hero p, .card p, .article p, .article li, .fix p { text-align: left; }
+  .edu { grid-template-columns: 1fr; gap: 28px; }
+  .nav .icons .resume { padding: 0 10px; }
   .projects.three { grid-template-columns: 1fr; }
   .nav { gap: 16px; }
   .nav .links { display: none; }

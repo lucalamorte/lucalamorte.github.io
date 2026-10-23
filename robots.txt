@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://lucalamorte.github.io/sitemap.xml
