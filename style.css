@@ -433,11 +433,21 @@ html { scrollbar-width: thin; scrollbar-color: rgba(255, 255, 255, .16) transpar
 @media (max-width: 760px) { .list .who { justify-items: start; } }
 @media (prefers-reduced-motion: reduce) { .cred .seal, .list li::after { transition: none; } }
 /* Juego: el muñequito vive en la página. Un botón invisible encima para tocarlo, una pista la primera vez y controles en el celu. */
-.pk-hit { position: absolute; z-index: 21; width: 44px; height: 44px; margin: -10px 0 0 -10px; padding: 0; border: 0; border-radius: 12px; background: transparent; cursor: pointer; }
+.pk-hit { position: absolute; z-index: 21; width: 44px; height: 44px; padding: 0; border: 0; border-radius: 12px; background: transparent; cursor: pointer; }
 .pk-hit:focus-visible { outline: 2px solid var(--accent); outline-offset: 0; }
-.pk-hint { position: absolute; z-index: 21; font-family: var(--mono); font-size: .72rem; color: var(--accent); white-space: nowrap; pointer-events: none; opacity: 0; transition: opacity .5s; }
-.pk-hint.on { opacity: .9; animation: pk-nudge 1.6s ease-in-out infinite; }
-@keyframes pk-nudge { 50% { transform: translateX(4px); } }
+.pk-hint { position: absolute; z-index: 21; padding: 5px 11px; border: 1px solid var(--accent-line); border-radius: 10px; background: rgba(11, 17, 32, .92); font-family: var(--mono); font-size: .74rem; color: var(--accent); white-space: nowrap; pointer-events: none; opacity: 0; transform: translate(-50%, -100%); transition: opacity .4s; }
+.pk-hint::after, .pk-say::after { content: ""; position: absolute; left: 50%; bottom: -6px; width: 10px; height: 10px; margin-left: -5px; background: inherit; border: inherit; border-width: 0 1px 1px 0; transform: rotate(45deg); }
+.pk-hint.on { opacity: 1; animation: pk-bob 1.8s ease-in-out infinite; }
+@keyframes pk-bob { 50% { transform: translate(-50%, calc(-100% - 5px)); } }
+.pk-say { position: absolute; z-index: 21; width: min(320px, calc(100vw - 32px)); padding: 12px 14px; border: 1px solid var(--accent-line); border-radius: 12px; background: rgba(11, 17, 32, .94); color: var(--text); font-size: .88rem; line-height: 1.5; pointer-events: none; opacity: 0; transform: translate(-50%, calc(-100% + 6px)); transition: opacity .35s, transform .35s; }
+.pk-say.on { opacity: 1; transform: translate(-50%, -100%); }
+.pk-say p { margin: 0; }
+.pk-say .go { display: flex; align-items: center; gap: 6px; margin-top: 10px; font-family: var(--mono); font-size: .72rem; color: var(--muted); }
+.pk-say kbd { display: inline-grid; place-items: center; min-width: 28px; height: 28px; border: 1px solid var(--accent-line); border-bottom-width: 3px; border-radius: 7px; color: var(--accent); font: inherit; font-size: 1.1rem; }
+.pk-say kbd + kbd { margin-left: -2px; }
+.pad.pulse button[data-k] { animation: pad-pulse .9s ease 3; }
+@keyframes pad-pulse { 50% { box-shadow: 0 0 0 10px rgba(94, 234, 212, .18); border-color: var(--accent); } }
+@media (prefers-reduced-motion: reduce) { .pk-hint.on, .pad.pulse button[data-k] { animation: none; } }
 .play-help { position: fixed; left: 50%; bottom: 18px; z-index: 21; margin: 0; padding: 6px 12px; border-radius: 8px; background: rgba(11, 17, 32, .88); font-family: var(--mono); font-size: .72rem; color: var(--muted); white-space: nowrap; transform: translateX(-50%); opacity: 0; pointer-events: none; transition: opacity .3s; }
 .playing .play-help { opacity: 1; }
 .pad { position: fixed; left: 0; right: 0; bottom: 0; z-index: 25; display: flex; align-items: flex-end; gap: 14px; padding: 0 18px calc(18px + env(safe-area-inset-bottom)); pointer-events: none; }
