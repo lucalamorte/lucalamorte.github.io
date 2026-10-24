@@ -78,37 +78,45 @@
 
   <section id="experience" class="reveal">
     <h2><span>/</span> experience</h2>
-    <div class="roles">
-        <div class="panel">
+    <div class="tabs">
+      <div class="tablist" role="tablist" aria-label="Roles">
+        <button role="tab" aria-selected="true" aria-controls="job-0" id="tab-0">Data Engineer</button>
+        <button role="tab" aria-selected="false" aria-controls="job-1" id="tab-1">Solution Engineer</button>
+        <button role="tab" aria-selected="false" aria-controls="job-2" id="tab-2">IT Trainee</button>
+      </div>
+      <div>
+        <div class="panel" role="tabpanel" id="job-0" aria-labelledby="tab-0">
           <h3>Data Engineer <b>@ Kimberly-Clark</b></h3>
           <p class="when">NOV 2025 · PRESENT</p>
           <div class="built small"><p>Built with</p><ul><li>Snowflake</li><li>Python</li><li>AWS S3</li><li>SageMaker</li><li>Azure Data Factory</li><li>Control-M</li><li>Azure DevOps</li><li>Monte Carlo</li><li>Hightouch</li></ul></div>
-          <ul>
-            <li>Built an in-house Composable CDP on <b class="t">Snowflake</b> for the USA and Canada. It replaced a vendor that cost $260K a month, with $5M in projected savings.</li>
-            <li>Built ELT pipelines that bring 12+ sources (<b class="t">AWS S3</b> files and APIs) into the warehouse with <b class="t">Python</b> and <b class="t">SageMaker</b>, scheduled in <b class="t">Azure Data Factory</b> and <b class="t">Control-M</b>, and pushed to marketing tools with <b class="t">Hightouch</b>.</li>
-            <li>Modeled 35 dimension and fact tables in <b class="t">Snowflake</b> with daily incremental loads, so every person gets one Customer 360 profile. 65M of them.</li>
-            <li>Set up CI/CD for <b class="t">Snowflake</b> in <b class="t">Azure DevOps</b>, and <b class="t">Monte Carlo</b> alerts so a broken source is caught before marketing uses it.</li>
+          <ul class="wins">
+            <li style="--i:0"><b class="big">$260K</b><span>a month in vendor fees, gone. The in-house CDP on <b class="t">Snowflake</b> projects $5M in savings.</span></li>
+            <li style="--i:1"><b class="big">12+</b><span>sources (<b class="t">AWS S3</b> files and APIs) loaded with <b class="t">Python</b> and <b class="t">SageMaker</b>, scheduled in <b class="t">Azure Data Factory</b> and <b class="t">Control-M</b>, sent to marketing with <b class="t">Hightouch</b>.</span></li>
+            <li style="--i:2"><b class="big">65M</b><span>Customer 360 profiles, built from 35 dimension and fact tables in <b class="t">Snowflake</b> that load every day.</span></li>
+            <li style="--i:3"><b class="big">CI/CD</b><span>for every <b class="t">Snowflake</b> change in <b class="t">Azure DevOps</b>, and <b class="t">Monte Carlo</b> flags a broken source before marketing sees it.</span></li>
           </ul>
           <a class="case" href="projects/cdp.html"><span class="badge"><svg><use href="#i-db"/></svg></span><span><b>Composable CDP</b><small>How we swapped the vendor for Snowflake</small></span><i>→</i></a>
         </div>
-        <div class="panel">
+        <div class="panel" role="tabpanel" id="job-1" aria-labelledby="tab-1" hidden>
           <h3>Solution Engineer <b>@ Kimberly-Clark</b></h3>
           <p class="when">JUL 2023 · OCT 2025</p>
           <div class="built small"><p>Built with</p><ul><li>Azure</li><li>SAP</li><li>Power BI</li><li>Digital twins</li><li>Real-time data</li></ul></div>
-          <ul>
-            <li>Led the rollout of real-time machine data and digital twins in 10 plants across Colombia, Argentina, El Salvador, Peru and the USA. The program is worth $21.5M a year.</li>
-            <li>Replicated <b class="t">SAP</b> and <b class="t">ERP</b> data into <b class="t">Azure</b> and got every plant to agree on one definition per metric, so they all report the same numbers in <b class="t">Power BI</b>.</li>
+          <ul class="wins">
+            <li style="--i:0"><b class="big">10</b><span>plants in Colombia, Argentina, El Salvador, Peru and the US now run on real-time machine data and digital twins. I led the rollout.</span></li>
+            <li style="--i:1"><b class="big">$21.5M</b><span>a year in ROI from the program.</span></li>
+            <li style="--i:2"><b class="big">1</b><span>definition per metric for every plant, with <b class="t">SAP</b> and <b class="t">ERP</b> data replicated into <b class="t">Azure</b> and reported in <b class="t">Power BI</b>.</span></li>
           </ul>
           <a class="case" href="projects/smom.html"><span class="badge"><svg><use href="#i-factory"/></svg></span><span><b>Smart Manufacturing Operations Management</b><small>How 10 plants got live machine data</small></span><i>→</i></a>
         </div>
-        <div class="panel">
+        <div class="panel" role="tabpanel" id="job-2" aria-labelledby="tab-2" hidden>
           <h3>IT Trainee <b>@ Kimberly-Clark</b></h3>
           <p class="when">AUG 2022 · JUN 2023</p>
           <div class="built small"><p>Built with</p><ul><li>ServiceNow</li></ul></div>
-          <ul>
-            <li>Built <b class="t">ServiceNow</b> workflows for HR, R&amp;E and Legal requests across North America.</li>
+          <ul class="wins">
+            <li style="--i:0"><b class="big">3</b><span>teams (HR, R&amp;E and Legal) run their requests on <b class="t">ServiceNow</b> workflows I built.</span></li>
           </ul>
         </div>
+      </div>
     </div>
   </section>
 
@@ -142,18 +150,18 @@
 
   <section id="principles" class="reveal">
     <h2><span>/</span> how I work</h2>
-    <p class="lead">Rules I work by, on data, on teams and on GenAI.</p>
+    <p class="lead">Rules I work by, on data, on teams and on GenAI. Pick one to see it in action.</p>
     <div class="principles">
       <div class="pr-list" role="tablist" aria-label="How I work">
         <p class="pr-group">Data</p>
-        <button type="button" class="pr-item on" role="tab" aria-selected="true" aria-controls="pr-0" id="pr-tab-0"><span class="n">01</span><span class="tx"><b>One copy of the truth.</b><span class="desc">Everything lands once, in the warehouse, and every team reads that same copy.</span></span><i class="bar"></i></button>
-        <button type="button" class="pr-item" role="tab" aria-selected="false" aria-controls="pr-1" id="pr-tab-1"><span class="n">02</span><span class="tx"><b>Bad data stops at the gate.</b><span class="desc">Quality is checked inside the pipeline, so a broken source never reaches an audience.</span></span><i class="bar"></i></button>
+        <button type="button" class="pr-item on" role="tab" aria-selected="true" aria-controls="pr-0" id="pr-tab-0"><span class="n">01</span><span class="tx"><b>One copy of the truth.</b><span class="desc"><span>Everything lands once, in the warehouse, and every team reads that same copy.</span></span></span><i class="bar"></i></button>
+        <button type="button" class="pr-item" role="tab" aria-selected="false" aria-controls="pr-1" id="pr-tab-1"><span class="n">02</span><span class="tx"><b>Bad data stops at the gate.</b><span class="desc"><span>Quality is checked inside the pipeline, so a broken source never reaches an audience.</span></span></span><i class="bar"></i></button>
         <p class="pr-group">Team</p>
-        <button type="button" class="pr-item" role="tab" aria-selected="false" aria-controls="pr-2" id="pr-tab-2"><span class="n">03</span><span class="tx"><b>Agree on the math first.</b><span class="desc">Before any dashboard, every plant agreed on how each metric is calculated.</span></span><i class="bar"></i></button>
-        <button type="button" class="pr-item" role="tab" aria-selected="false" aria-controls="pr-3" id="pr-tab-3"><span class="n">04</span><span class="tx"><b>Roll out one plant at a time.</b><span class="desc">Ten plants in five countries went live one by one, each team trained before the next.</span></span><i class="bar"></i></button>
+        <button type="button" class="pr-item" role="tab" aria-selected="false" aria-controls="pr-2" id="pr-tab-2"><span class="n">03</span><span class="tx"><b>Agree on the math first.</b><span class="desc"><span>Before any dashboard, every plant agreed on how each metric is calculated.</span></span></span><i class="bar"></i></button>
+        <button type="button" class="pr-item" role="tab" aria-selected="false" aria-controls="pr-3" id="pr-tab-3"><span class="n">04</span><span class="tx"><b>Roll out one plant at a time.</b><span class="desc"><span>Ten plants in five countries went live one by one, each team trained before the next.</span></span></span><i class="bar"></i></button>
         <p class="pr-group">GenAI</p>
-        <button type="button" class="pr-item" role="tab" aria-selected="false" aria-controls="pr-4" id="pr-tab-4"><span class="n">05</span><span class="tx"><b>The model reads. The code decides.</b><span class="desc">The model understands what people mean. Every number, date and delete happens in code.</span></span><i class="bar"></i></button>
-        <button type="button" class="pr-item" role="tab" aria-selected="false" aria-controls="pr-5" id="pr-tab-5"><span class="n">06</span><span class="tx"><b>Every failure becomes a test.</b><span class="desc">When something breaks for a real user, that conversation becomes a test.</span></span><i class="bar"></i></button>
+        <button type="button" class="pr-item" role="tab" aria-selected="false" aria-controls="pr-4" id="pr-tab-4"><span class="n">05</span><span class="tx"><b>The model reads. The code decides.</b><span class="desc"><span>The model understands what people mean. Every number, date and delete happens in code.</span></span></span><i class="bar"></i></button>
+        <button type="button" class="pr-item" role="tab" aria-selected="false" aria-controls="pr-5" id="pr-tab-5"><span class="n">06</span><span class="tx"><b>Every failure becomes a test.</b><span class="desc"><span>When something breaks for a real user, that conversation becomes a test.</span></span></span><i class="bar"></i></button>
       </div>
       <div class="pr-panel">
         <div class="pr-scene on" role="tabpanel" id="pr-0" aria-labelledby="pr-tab-0">
@@ -234,6 +242,26 @@
 <script src="portrait.js"></script>
 <script>
   // Pestañas de experiencia: una visible por vez, también con las flechas del teclado.
+  const tabs = [...document.querySelectorAll('.tablist [role="tab"]')];
+  function select(tab) {
+    tabs.forEach(other => {
+      const on = other === tab;
+      other.setAttribute('aria-selected', on);
+      other.tabIndex = on ? 0 : -1;
+      document.getElementById(other.getAttribute('aria-controls')).hidden = !on;
+    });
+  }
+  tabs.forEach((tab, index) => {
+    tab.tabIndex = index ? -1 : 0;
+    tab.addEventListener('click', () => select(tab));
+    tab.addEventListener('keydown', event => {
+      const step = { ArrowDown: 1, ArrowRight: 1, ArrowUp: -1, ArrowLeft: -1 }[event.key];
+      if (!step) return;
+      event.preventDefault();
+      const next = tabs[(index + step + tabs.length) % tabs.length];
+      select(next); next.focus();
+    });
+  });
   // Copiar el email: con el portapapeles si se puede; si no, queda seleccionado para copiarlo a mano.
   const copy = document.getElementById('copy');
   copy.addEventListener('click', async () => {
