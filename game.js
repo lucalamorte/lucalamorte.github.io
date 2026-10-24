@@ -1,6 +1,6 @@
-// El portfolio como nivel. Al lado del botón de la portada llega un mail. Al abrirlo, el muñequito sale
-// disparado del sobre, cruza el retrato de Luca, cae sobre el título y cuenta su misión: llegar a la casilla
-// de Luca pasando por su stack. Se mueve con ← → ↑ o con los controles del celu; scrollear o Esc lo pausa.
+// El portfolio como nivel. Al lado del botón de la portada espera un mensaje para Luca: el de quien visita.
+// Al enviarlo, el muñequito (ese mensaje) sale disparado del sobre, cruza el retrato de Luca, cae sobre el
+// título y cuenta su misión: llegar a la casilla de Luca viajando por el mismo camino que sus datos. Se mueve con ← → ↑ o con los controles del celu; scrollear o Esc lo pausa.
 // Es un dato que viaja por el stack hasta llegar al contacto, y cada pieza hace lo que hace de verdad:
 // todo pasa en AWS, S3 lo guarda como archivo, el DAG de Airflow lo deja pasar a horario y lo carga,
 // Monte Carlo lo revisa, en Snowflake dbt lo transforma de raw a mart, el warehouse escala mientras
@@ -22,13 +22,13 @@
   canvas.className = 'play-layer'; canvas.setAttribute('aria-hidden', 'true');
   const ctx = canvas.getContext('2d');
   const hit = document.createElement('button');
-  hit.type = 'button'; hit.className = 'pk-hit'; hit.setAttribute('aria-label', 'Open the new message and play the portfolio as a game');
+  hit.type = 'button'; hit.className = 'pk-hit'; hit.setAttribute('aria-label', 'Send a message to Luca and play the portfolio as a game');
   const hint = document.createElement('span');
-  hint.className = 'pk-hint'; hint.textContent = touch ? 'new message · tap to open' : 'new message · click to open';
+  hint.className = 'pk-hint'; hint.textContent = touch ? 'message for Luca · tap to send' : 'message for Luca · click to send';
   // La misión, con las teclas para moverse, en un globo sobre el muñequito.
   const mission = document.createElement('div');
   mission.className = 'pk-say'; mission.setAttribute('role', 'status');
-  mission.innerHTML = `<p>Hi! I'm a data record and I need to reach Luca's inbox. The only way there is through his stack.</p>${touch ? '<p class="go">use the buttons below ↓</p>' : '<p class="go"><kbd>←</kbd><kbd>→</kbd> move <kbd>↑</kbd> jump</p>'}`;
+  mission.innerHTML = `<p>Hi! I'm your message to Luca. To reach his inbox I travel the way his data does. Take me there.</p>${touch ? '<p class="go">use the buttons below ↓</p>' : '<p class="go"><kbd>←</kbd><kbd>→</kbd> move <kbd>↑</kbd> jump</p>'}`;
   const help = document.createElement('p');
   help.className = 'play-help'; help.textContent = '← → move · ↑ jump · ↓ drop · scroll to read · esc';
   const pad = document.createElement('div');
@@ -425,7 +425,7 @@
 
     const m = level.mailbox;
     if (!won && P.x + S > m.x - 6 && P.x < m.x + m.w + 6 && P.y + S > m.y - 10 && P.y < m.y + m.h) {
-      won = true; P.form = 'mail'; say('delivered. say hi!', m.x + m.w / 2, m.y - 24, 4000);
+      won = true; P.form = 'mail'; say('delivered! now send the real one', m.x + m.w / 2, m.y - 24, 4000);
       const hi = $('#contact .btn'); hi.classList.remove('wiggle'); void hi.offsetWidth; hi.classList.add('wiggle');
       setTimeout(() => { stop(); P.form = 'pk'; P.x = m.x + m.w / 2 - S / 2; P.y = m.y - S; P.vy = 0; }, 1600);
     }
