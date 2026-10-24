@@ -33,280 +33,80 @@
 </svg>
 
 <a class="skip" href="#content">Skip to content</a>
-<nav class="nav" aria-label="Main">
-  <a class="name" href="#top">Luca Lamorte</a>
-  <div class="links"><a href="#about">About</a><a href="#experience">Experience</a><a href="#projects">Projects</a><a href="#principles">How I work</a><a href="#education">Education</a></div>
-  <div class="icons">
-    <a href="mailto:lclamorte@gmail.com?subject=Let's%20connect!" aria-label="Email"><svg><use href="#i-mail"/></svg></a>
-    <a href="https://www.linkedin.com/in/lclamorte/" aria-label="LinkedIn" rel="noopener"><svg><use href="#i-linkedin"/></svg></a>
-  </div>
-</nav>
-
-<main id="top">
+<main class="home" id="top">
   <span id="content"></span>
-  <section class="hero">
-    <button type="button" class="game-toggle" id="game" aria-pressed="false"><i></i>Game mode</button>
-    <div class="portrait">
+  <header class="me">
+    <div class="me-portrait">
       <canvas id="portrait" role="img" aria-label="Portrait of Luca drawn with small dashes that move with the cursor"></canvas>
+      <button type="button" class="game-link" id="game" aria-pressed="false">Play with it</button>
       <p class="game-status" id="game-status" aria-live="polite"></p>
     </div>
-    <div class="intro">
-    <h1>Hi, <b>Luca</b> here.</h1>
-    <p>Data Engineer in Buenos Aires. I build the data platform, and then the GenAI product on top of it.</p>
-    <div class="cta">
-      <a class="btn" href="#about">Get to know me <span aria-hidden="true">↓</span></a>
-    </div>
-    </div>
-  </section>
-
-  <section id="about" class="about reveal">
-    <h2><span>/</span> about me</h2>
-    <div class="about-grid">
     <div>
-    <p class="tech-label">Tools I use most</p>
-    <ul class="tech">
-      <li>Python</li><li>SQL</li><li>Snowflake</li><li>dbt</li><li>Spark / PySpark</li><li>Airflow</li>
-      <li>AWS · Azure · GCP</li><li>Postgres · pgvector</li><li>LLMs · RAG · agents</li>
+      <h1>Luca Lamorte</h1>
+      <p class="role">Data engineer · Buenos Aires</p>
+      <p class="links"><a href="mailto:lclamorte@gmail.com?subject=Let's%20connect!">Email</a><a href="https://www.linkedin.com/in/lclamorte/" rel="noopener">LinkedIn</a></p>
+    </div>
+  </header>
+
+  <section class="bio">
+    <p>I work on the North America Marketing data &amp; analytics team at Kimberly-Clark, mostly in Snowflake. We replaced a vendor CDP that cost <b>$260K a month</b> with our own, and it now holds <b>65M</b> customer profiles.</p>
+    <p>Before that I spent two years getting real-time machine data into <b>10</b> plants across Colombia, Argentina, El Salvador, Peru and the US. On the side I build small GenAI products and run them myself, which is where I learn the most.</p>
+    <p class="tools">Usually with Python, SQL, Snowflake, dbt, Airflow, Spark, AWS, Azure, Postgres and a couple of LLMs.</p>
+  </section>
+
+  <section>
+    <h2>Now</h2>
+    <ul class="lines">
+      <li><span>Running <a href="projects/nutrigordo.html">Nutrigordo</a>, a nutrition bot on Telegram, in closed beta.</span></li>
+      <li><span>Finishing my degree in Information Systems at UADE.</span></li>
     </ul>
-    <p>I'm a data engineer at Kimberly-Clark, on the North America Marketing data &amp; analytics team. Most of my day is Snowflake: we replaced a vendor CDP with our own, and it now holds <b>65M</b> customer profiles.</p>
-    <p>Before that I spent two years in manufacturing, bringing real-time machine data to <b>10</b> plants in Colombia, Argentina, El Salvador, Peru and the US.</p>
-    <p>After hours I build my own products, mostly with GenAI. <b>Three</b> of them are live: Nutrigordo, PrimeroLab and DataChinchilla.</p>
-    </div>
-    <img class="photo" src="assets/luca.webp" alt="Luca Lamorte" width="400" height="400">
-    </div>
   </section>
 
-  <section id="experience" class="reveal">
-    <h2><span>/</span> experience</h2>
-    <div class="tabs">
-      <div class="tablist" role="tablist" aria-label="Roles">
-        <button role="tab" aria-selected="true" aria-controls="job-0" id="tab-0">Data Engineer</button>
-        <button role="tab" aria-selected="false" aria-controls="job-1" id="tab-1">Solution Engineer</button>
-        <button role="tab" aria-selected="false" aria-controls="job-2" id="tab-2">IT Trainee</button>
-      </div>
-      <div>
-        <div class="panel" role="tabpanel" id="job-0" aria-labelledby="tab-0">
-          <h3>Data Engineer <b>@ Kimberly-Clark</b></h3>
-          <p class="when">NOV 2025 · PRESENT</p>
-          <ul class="role-stack" aria-label="Stack"><li>Snowflake</li><li>Python</li><li>AWS S3</li><li>SageMaker</li><li>Azure Data Factory</li><li>Control-M</li><li>Azure DevOps</li><li>Monte Carlo</li><li>Hightouch</li></ul>
-          <ul class="wins">
-            <li style="--i:0"><b class="big">$260K</b><span>a month in vendor fees, gone. The in-house CDP on <b class="t">Snowflake</b> projects $5M in savings.</span></li>
-            <li style="--i:1"><b class="big">12+</b><span>sources (<b class="t">AWS S3</b> files and APIs) loaded with <b class="t">Python</b> and <b class="t">SageMaker</b>, scheduled in <b class="t">Azure Data Factory</b> and <b class="t">Control-M</b>, sent to marketing with <b class="t">Hightouch</b>.</span></li>
-            <li style="--i:2"><b class="big">65M</b><span>Customer 360 profiles, built from 35 dimension and fact tables in <b class="t">Snowflake</b> that load every day.</span></li>
-            <li style="--i:3"><b class="big">CI/CD</b><span>for every <b class="t">Snowflake</b> change in <b class="t">Azure DevOps</b>, and <b class="t">Monte Carlo</b> flags a broken source before marketing sees it.</span></li>
-          </ul>
-          <a class="case" href="projects/cdp.html"><span class="badge"><svg><use href="#i-db"/></svg></span><span><b>Composable CDP</b><small>How we swapped the vendor for Snowflake</small></span><i>→</i></a>
-        </div>
-        <div class="panel" role="tabpanel" id="job-1" aria-labelledby="tab-1" hidden>
-          <h3>Solution Engineer <b>@ Kimberly-Clark</b></h3>
-          <p class="when">JUL 2023 · OCT 2025</p>
-          <ul class="role-stack" aria-label="Stack"><li>Azure</li><li>SAP</li><li>Power BI</li><li>Digital twins</li><li>Real-time data</li></ul>
-          <ul class="wins">
-            <li style="--i:0"><b class="big">10</b><span>plants in Colombia, Argentina, El Salvador, Peru and the US now run on real-time machine data and digital twins. I led the rollout.</span></li>
-            <li style="--i:1"><b class="big">$21.5M</b><span>a year in ROI from the program.</span></li>
-            <li style="--i:2"><b class="big">1</b><span>definition per metric for every plant, with <b class="t">SAP</b> and <b class="t">ERP</b> data replicated into <b class="t">Azure</b> and reported in <b class="t">Power BI</b>.</span></li>
-          </ul>
-          <a class="case" href="projects/smom.html"><span class="badge"><svg><use href="#i-factory"/></svg></span><span><b>Smart Manufacturing Operations Management</b><small>How 10 plants got live machine data</small></span><i>→</i></a>
-        </div>
-        <div class="panel" role="tabpanel" id="job-2" aria-labelledby="tab-2" hidden>
-          <h3>IT Trainee <b>@ Kimberly-Clark</b></h3>
-          <p class="when">AUG 2022 · JUN 2023</p>
-          <ul class="role-stack" aria-label="Stack"><li>ServiceNow</li></ul>
-          <ul class="wins">
-            <li style="--i:0"><b class="big">3</b><span>teams (HR, R&amp;E and Legal) run their requests on <b class="t">ServiceNow</b> workflows I built.</span></li>
-          </ul>
-        </div>
-      </div>
-    </div>
+  <section>
+    <h2>Work</h2>
+    <ul class="lines work">
+      <li><div class="what">Data Engineer<small>Composable CDP on Snowflake, 65M profiles</small><span class="go"><a href="projects/cdp.html">Case study →</a></span></div><span class="when">Kimberly-Clark · 2025 · now</span></li>
+      <li><div class="what">Solution Engineer<small>Live machine data in 10 plants, $21.5M a year in ROI</small><span class="go"><a href="projects/smom.html">Case study →</a></span></div><span class="when">Kimberly-Clark · 2023 · 2025</span></li>
+      <li><div class="what">IT Trainee<small>ServiceNow workflows for HR, R&amp;E and Legal</small></div><span class="when">Kimberly-Clark · 2022 · 2023</span></li>
+    </ul>
   </section>
 
-  <section id="projects" class="reveal">
-    <h2><span>/</span> projects</h2>
-    <p class="group"><span>GenAI</span> products I built and run on my own</p>
-    <div class="projects three">
-      <a class="card" href="projects/nutrigordo.html">
-        <div class="top"><img class="logo" src="assets/nutrigordo.webp" alt=""><span class="kind">Telegram assistant</span></div>
-        <h3>Nutrigordo</h3>
-        <p>A nutrition coach in Telegram. Send a text, a photo or a voice note and the meal is logged. The model reads the message, the math is done in code, and the numbers add up.</p>
-        <div class="tags"><span>Python</span><span>FastAPI</span><span>OpenAI</span><span>Supabase</span><span>Telegram</span></div>
-        <span class="more">Read the case study →</span>
-      </a>
-      <a class="card" href="projects/primerolab.html">
-        <div class="top"><img class="logo" src="assets/primerolab.png" alt=""><span class="kind">Study app · agent and RAG</span></div>
-        <h3>PrimeroLab</h3>
-        <p>Upload your notes or a PDF and get flashcards with spaced repetition. A study assistant answers from your own documents, and the database decides what it is allowed to see.</p>
-        <div class="tags"><span>Next.js</span><span>TypeScript</span><span>Supabase</span><span>pgvector</span><span>Gemini</span><span>OpenAI</span></div>
-        <span class="more">Read the case study →</span>
-      </a>
-      <a class="card" href="projects/datachinchilla.html">
-        <div class="top"><img class="logo" src="assets/datachinchilla.svg" alt=""><span class="kind">Career paths</span></div>
-        <h3>DataChinchilla</h3>
-        <p>Free study paths for 14 tech roles, built from the best free courses in a sensible order. Drop in your CV and get only the steps you are missing. The CV never leaves your browser.</p>
-        <div class="tags"><span>JavaScript</span><span>pdf.js</span><span>Python</span><span>Firebase</span><span>Cloudflare</span></div>
-        <span class="more">Read the case study →</span>
-      </a>
-    </div>
+  <section>
+    <h2>Things I built</h2>
+    <ul class="lines work">
+      <li><div class="what">Nutrigordo<small>I wanted a calorie tracker I would actually use, so I built one that understands how I talk. Text, a photo or a voice note in, exact macros out.</small><span class="go"><a href="projects/nutrigordo.html">Case study →</a><a href="https://food-tracker-backend-cr8c.onrender.com/" rel="noopener">Try the demo ↗</a></span></div><span class="when">2026</span></li>
+      <li><div class="what">PrimeroLab<small>Studying should be fun. Upload your notes and get flashcards, spaced repetition and an assistant that knows your material.</small><span class="go"><a href="projects/primerolab.html">Case study →</a><a href="https://primerolab.com" rel="noopener">Visit ↗</a></span></div><span class="when">2026</span></li>
+      <li><div class="what">DataChinchilla<small>Built to help people get into tech without paying for it: free study paths for 14 roles, matched to your CV.</small><span class="go"><a href="projects/datachinchilla.html">Case study →</a><a href="https://datachinchilla.com/" rel="noopener">Visit ↗</a></span></div><span class="when">2026</span></li>
+    </ul>
   </section>
 
-  <section id="principles" class="reveal">
-    <h2><span>/</span> how I work</h2>
-    <p class="lead">How I take a product from idea to production, one rule per stage. Pick one to see it in action.</p>
-    <div class="principles">
-      <div class="pr-list" role="tablist" aria-label="How I work">
-        <button type="button" class="pr-item on" role="tab" aria-selected="true" aria-controls="pr-0" id="pr-tab-0"><span class="n">01<em>Define</em></span><span class="tx"><b>Agree on the math first.</b><span class="desc"><span>Before any dashboard, every plant agreed on how each metric is calculated.</span></span></span><i class="bar"></i></button>
-        <button type="button" class="pr-item" role="tab" aria-selected="false" aria-controls="pr-1" id="pr-tab-1"><span class="n">02<em>Design</em></span><span class="tx"><b>One copy of the truth.</b><span class="desc"><span>Everything lands once, in the warehouse, and every team reads that same copy.</span></span></span><i class="bar"></i></button>
-        <button type="button" class="pr-item" role="tab" aria-selected="false" aria-controls="pr-2" id="pr-tab-2"><span class="n">03<em>Build</em></span><span class="tx"><b>The model reads. The code decides.</b><span class="desc"><span>The model understands what people mean. Every number, date and delete happens in code.</span></span></span><i class="bar"></i></button>
-        <button type="button" class="pr-item" role="tab" aria-selected="false" aria-controls="pr-3" id="pr-tab-3"><span class="n">04<em>Ship</em></span><span class="tx"><b>Roll out one plant at a time.</b><span class="desc"><span>Ten plants in five countries went live one by one, each team trained before the next.</span></span></span><i class="bar"></i></button>
-        <button type="button" class="pr-item" role="tab" aria-selected="false" aria-controls="pr-4" id="pr-tab-4"><span class="n">05<em>Run</em></span><span class="tx"><b>Bad data stops at the gate.</b><span class="desc"><span>Quality is checked inside the pipeline, so a broken source never reaches an audience.</span></span></span><i class="bar"></i></button>
-        <button type="button" class="pr-item" role="tab" aria-selected="false" aria-controls="pr-5" id="pr-tab-5"><span class="n">06<em>Learn</em></span><span class="tx"><b>Every failure becomes a test.</b><span class="desc"><span>When something breaks for a real user, that conversation becomes a test.</span></span></span><i class="bar"></i></button>
-      </div>
-      <div class="pr-panel">
-        <div class="pr-scene on" role="tabpanel" id="pr-0" aria-labelledby="pr-tab-0">
-          <svg viewBox="0 0 400 240" role="img" aria-label="Agree on the math first. Before any dashboard, every plant agreed on how each metric is calculated."><text class="sc-cap" x="16" y="24" text-anchor="start">before</text><text class="sc-cap" x="236" y="24" text-anchor="start">after</text><text class="sc-t" x="16" y="62" text-anchor="start">Plant A</text><text class="sc-mut" x="140" y="62" text-anchor="end">71%</text><text class="sc-mut" x="16" y="78" text-anchor="start">uptime</text><text class="sc-t" x="16" y="112" text-anchor="start">Plant B</text><text class="sc-mut" x="140" y="112" text-anchor="end">64%</text><text class="sc-mut" x="16" y="128" text-anchor="start">uptime × speed</text><text class="sc-t" x="16" y="162" text-anchor="start">Plant C</text><text class="sc-mut" x="140" y="162" text-anchor="end">80%</text><text class="sc-mut" x="16" y="178" text-anchor="start">own spreadsheet</text><text class="sc-mut" x="16" y="222" text-anchor="start">3 plants, 3 formulas</text><path d="M168 118 H212" stroke="#5eead4" stroke-width="2"/><path d="M206 112 l7 6 l-7 6" fill="none" stroke="#5eead4" stroke-width="2"/><text class="sc-acc" x="190" y="104" text-anchor="middle">1 formula</text><text class="sc-t" x="236" y="62" text-anchor="start">A</text><rect x="254" y="50" width="88" height="16" rx="3" fill="#5eead4" fill-opacity=".8"><animate attributeName="width" values="0;0;88;88;0" keyTimes="0;.15;.45;.92;1" dur="6s" repeatCount="indefinite"/></rect><text class="sc-t" x="350" y="62" opacity="0">62%<animate attributeName="opacity" values="0;0;1;1;0" keyTimes="0;.44;.5;.92;1" dur="6s" repeatCount="indefinite"/></text><text class="sc-t" x="236" y="112" text-anchor="start">B</text><rect x="254" y="100" width="80" height="16" rx="3" fill="#5eead4" fill-opacity=".8"><animate attributeName="width" values="0;0;80;80;0" keyTimes="0;.15;.45;.92;1" dur="6s" repeatCount="indefinite"/></rect><text class="sc-t" x="342" y="112" opacity="0">58%<animate attributeName="opacity" values="0;0;1;1;0" keyTimes="0;.44;.5;.92;1" dur="6s" repeatCount="indefinite"/></text><text class="sc-t" x="236" y="162" text-anchor="start">C</text><rect x="254" y="150" width="96" height="16" rx="3" fill="#5eead4" fill-opacity=".8"><animate attributeName="width" values="0;0;96;96;0" keyTimes="0;.15;.45;.92;1" dur="6s" repeatCount="indefinite"/></rect><text class="sc-t" x="358" y="162" opacity="0">66%<animate attributeName="opacity" values="0;0;1;1;0" keyTimes="0;.44;.5;.92;1" dur="6s" repeatCount="indefinite"/></text><text class="sc-mut" x="236" y="222" text-anchor="start">same math, 10 plants</text></svg>
-          <a class="seen" href="projects/smom.html">Seen in SMOM →</a>
-        </div>
-        <div class="pr-scene" role="tabpanel" id="pr-1" aria-labelledby="pr-tab-1">
-          <svg viewBox="0 0 400 240" role="img" aria-label="One copy of the truth. Everything lands once, in the warehouse, and every team reads that same copy."><text class="sc-cap" x="16" y="24" text-anchor="start">12+ sources</text><text class="sc-cap" x="200" y="24" text-anchor="middle">one copy</text><text class="sc-cap" x="384" y="24" text-anchor="end">everyone reads it</text><path class="sc-line sc-flow" d="M34 58 C110 58 120 120 166 120"/><circle cx="28" cy="58" r="5" fill="#94a3b8" fill-opacity=".6"/><path class="sc-line sc-flow" d="M34 84 C110 84 120 120 166 120"/><circle cx="28" cy="84" r="5" fill="#94a3b8" fill-opacity=".6"/><path class="sc-line sc-flow" d="M34 110 C110 110 120 120 166 120"/><circle cx="28" cy="110" r="5" fill="#94a3b8" fill-opacity=".6"/><path class="sc-line sc-flow" d="M34 136 C110 136 120 120 166 120"/><circle cx="28" cy="136" r="5" fill="#94a3b8" fill-opacity=".6"/><path class="sc-line sc-flow" d="M34 162 C110 162 120 120 166 120"/><circle cx="28" cy="162" r="5" fill="#94a3b8" fill-opacity=".6"/><path class="sc-line sc-flow" d="M34 188 C110 188 120 120 166 120"/><circle cx="28" cy="188" r="5" fill="#94a3b8" fill-opacity=".6"/><path class="sc-line sc-flow sc-acc-line" d="M234 120 C262 120 270 64 296 64"/><text class="sc-t" x="304" y="68" text-anchor="start">marketing</text><path class="sc-line sc-flow sc-acc-line" d="M234 120 C262 120 270 120 296 120"/><text class="sc-t" x="304" y="124" text-anchor="start">reports</text><path class="sc-line sc-flow sc-acc-line" d="M234 120 C262 120 270 176 296 176"/><text class="sc-t" x="304" y="180" text-anchor="start">data science</text><path d="M168 92 v56 a32 9 0 0 0 64 0 v-56" fill="rgba(94,234,212,.14)" stroke="#5eead4" stroke-width="1.5"/>
-<ellipse cx="200" cy="92" rx="32" ry="9" fill="#0b1120" stroke="#5eead4" stroke-width="1.5"/>
-<path d="M168 120 a32 9 0 0 0 64 0" fill="none" stroke="#5eead4" stroke-opacity=".5"/><text class="sc-t" x="200" y="182" text-anchor="middle">Snowflake</text><text class="sc-acc" x="200" y="200" text-anchor="middle">65M profiles</text></svg>
-          <a class="seen" href="projects/cdp.html">Seen in Composable CDP →</a>
-        </div>
-        <div class="pr-scene" role="tabpanel" id="pr-2" aria-labelledby="pr-tab-2">
-          <svg viewBox="0 0 400 240" role="img" aria-label="The model reads. The code decides. The model understands what people mean. Every number, date and delete happens in code."><text class="sc-cap" x="16" y="24" text-anchor="start">you say</text><path class="sc-line sc-flow" d="M170 68 H260 V176 H170"/><circle r="5" fill="#5eead4"><animateMotion dur="3.6s" repeatCount="indefinite" path="M170 68 H260 V176 H170" keyPoints="0;1;1" keyTimes="0;.85;1" calcMode="linear"/></circle><text class="sc-t" x="16" y="62" text-anchor="start">"the usual, but</text><text class="sc-t" x="16" y="80" text-anchor="start">with two eggs"</text><circle cx="260" cy="68" r="28" fill="#5eead4"/><text class="sc-ink" x="260" y="72" text-anchor="middle">model</text><text class="sc-mut" x="298" y="66" text-anchor="start">reads it</text><text class="sc-mut" x="268" y="118" text-anchor="start">{toast: 1,</text><text class="sc-mut" x="268" y="132" text-anchor="start"> eggs: 2}</text><rect class="sc-code" x="232" y="148" width="56" height="56" rx="6"/><text class="sc-t" x="260" y="180" text-anchor="middle">code</text><text class="sc-mut" x="298" y="174" text-anchor="start">does</text><text class="sc-mut" x="298" y="188" text-anchor="start">the math</text><text class="sc-big" x="16" y="182" opacity=".25">412 kcal<animate attributeName="opacity" values=".25;.25;1;1" keyTimes="0;.8;.88;1" dur="3.6s" repeatCount="indefinite"/></text><text class="sc-cap" x="16" y="212" text-anchor="start">exact, tested</text></svg>
-          <a class="seen" href="projects/nutrigordo.html">Seen in Nutrigordo →</a>
-        </div>
-        <div class="pr-scene" role="tabpanel" id="pr-3" aria-labelledby="pr-tab-3">
-          <svg viewBox="0 0 400 240" role="img" aria-label="Roll out one plant at a time. Ten plants in five countries went live one by one, each team trained before the next."><text class="sc-cap" x="200" y="28" text-anchor="middle">rollout, one country at a time</text><path d="M40 128 H360" stroke="#94a3b8" stroke-opacity=".3" stroke-width="2"/><path d="M40 128 H360" stroke="#5eead4" stroke-width="2" pathLength="100" stroke-dasharray="0 100"><animate attributeName="stroke-dasharray" values="0 100;100 100;100 100;0 100" keyTimes="0;.85;.94;1" dur="10s" repeatCount="indefinite"/></path><path d="M22 96 v-7 l5 3 v-3 l5 3 v-3 l4 3 v-7 h3 v11 z" fill="#94a3b8"><animate attributeName="fill" values="#94a3b8;#94a3b8;#5eead4;#5eead4;#94a3b8" keyTimes="0;0.000;0.020;.94;1" dur="10s" repeatCount="indefinite"/></path><path d="M42 96 v-7 l5 3 v-3 l5 3 v-3 l4 3 v-7 h3 v11 z" fill="#94a3b8"><animate attributeName="fill" values="#94a3b8;#94a3b8;#5eead4;#5eead4;#94a3b8" keyTimes="0;0.000;0.020;.94;1" dur="10s" repeatCount="indefinite"/></path><circle cx="40" cy="128" r="6" fill="#0b1120" stroke="#94a3b8" stroke-width="2"><animate attributeName="stroke" values="#94a3b8;#94a3b8;#5eead4;#5eead4;#94a3b8" keyTimes="0;0.000;0.020;.94;1" dur="10s" repeatCount="indefinite"/><animate attributeName="fill" values="#0b1120;#0b1120;#5eead4;#5eead4;#0b1120" keyTimes="0;0.000;0.020;.94;1" dur="10s" repeatCount="indefinite"/></circle><text class="sc-t" x="40" y="156" text-anchor="middle">Colombia</text><text class="sc-acc" x="40" y="174" text-anchor="middle" opacity="0">live<animate attributeName="opacity" values="0;0;1;1;0" keyTimes="0;0.000;0.020;.94;1" dur="10s" repeatCount="indefinite"/></text><path d="M102 96 v-7 l5 3 v-3 l5 3 v-3 l4 3 v-7 h3 v11 z" fill="#94a3b8"><animate attributeName="fill" values="#94a3b8;#94a3b8;#5eead4;#5eead4;#94a3b8" keyTimes="0;0.212;0.232;.94;1" dur="10s" repeatCount="indefinite"/></path><path d="M122 96 v-7 l5 3 v-3 l5 3 v-3 l4 3 v-7 h3 v11 z" fill="#94a3b8"><animate attributeName="fill" values="#94a3b8;#94a3b8;#5eead4;#5eead4;#94a3b8" keyTimes="0;0.212;0.232;.94;1" dur="10s" repeatCount="indefinite"/></path><circle cx="120" cy="128" r="6" fill="#0b1120" stroke="#94a3b8" stroke-width="2"><animate attributeName="stroke" values="#94a3b8;#94a3b8;#5eead4;#5eead4;#94a3b8" keyTimes="0;0.212;0.232;.94;1" dur="10s" repeatCount="indefinite"/><animate attributeName="fill" values="#0b1120;#0b1120;#5eead4;#5eead4;#0b1120" keyTimes="0;0.212;0.232;.94;1" dur="10s" repeatCount="indefinite"/></circle><text class="sc-t" x="120" y="156" text-anchor="middle">Argentina</text><text class="sc-acc" x="120" y="174" text-anchor="middle" opacity="0">live<animate attributeName="opacity" values="0;0;1;1;0" keyTimes="0;0.212;0.232;.94;1" dur="10s" repeatCount="indefinite"/></text><path d="M182 96 v-7 l5 3 v-3 l5 3 v-3 l4 3 v-7 h3 v11 z" fill="#94a3b8"><animate attributeName="fill" values="#94a3b8;#94a3b8;#5eead4;#5eead4;#94a3b8" keyTimes="0;0.425;0.445;.94;1" dur="10s" repeatCount="indefinite"/></path><path d="M202 96 v-7 l5 3 v-3 l5 3 v-3 l4 3 v-7 h3 v11 z" fill="#94a3b8"><animate attributeName="fill" values="#94a3b8;#94a3b8;#5eead4;#5eead4;#94a3b8" keyTimes="0;0.425;0.445;.94;1" dur="10s" repeatCount="indefinite"/></path><circle cx="200" cy="128" r="6" fill="#0b1120" stroke="#94a3b8" stroke-width="2"><animate attributeName="stroke" values="#94a3b8;#94a3b8;#5eead4;#5eead4;#94a3b8" keyTimes="0;0.425;0.445;.94;1" dur="10s" repeatCount="indefinite"/><animate attributeName="fill" values="#0b1120;#0b1120;#5eead4;#5eead4;#0b1120" keyTimes="0;0.425;0.445;.94;1" dur="10s" repeatCount="indefinite"/></circle><text class="sc-t" x="200" y="156" text-anchor="middle">El Salvador</text><text class="sc-acc" x="200" y="174" text-anchor="middle" opacity="0">live<animate attributeName="opacity" values="0;0;1;1;0" keyTimes="0;0.425;0.445;.94;1" dur="10s" repeatCount="indefinite"/></text><path d="M262 96 v-7 l5 3 v-3 l5 3 v-3 l4 3 v-7 h3 v11 z" fill="#94a3b8"><animate attributeName="fill" values="#94a3b8;#94a3b8;#5eead4;#5eead4;#94a3b8" keyTimes="0;0.637;0.657;.94;1" dur="10s" repeatCount="indefinite"/></path><path d="M282 96 v-7 l5 3 v-3 l5 3 v-3 l4 3 v-7 h3 v11 z" fill="#94a3b8"><animate attributeName="fill" values="#94a3b8;#94a3b8;#5eead4;#5eead4;#94a3b8" keyTimes="0;0.637;0.657;.94;1" dur="10s" repeatCount="indefinite"/></path><circle cx="280" cy="128" r="6" fill="#0b1120" stroke="#94a3b8" stroke-width="2"><animate attributeName="stroke" values="#94a3b8;#94a3b8;#5eead4;#5eead4;#94a3b8" keyTimes="0;0.637;0.657;.94;1" dur="10s" repeatCount="indefinite"/><animate attributeName="fill" values="#0b1120;#0b1120;#5eead4;#5eead4;#0b1120" keyTimes="0;0.637;0.657;.94;1" dur="10s" repeatCount="indefinite"/></circle><text class="sc-t" x="280" y="156" text-anchor="middle">Peru</text><text class="sc-acc" x="280" y="174" text-anchor="middle" opacity="0">live<animate attributeName="opacity" values="0;0;1;1;0" keyTimes="0;0.637;0.657;.94;1" dur="10s" repeatCount="indefinite"/></text><path d="M342 96 v-7 l5 3 v-3 l5 3 v-3 l4 3 v-7 h3 v11 z" fill="#94a3b8"><animate attributeName="fill" values="#94a3b8;#94a3b8;#5eead4;#5eead4;#94a3b8" keyTimes="0;0.850;0.870;.94;1" dur="10s" repeatCount="indefinite"/></path><path d="M362 96 v-7 l5 3 v-3 l5 3 v-3 l4 3 v-7 h3 v11 z" fill="#94a3b8"><animate attributeName="fill" values="#94a3b8;#94a3b8;#5eead4;#5eead4;#94a3b8" keyTimes="0;0.850;0.870;.94;1" dur="10s" repeatCount="indefinite"/></path><circle cx="360" cy="128" r="6" fill="#0b1120" stroke="#94a3b8" stroke-width="2"><animate attributeName="stroke" values="#94a3b8;#94a3b8;#5eead4;#5eead4;#94a3b8" keyTimes="0;0.850;0.870;.94;1" dur="10s" repeatCount="indefinite"/><animate attributeName="fill" values="#0b1120;#0b1120;#5eead4;#5eead4;#0b1120" keyTimes="0;0.850;0.870;.94;1" dur="10s" repeatCount="indefinite"/></circle><text class="sc-t" x="360" y="156" text-anchor="middle">USA</text><text class="sc-acc" x="360" y="174" text-anchor="middle" opacity="0">live<animate attributeName="opacity" values="0;0;1;1;0" keyTimes="0;0.850;0.870;.94;1" dur="10s" repeatCount="indefinite"/></text><text class="sc-mut" x="200" y="214" text-anchor="middle">each stop: install, train the team, go live</text></svg>
-          <a class="seen" href="projects/smom.html">Seen in SMOM →</a>
-        </div>
-        <div class="pr-scene" role="tabpanel" id="pr-4" aria-labelledby="pr-tab-4">
-          <svg viewBox="0 0 400 240" role="img" aria-label="Bad data stops at the gate. Quality is checked inside the pipeline, so a broken source never reaches an audience."><text class="sc-cap" x="16" y="24" text-anchor="start">sources</text><text class="sc-cap" x="200" y="24" text-anchor="middle">quality check</text><text class="sc-cap" x="384" y="24" text-anchor="end">audience</text><path d="M16 130 H384" stroke="#94a3b8" stroke-opacity=".35" stroke-width="1.5"/><path d="M200 60 V196" stroke="#5eead4" stroke-width="2" stroke-dasharray="6 5"/><text class="sc-mut" x="200" y="214" text-anchor="middle">Monte Carlo</text><rect x="-11" y="-7" width="22" height="14" rx="3" fill="rgba(94,234,212,.14)" stroke="#5eead4"><animateMotion path="M20 130 H372" dur="4.5s" begin="0.0s" repeatCount="indefinite"/></rect><rect x="-11" y="-7" width="22" height="14" rx="3" fill="rgba(94,234,212,.14)" stroke="#5eead4"><animateMotion path="M20 130 H372" dur="4.5s" begin="1.5s" repeatCount="indefinite"/></rect><rect x="-11" y="-7" width="22" height="14" rx="3" fill="rgba(94,234,212,.14)" stroke="#5eead4"><animateMotion path="M20 130 H372" dur="4.5s" begin="3.0s" repeatCount="indefinite"/></rect><g><rect x="-11" y="-7" width="22" height="14" rx="3" fill="#f87171" fill-opacity=".85"/><animateMotion path="M20 130 H182" keyPoints="0;1;1" keyTimes="0;.4;1" dur="4.5s" begin=".75s" repeatCount="indefinite" calcMode="linear"/></g><text class="sc-t" x="186" y="104" text-anchor="end" fill="#f87171" style="fill:#f87171" opacity="0">✕ blocked, alert sent<animate attributeName="opacity" values="0;0;1;1" keyTimes="0;.4;.45;1" dur="4.5s" repeatCount="indefinite" begin=".75s"/></text></svg>
-          <a class="seen" href="projects/cdp.html">Seen in Composable CDP →</a>
-        </div>
-        <div class="pr-scene" role="tabpanel" id="pr-5" aria-labelledby="pr-tab-5">
-          <svg viewBox="0 0 400 240" role="img" aria-label="Every failure becomes a test. When something breaks for a real user, that conversation becomes a test."><text class="sc-cap" x="16" y="24" text-anchor="start">test suite</text><text class="sc-big" x="16" y="66">136 passing<animate attributeName="opacity" values="1;1;0;0" keyTimes="0;.55;.62;1" dur="5s" repeatCount="indefinite"/></text><text class="sc-big" x="16" y="66" opacity="0">137 passing<animate attributeName="opacity" values="0;0;1;1;0" keyTimes="0;.58;.66;.94;1" dur="5s" repeatCount="indefinite"/></text><circle cx="44" cy="110" r="9" fill="rgba(94,234,212,.14)" stroke="#5eead4" stroke-width="1.5"/><circle cx="76" cy="110" r="9" fill="rgba(94,234,212,.14)" stroke="#5eead4" stroke-width="1.5"/><circle cx="108" cy="110" r="9" fill="rgba(94,234,212,.14)" stroke="#5eead4" stroke-width="1.5"/><circle cx="140" cy="110" r="9" fill="rgba(94,234,212,.14)" stroke="#5eead4" stroke-width="1.5"/><circle cx="172" cy="110" r="9" fill="rgba(94,234,212,.14)" stroke="#5eead4" stroke-width="1.5"/><circle cx="204" cy="110" r="9" fill="rgba(94,234,212,.14)" stroke="#5eead4" stroke-width="1.5"/><circle cx="236" cy="110" r="9" fill="rgba(94,234,212,.14)" stroke="#5eead4" stroke-width="1.5"/><circle cx="268" cy="110" r="9" fill="rgba(94,234,212,.14)" stroke="#5eead4" stroke-width="1.5"/><circle cx="300" cy="110" r="9" fill="rgba(94,234,212,.14)" stroke="#5eead4" stroke-width="1.5"/><circle cx="332" cy="110" r="9" fill="rgba(94,234,212,.14)" stroke="#5eead4" stroke-width="1.5"/><g><animateTransform attributeName="transform" type="translate" values="0 80;0 80;0 0;0 0" keyTimes="0;.3;.55;1" dur="5s" repeatCount="indefinite" calcMode="spline" keySplines="0 0 1 1;.4 0 .2 1;0 0 1 1"/>
-<circle cx="364" cy="110" r="9" stroke-width="1.5" fill="#f87171" stroke="#f87171"><animate attributeName="fill" values="#f87171;#f87171;rgba(94,234,212,.14);rgba(94,234,212,.14)" keyTimes="0;.5;.6;1" dur="5s" repeatCount="indefinite"/><animate attributeName="stroke" values="#f87171;#f87171;#5eead4;#5eead4" keyTimes="0;.5;.6;1" dur="5s" repeatCount="indefinite"/></circle></g><text class="sc-t" x="352" y="194" text-anchor="end" style="fill:#f87171">a real chat breaks<animate attributeName="opacity" values="1;1;0;0" keyTimes="0;.3;.4;1" dur="5s" repeatCount="indefinite"/></text><text class="sc-mut" x="16" y="160" text-anchor="start">the bug becomes a test, forever</text></svg>
-          <a class="seen" href="projects/nutrigordo.html">Seen in Nutrigordo →</a>
-        </div>
-      </div>
-    </div>
+  <section>
+    <h2>How I work</h2>
+    <p>From the first conversation about a metric to the bug report six months later.</p>
+    <ul class="rules">
+        <li><span class="k">Define</span><span>Agree on how a metric is calculated before anyone builds a dashboard.</span></li>
+        <li><span class="k">Design</span><span>Keep one copy of the data, in the warehouse, and every rule in one place.</span></li>
+        <li><span class="k">Build</span><span>Let the model read what people mean; let code do every number and date. No hardcoded lists.</span></li>
+        <li><span class="k">Test</span><span>Use it the way a real user would before calling it done.</span></li>
+        <li><span class="k">Ship</span><span>Roll out one plant at a time, and train the team before moving on.</span></li>
+        <li><span class="k">Run</span><span>Check data quality inside the pipeline, so bad data never reaches a user.</span></li>
+        <li><span class="k">Learn</span><span>Turn every real failure into a test, so it only happens once.</span></li>
+        <li><span class="k">Team</span><span>Write it so the next person can audit it, and reuse before rewriting.</span></li>
+    </ul>
   </section>
 
-  <section id="education" class="reveal">
-    <h2><span>/</span> education</h2>
-    <div class="edu">
-      <ul class="rows">
-        <li><div class="row" style="--i:0"><span class="what"><b>Bachelor's Degree in Information Systems Management</b></span><span class="who"><span class="meta">UADE · expected 2026</span></span></div></li>
-      </ul>
-      <div class="certs-head">
-        <div>
-          <h3>Certifications &amp; Training</h3>
-        </div>
-        <div class="chips" role="group" aria-label="Filter by area"><button type="button" class="chip on" data-f="all" aria-pressed="true">All</button><button type="button" class="chip" data-f="data" aria-pressed="false">Data engineering</button><button type="button" class="chip" data-f="bi" aria-pressed="false">Analytics & BI</button><button type="button" class="chip" data-f="ml" aria-pressed="false">Machine learning</button></div>
-      </div>
-      <ul class="rows certs">
-        <li data-area="data"><div class="row" style="--i:0"><span class="what">Airflow 3 Certification</span><span class="who"><span class="meta">Astronomer · 2026</span></span></div></li>
-        <li data-area="data"><div class="row" style="--i:1"><span class="what">Data Engineering: Lakeflow Connect, Jobs, Spark Declarative Pipelines and DevOps</span><span class="who"><span class="meta">Databricks Academy · 2026</span></span></div></li>
-        <li data-area="data"><a class="row" href="https://achieve.snowflake.com/e4817076-5584-4154-bc81-b31a99f1b334" rel="noopener" style="--i:2"><span class="what">Data Engineering Workshop</span><span class="who"><span class="meta">Snowflake · 2026</span><span class="go">verify ↗</span></span></a></li>
-        <li data-area="data"><a class="row" href="https://www.credly.com/badges/dc607278-6c4c-4a3d-9680-2f892a79aff0" rel="noopener" style="--i:3"><span class="what">Build a Data Warehouse with BigQuery</span><span class="who"><span class="meta">Google Cloud · 2026</span><span class="go">verify ↗</span></span></a></li>
-        <li data-area="bi"><a class="row" href="https://www.credly.com/badges/6d7eccb5-0103-4d6d-944a-61bacf40d1e3" rel="noopener" style="--i:4"><span class="what">Manage Data Models in Looker</span><span class="who"><span class="meta">Google Cloud · 2026</span><span class="go">verify ↗</span></span></a></li>
-        <li data-area="bi"><a class="row" href="https://skillshop.credential.net/e78edea0-5392-442c-916a-2044020cbfe9" rel="noopener" style="--i:5"><span class="what">Google Analytics 4</span><span class="who"><span class="meta">Google Skillshop · 2026</span><span class="go">verify ↗</span></span></a></li>
-        <li data-area="bi"><a class="row" href="https://skillshop.credential.net/ca87fab7-0ff1-48b2-8c95-75a754aa3c0f" rel="noopener" style="--i:6"><span class="what">Campaign Manager 360</span><span class="who"><span class="meta">Google Skillshop · 2026</span><span class="go">verify ↗</span></span></a></li>
-        <li data-area="ml"><a class="row" href="https://www.credly.com/badges/8c637f8d-a946-4fdb-aeb4-79f877d4640e" rel="noopener" style="--i:7"><span class="what">Machine Learning with Python</span><span class="who"><span class="meta">IBM · 2025</span><span class="go">verify ↗</span></span></a></li>
-        <li data-area="bi"><a class="row" href="https://learn.microsoft.com/en-us/users/lucalamorte-9631/achievements/3autwv3h" rel="noopener" style="--i:8"><span class="what">Power BI: DAX and reports</span><span class="who"><span class="meta">Microsoft · 2025</span><span class="go">verify ↗</span></span></a></li>
-      </ul>
-      <div class="certs-head"><div><h3>Languages</h3></div></div>
-      <ul class="rows">
-        <li><div class="row" style="--i:0"><span class="what">Spanish</span><span class="who"><span class="meta">Native</span></span></div></li>
-        <li><a class="row" href="https://cert.efset.org/2LxfZy" rel="noopener" style="--i:1"><span class="what">English</span><span class="who"><span class="meta">Fluent · C2</span><span class="go">EF SET ↗</span></span></a></li>
-      </ul>
-    </div>
+  <section>
+    <h2>Education</h2>
+    <p>Information Systems at UADE, expected 2026. English at C2 (<a href="https://cert.efset.org/2LxfZy" rel="noopener">EF SET</a>), Spanish native.</p>
+    <p class="certs">Certified in Airflow 3, Databricks Data Engineering, <a href="https://achieve.snowflake.com/e4817076-5584-4154-bc81-b31a99f1b334" rel="noopener">Snowflake Data Engineering</a>, <a href="https://www.credly.com/badges/dc607278-6c4c-4a3d-9680-2f892a79aff0" rel="noopener">BigQuery</a>, <a href="https://www.credly.com/badges/6d7eccb5-0103-4d6d-944a-61bacf40d1e3" rel="noopener">Looker</a>, <a href="https://skillshop.credential.net/e78edea0-5392-442c-916a-2044020cbfe9" rel="noopener">Google Analytics 4</a>, <a href="https://skillshop.credential.net/ca87fab7-0ff1-48b2-8c95-75a754aa3c0f" rel="noopener">Campaign Manager 360</a>, <a href="https://www.credly.com/badges/8c637f8d-a946-4fdb-aeb4-79f877d4640e" rel="noopener">Machine Learning with Python</a>, <a href="https://learn.microsoft.com/en-us/users/lucalamorte-9631/achievements/3autwv3h" rel="noopener">Power BI</a>.</p>
   </section>
 
-  <section id="contact" class="contact reveal">
-    <h2>Get in touch</h2>
-    <p>Want to talk data platforms, GenAI, or a role on your team? Email is the fastest way to reach me.</p>
-    <div class="email"><span id="email">lclamorte@gmail.com</span><button type="button" class="copy" id="copy" aria-label="Copy email address"><svg><use href="#i-copy"/></svg><span>Copy</span></button></div>
-    <div class="cta">
-      <a class="btn" href="mailto:lclamorte@gmail.com?subject=Let's%20connect!"><svg><use href="#i-mail"/></svg>Say hi!</a>
-      <a class="btn ghost" href="https://www.linkedin.com/in/lclamorte/" rel="noopener"><svg><use href="#i-linkedin"/></svg>LinkedIn</a>
-    </div>
+  <section>
+    <h2>Say hi</h2>
+    <p>Email is the fastest way to reach me: <a href="mailto:lclamorte@gmail.com?subject=Let's%20connect!">lclamorte@gmail.com</a>. I'm also on <a href="https://www.linkedin.com/in/lclamorte/" rel="noopener">LinkedIn</a>.</p>
   </section>
 </main>
-
-<footer>© 2026 Luca Lamorte · Designed and built by hand · <a href="https://www.linkedin.com/in/lclamorte/" rel="noopener">LinkedIn</a></footer>
-
+<footer>© 2026 Luca Lamorte</footer>
 <script src="portrait.js"></script>
-<script>
-  // Pestañas de experiencia: una visible por vez, también con las flechas del teclado.
-  const tabs = [...document.querySelectorAll('.tablist [role="tab"]')];
-  function select(tab) {
-    tabs.forEach(other => {
-      const on = other === tab;
-      other.setAttribute('aria-selected', on);
-      other.tabIndex = on ? 0 : -1;
-      document.getElementById(other.getAttribute('aria-controls')).hidden = !on;
-    });
-  }
-  tabs.forEach((tab, index) => {
-    tab.tabIndex = index ? -1 : 0;
-    tab.addEventListener('click', () => select(tab));
-    tab.addEventListener('keydown', event => {
-      const step = { ArrowDown: 1, ArrowRight: 1, ArrowUp: -1, ArrowLeft: -1 }[event.key];
-      if (!step) return;
-      event.preventDefault();
-      const next = tabs[(index + step + tabs.length) % tabs.length];
-      select(next); next.focus();
-    });
-  });
-  // Copiar el email: con el portapapeles si se puede; si no, queda seleccionado para copiarlo a mano.
-  const copy = document.getElementById('copy');
-  copy.addEventListener('click', async () => {
-    const label = copy.querySelector('span');
-    try { await navigator.clipboard.writeText('lclamorte@gmail.com'); label.textContent = 'Copied'; }
-    catch { const range = document.createRange(); range.selectNodeContents(document.getElementById('email')); getSelection().removeAllRanges(); getSelection().addRange(range); label.textContent = 'Selected'; }
-    setTimeout(() => { label.textContent = 'Copy'; }, 1800);
-  });
-  // How I work: las reglas rotan solas mientras la sección está a la vista; un clic la deja quieta en la elegida.
-  const principles = document.querySelector('.principles');
-  const ruleTabs = [...principles.querySelectorAll('.pr-item')];
-  const panels = [...principles.querySelectorAll('.pr-scene')];
-  const showRule = n => {
-    ruleTabs.forEach((tab, k) => { tab.classList.toggle('on', k === n); tab.setAttribute('aria-selected', k === n); });
-    panels.forEach((panel, k) => panel.classList.toggle('on', k === n));
-  };
-  ruleTabs.forEach((tab, k) => {
-    tab.addEventListener('click', () => { principles.classList.remove('auto'); showRule(k); });
-    tab.querySelector('.bar').addEventListener('animationend', () => showRule((k + 1) % ruleTabs.length));
-  });
-  principles.classList.add('auto');
-  // Certificaciones: filtro por área.
-  const chipButtons = [...document.querySelectorAll('.chip')];
-  chipButtons.forEach(chip => chip.addEventListener('click', () => {
-    chipButtons.forEach(other => { other.classList.toggle('on', other === chip); other.setAttribute('aria-pressed', other === chip); });
-    document.querySelectorAll('.certs li').forEach(li => li.classList.toggle('out', chip.dataset.f !== 'all' && li.dataset.area !== chip.dataset.f));
-  }));
-  // Lo animado arranca al llegar: las filas entran en cascada, los números cuentan y las reglas empiezan a rotar.
-  const motion = new IntersectionObserver(entries => entries.forEach(entry => {
-    entry.target.classList.toggle('live', entry.isIntersecting);
-    if (!entry.isIntersecting || entry.target.dataset.done) return;
-    entry.target.dataset.done = '1';
-    entry.target.querySelectorAll('[data-count]').forEach(el => {
-      const end = +el.dataset.count, t0 = performance.now();
-      const step = now => { const k = Math.min(1, (now - t0) / 900); el.textContent = Math.round(end * (1 - Math.pow(1 - k, 3))); if (k < 1) requestAnimationFrame(step); };
-      requestAnimationFrame(step);
-    });
-  }), { threshold: 0.2 });
-  document.querySelectorAll('.edu, .principles').forEach(el => motion.observe(el));
-  document.documentElement.classList.add('motion');
-  // Cada bloque aparece al llegar a él.
-  if ('IntersectionObserver' in window) {
-    document.documentElement.classList.add('js');
-    const seen = new IntersectionObserver(entries => entries.forEach(entry => {
-      if (entry.isIntersecting) { entry.target.classList.add('in'); seen.unobserve(entry.target); }
-    }), { threshold: 0.12 });
-    document.querySelectorAll('.reveal').forEach(el => seen.observe(el));
-  }
-</script>
 </body>
 </html>
