@@ -390,3 +390,12 @@ footer a:hover { color: var(--text); }
 .about .tech { margin: 0 0 28px; gap: 4px 20px; }
 .about .tech li { color: var(--text); font-family: var(--sans); font-size: .98rem; font-weight: 600; letter-spacing: -.01em; }
 .about .tech li::before { content: none; }
+/* Educación en dos párrafos. */
+.edu-plain p { max-width: 760px; margin: 0 0 14px; color: var(--text-2); line-height: 1.8; }
+.edu-plain b { color: var(--text); font-weight: 600; }
+.edu-plain a { color: var(--text); text-decoration: underline; text-decoration-color: var(--accent-line); text-underline-offset: 3px; }
+.edu-plain a:hover { color: var(--accent); text-decoration-color: var(--accent); }
+.certs-line span { color: var(--muted); }
+/* Experiencia: los logros separados por aire, sin líneas. */
+.panel ul.wins { border-top: 0; margin-top: 14px; }
+.panel .wins li { border-bottom: 0; padding: 6px 0; }
