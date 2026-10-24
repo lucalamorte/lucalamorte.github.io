@@ -169,6 +169,14 @@
   function wake() { if (!running) { running = true; requestAnimationFrame(frame); } }
   canvas.addEventListener('pointermove', wake);
   if (toggle) toggle.addEventListener('click', wake);
+  // El muñequito del juego atraviesa el retrato: empuja las rayas igual que el cursor.
+  window.__portraitPoke = (clientX, clientY, vx, vy) => {
+    if (clientX === null) { pointer.active = false; pointer.vx = pointer.vy = 0; return; }
+    const box = canvas.getBoundingClientRect();
+    pointer.x = clientX - box.left; pointer.y = clientY - box.top;
+    pointer.vx = vx; pointer.vy = vy; pointer.active = true; pointer.seen = performance.now();
+    wake();
+  };
   window.addEventListener('resize', () => { resize(); wake(); });
   resize();
   wake();
