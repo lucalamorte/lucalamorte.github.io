@@ -44,12 +44,13 @@
   // El sobre espera al lado del primer botón de la portada.
   const envelope = () => { const b = box($('.hero .cta .btn')); return { x: b.r + 22, y: b.b - 32, w: 46, h: 32 }; };
   // Un cartelito que flota sobre el muñequito o sobre una pieza.
-  const say = (text, x = P.x + S / 2, y = P.y - 14, ms = 2000) => { labels = labels.filter(l => l.text !== text); labels.push({ text, x, y, until: performance.now() + ms }); };
+  // Los diálogos siempre salen justo arriba del muñequito y lo siguen mientras se mueve.
+  const say = (text, ms = 2000) => { labels = labels.filter(l => l.text !== text); labels.push({ text, until: performance.now() + ms }); };
 
   // ---------- el nivel ----------
   function build() {
     W = document.documentElement.clientWidth;
-    const plats = [], things = [], checkpoints = [];
+    const plats = [], things = [], checkpoints = [], walls = [];
     const h = box(hero), colL = Math.max(16, h.x), colR = Math.min(W - 16, h.r);
     const ledge = (x, y, w, extra = {}) => { const p = { x, y, w, solid: true, ...extra }; plats.push(p); return p; };
     // Un piso de lado a lado con huecos: por ahí se baja.
@@ -59,22 +60,42 @@
       gaps.forEach(([gx, gw]) => things.push({ draw: now => drawGap(gx + gw / 2, y, now) }));
     };
 
-    // Portada: el título, el texto y el botón son plataformas.
-    const h1 = box($('.hero h1')), hp = box($('.hero .intro p')), cta = box($('.hero .cta'));
-    ledge(h1.x, h1.y + 4, Math.min(h1.w, 440)); ledge(hp.x, hp.y, hp.w); ledge(cta.x, cta.y, cta.w);
-    floor(h.b - 8, [[colR - 150, 100]]);
+    // Portada: el título es el piso, sin línea encima. Con el retrato al costado, los hombros son el otro piso
+    // y la única salida es un hueco en el medio del pecho: para bajar hay que cruzar la figura de Luca.
+    const h1 = box($('.hero h1')), fig = portrait ? box(portrait) : null;
+    if (fig && fig.b > h1.y) {
+      ledge(h1.x, h1.y + 4, W + 60 - h1.x, { hidden: true });
+      const sy = fig.y + fig.h * 0.8, gx = fig.x + fig.w * 0.42, gw = 70;
+      ledge(-60, sy, gx + 60, { hidden: true }); ledge(gx + gw, sy, h1.x + 30 - gx - gw, { hidden: true });
+      things.push({ draw: now => drawGap(gx + gw / 2, sy, now) });
+    } else {
+      // En el celu el retrato queda arriba del título: se baja por el costado.
+      ledge(h1.x, h1.y + 4, h1.w, { hidden: true });
+      floor(h.b - 8, [[colR - 110, 90]]);
+    }
 
-    // About: todo pasa adentro de AWS, y la única salida es el bucket de S3.
-    const ab = box($('#about')), grid = box($('.about-grid')), photo = box($('.photo'));
+    // About: todo pasa adentro de AWS. Cada párrafo es un escalón: al pisarlo se ilumina y el muñequito
+    // reacciona. El DAG de Airflow tiene una tarea por párrafo y no corre hasta que los tres estén leídos.
+    const ab = box($('#about')), grid = box($('.about-grid'));
     things.push({ draw: () => { dashedBox(grid.x - 18, grid.y - 22, grid.w + 36, grid.h + 44, 26); text('AWS', grid.x - 4, grid.y - 28, ACCENT); } });
-    ledge(photo.x, photo.y, photo.w, { land: () => say("that's Luca") });
+    const paras = [...document.querySelectorAll('#about .about-grid p:not(.tech-label)')];
+    const REACT = ['interesting… 65M profiles', '10 plants, 5 countries. noted', 'three live products? ok, impressed'];
+    const reads = { done: paras.filter(el => el.classList.contains('read')).length, total: paras.length };
+    paras.forEach((el, k) => {
+      const b = box(el), part = k % 2 ? [b.x + b.w * 0.3, b.w * 0.7] : [b.x, b.w * 0.7];
+      ledge(part[0], b.y + 2, part[1], { hidden: true, land: () => {
+        if (!el.classList.contains('read')) { el.classList.add('read'); reads.done++; }
+        say(reads.done === reads.total && k === paras.length - 1 ? 'all read. Airflow can run now ↓' : REACT[k] || 'noted', 2400);
+      } });
+    });
     const fy = ab.b - 6, bw = 84, bx = Math.max(colL + 30, 24);
     floor(fy, [[bx, bw]]);
     const PERIOD = 5000, OPEN = 900;
-    const gateOpen = now => now % PERIOD > PERIOD - OPEN;
-    const gate = ledge(bx + 4, fy + 48, bw - 8, { tick: now => { gate.solid = !gateOpen(now); }, land: () => say('stored in S3 as a file') });
+    const ready = () => reads.done >= reads.total;
+    const gateOpen = now => ready() && now % PERIOD > PERIOD - OPEN;
+    const gate = ledge(bx + 4, fy + 48, bw - 8, { tick: now => { gate.solid = !gateOpen(now); }, land: () => say(ready() ? 'stored in S3. waiting for the next Airflow run' : 'Airflow is waiting: read about Luca first ↑', 2600) });
     const bucket = { x: bx, y: fy, w: bw, d: 52 };
-    things.push({ draw: now => drawBucket(bucket, gateOpen(now), now, PERIOD, OPEN) });
+    things.push({ draw: now => drawBucket(bucket, gateOpen(now), now, PERIOD, OPEN, reads) });
 
     // Experience: la tarea de Airflow carga el archivo por el margen y Monte Carlo lo revisa a mitad de camino.
     const exp = box($('#experience')), tl = box($('.tablist'));
@@ -86,85 +107,93 @@
     const pipe = { path, scan, mouth: [bx + bw / 2, fy + 56] };
     things.push({ draw: now => drawPipe(pipe, now) });
 
-    // Snowflake: adentro, dbt construye los modelos en orden (raw, staging, mart) y el warehouse escala
+    // Snowflake es una caja cerrada: las paredes no dejan salir y la única salida es una compuerta en el piso
+    // que se abre cuando dbt construyó los tres modelos (raw, staging, mart). Adentro, el warehouse escala
     // mientras lo usas y se suspende solo cuando lo dejas.
-    const sfW = Math.max(210, Math.min(tl.w + 28, W - wx - 16));
-    things.push({ draw: () => { dashedBox(wx - 14, top - 18, sfW, wy - top + 46, 18); snowflake(wx + 2, top - 26, 5, ACCENT); text('Snowflake', wx + 12, top - 22, ACCENT); } });
-    const models = [['raw.orders', 0], ['stg_orders', 1], ['fct_orders', 2]];
-    models.forEach(([name, k]) => {
+    const sfW = Math.max(210, Math.min(tl.w + 28, W - wx - 16)), boxL = wx - 14, boxR = boxL + sfW, boxB = wy + 28;
+    walls.push({ x: boxL, y1: top - 180, y2: boxB }, { x: boxR, y1: top - 180, y2: boxB });
+    const models = [['raw.orders', 0], ['stg_orders', 1], ['fct_orders', 2]].map(([name, k]) => {
       const m = ledge(wx + (k % 2 ? 70 : 0), top + 60 + k * 50, 118, { kind: 'model', name, built: false });
-      m.land = () => { if (!m.built) { m.built = true; say(k === 0 ? `dbt: ${name} loaded` : `dbt run · ${name} ✓`, m.x + m.w / 2, m.y - 14, 1500); } };
+      m.land = () => {
+        if (m.built) return;
+        m.built = true;
+        say(models.every(x => x.built) ? 'dbt build done · the hatch is open ↓' : k === 0 ? `dbt: ${name} loaded` : `dbt run · ${name} ✓`, 2000);
+      };
+      return m;
     });
+    const built = () => models.every(m => m.built);
+    const hatch = { x: boxR - 74, w: 58 };
+    const locked = () => { if (!built()) say('build all the dbt models to get out ↑', 2200); };
+    ledge(boxL, boxB, hatch.x - boxL, { floor: true, land: locked });
+    ledge(hatch.x + hatch.w, boxB, boxR - hatch.x - hatch.w, { floor: true, land: locked });
+    const lid = ledge(hatch.x, boxB, hatch.w, { floor: true, tick: () => { lid.solid = !built(); }, land: locked });
+    things.push({ draw: now => {
+      const open = built();
+      ctx.setLineDash(open ? [3, 7] : []); ctx.strokeStyle = open ? 'rgba(94,234,212,.3)' : 'rgba(94,234,212,.55)'; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.roundRect(boxL, top - 18, sfW, boxB - top + 18, 18); ctx.stroke(); ctx.setLineDash([]);
+      snowflake(wx + 2, top - 26, 5, ACCENT); text('Snowflake', wx + 12, top - 22, ACCENT);
+      if (open) drawGap(hatch.x + hatch.w / 2, boxB, now);
+      else { ctx.strokeStyle = MUTED; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(hatch.x, boxB); ctx.lineTo(hatch.x + hatch.w, boxB); ctx.stroke(); text('🔒︎ dbt', hatch.x + hatch.w / 2, boxB + 16, MUTED, 'center'); }
+    } });
     const SIZES = ['XS', 'S', 'M', 'L', 'XL'], maxW = sfW - 28;
     const wh = ledge(wx, wy, 56, { size: 0, idle: 0, grow: 0, kind: 'warehouse' });
-    wh.land = () => say(wh.size ? 'warehouse resumed' : 'Snowflake: warehouse running');
-    wh.stand = dt => { wh.idle = 0; wh.grow += dt; if (wh.grow > 0.55 && wh.size < SIZES.length - 1) { wh.size++; wh.grow = 0; say(`scaled up to ${SIZES[wh.size]}`, wh.x + wh.w / 2, wh.y - 16, 900); } };
+    wh.land = () => say(wh.size ? 'warehouse resumed' : 'warehouse running · it scales while you use it', 2200);
+    wh.stand = dt => { wh.idle = 0; wh.grow += dt; if (wh.grow > 0.55 && wh.size < SIZES.length - 1) { wh.size++; wh.grow = 0; say(`warehouse scaled up to ${SIZES[wh.size]}`, 900); } };
     wh.tick = (now, dt) => {
-      if (P.on !== wh) { wh.grow = 0; wh.idle += dt; if (wh.idle > 1.6 && wh.size) { wh.size = 0; say('auto-suspended · $0', wh.x + 40, wh.y - 16, 1400); } }
+      if (P.on !== wh) { wh.grow = 0; wh.idle += dt; if (wh.idle > 1.6 && wh.size) { wh.size = 0; } }
       const target = 56 + (maxW - 56) * wh.size / (SIZES.length - 1);
       wh.w += (target - wh.w) * Math.min(1, dt * 6);
     };
     wh.label = () => SIZES[wh.size];
     // El piso es la línea de una planta, en tiempo real: te lleva hacia la salida.
-    // El hueco de salida queda justo arriba del chat de Nutrigordo, el primer producto.
+    // El hueco de salida cae sobre la primera tarjeta de Projects.
     const card0 = $('#projects .card'), c0 = card0 ? box(card0) : { r: colR, w: 200 };
-    const gx = Math.min(W - 100, Math.max(colL, c0.r - Math.min(170, c0.w * 0.8) / 2 - 45)), ey = exp.b - 6;
+    const gx = Math.min(W - 100, Math.max(colL, c0.x + c0.w / 2 - 45)), ey = exp.b - 6;
     ledge(-60, ey, gx + 60, { floor: true, belt: 70 });
     ledge(gx + 90, ey, W - gx - 30, { floor: true, belt: -70 });
     things.push({ draw: now => { drawGap(gx + 45, ey, now); drawBelt(colL - 10, gx - 6, ey, now, 1); drawBelt(gx + 96, Math.max(gx + 140, colR), ey, now, -1); } });
 
-    // Projects: tres productos, cada uno con su mecánica.
-    const cards = [...document.querySelectorAll('#projects .card')].map(box);
-    if (cards[0]) {
-      // Nutrigordo: le escribís y el chat te contesta con una burbuja nueva.
-      const c = cards[0], w = Math.min(170, c.w * 0.8);
-      const lines = [['2 eggs and toast', 'me'], ['✓ logged · 412 kcal', 'bot'], ['and a coffee', 'me'], ['✓ 418 kcal today', 'bot']];
-      const bubbles = lines.map(([t, who], k) => ledge(who === 'me' ? c.r - w : c.x, c.y + 64 + k * 60, w, { kind: 'bubble', text: t, who, shown: k === 0 ? 1 : 0, solid: k === 0 }));
-      bubbles.forEach((b, k) => { b.land = () => { const next = bubbles[k + 1]; if (next && !next.solid) { next.typing = performance.now(); setTimeout(() => { next.solid = true; }, 700); } }; });
-    }
-    if (cards[1]) {
-      // PrimeroLab: la flashcard se da vuelta, desaparece y vuelve cada vez más tarde.
-      const c = cards[1], w = Math.min(150, c.w * 0.62);
-      [0, 1].forEach(k => {
-        const f = ledge(k ? c.r - w : c.x, c.y + c.h * (0.55 + k * 0.22), w, { kind: 'card', q: k ? 'Q: what is RAG?' : 'Q: SQL JOIN?', a: k ? 'A: search + generate ✓' : 'A: match rows ✓', flip: 0, gone: 0, gap: 2 });
-        f.stand = dt => { if (!f.gone) { f.flip = Math.min(1, f.flip + dt * 1.6); if (f.flip === 1 && !f.away) { f.away = performance.now() + 500; } } };
-        f.tick = now => {
-          if (f.away && now > f.away && !f.gone) { f.gone = now + f.gap * 1000; f.solid = false; say(`see you in ${f.gap}s`, f.x + f.w / 2, f.y - 14, 1400); f.gap *= 2; f.away = 0; }
-          if (f.gone && now > f.gone) { f.gone = 0; f.solid = true; f.flip = 0; }
-        };
+    // Projects: el borde de arriba de cada tarjeta es el piso. Al pisarla se enciende como en hover y el
+    // muñequito usa el producto: le habla a Nutrigordo, estudia con PrimeroLab, pide un camino a DataChinchilla.
+    const cardEls = [...document.querySelectorAll('#projects .card')];
+    const USE = [['2 eggs and toast', 'logged · 412 kcal ✓'], ['what is RAG?', 'search + generate ✓ · see you in 3 days'], ['I want to be a data engineer', 'your path: 23 steps, only what you miss']];
+    const stacked = cardEls.length > 1 && box(cardEls[1]).y > box(cardEls[0]).y + 10;
+    cardEls.forEach((el, k) => {
+      const c = box(el), part = !stacked ? [c.x, c.w] : k % 2 ? [c.x + c.w * 0.3, c.w * 0.7] : [c.x, c.w * 0.7];
+      ledge(part[0], c.y, part[1], { hidden: true, land: () => {
+        cardEls.forEach(other => other.classList.toggle('lit', other === el));
+        const [ask, answer] = USE[k] || ['', ''];
+        if (!ask || el.dataset.used) return;
+        el.dataset.used = '1'; say(ask, 1300); setTimeout(() => say(answer, 2600), 1100);
+      } });
+    });
+    // Lectura obligada: paredes a los costados de una lista y cada fila es un piso que se abre recién
+    // después de leerla un rato. Así se baja de a una, en orden.
+    const chute = (els, top, seconds, onLand) => {
+      const first = box(els[0]), lastRow = box(els[els.length - 1]);
+      walls.push({ x: first.x - 4, y1: top, y2: lastRow.b }, { x: first.r + 4, y1: top, y2: lastRow.b });
+      els.forEach((el, k) => {
+        const b = box(el);
+        const p = ledge(first.x - 4, b.y, first.w + 8, { kind: 'read', t: 0, need: seconds, land: () => onLand(el, k) });
+        p.stand = dt => { if (p.solid) { p.t += dt; if (p.t >= p.need) p.solid = false; } };
       });
-    }
-    if (cards[2]) {
-      // DataChinchilla: el camino sale de tu CV. Los pasos que ya tienes quedan tachados y no frenan.
-      const c = cards[2];
-      const have = [1, 4];
-      for (let k = 0; k < 6; k++) {
-        const s = ledge(c.x + (k % 2 ? c.w * 0.5 : 4), c.y + c.h * 0.42 + k * 44, Math.min(70, c.w * 0.4), { kind: 'step', have: have.includes(k), solid: !have.includes(k), n: k + 1 });
-        if (k === 0) s.land = () => say('your path, from your CV');
-        if (k === 5) s.land = () => say('only what you were missing');
-      }
-    }
+      return first;
+    };
+    const rows = [...document.querySelectorAll('.pr-item')], how = box($('#principles'));
+    const list = rows.length ? box(rows[0]) : { x: colL, w: 200 };
+    // Projects se deja por un hueco justo arriba de la lista de reglas.
     const pr = box($('#projects'));
-    floor(pr.b - 6, [[colR - 100, 90]]);
+    floor(pr.b - 6, [[list.x + list.w / 2 - 45, 90]]);
+    // How I work: seis reglas, de la 1 a la 6. Al caer en una se abre su escena para leerla.
+    if (rows.length) chute(rows, how.y + 40, 2.6, (row, k) => { row.click(); say(`${String(k + 1).padStart(2, '0')} · ${row.querySelector('.n em').textContent.toLowerCase()}`, 2600); });
+    floor(how.b - 6, [[list.x + list.w / 2 - 45, 90]]);
 
-    // How I work: cada regla es un escalón. Pisarla la abre, para leerla con calma.
-    const rows = [...document.querySelectorAll('.pr-item')];
-    rows.forEach((row, k) => {
-      const b = box(row), part = k % 2 ? [b.x + b.w * 0.3, b.w * 0.7] : [b.x, b.w * 0.7];
-      ledge(part[0], b.y, part[1], { kind: 'rule', land: () => { row.click(); say(row.querySelector('.n em').textContent.toLowerCase()); } });
+    // Education: lo mismo, fila por fila; cada credencial se sella al leerla.
+    const items = [...document.querySelectorAll('#education .list li')], ed = box($('#education'));
+    if (items.length) chute(items, ed.y + 40, 1.2, (li, k) => {
+      li.classList.remove('stamp'); void li.offsetWidth; li.classList.add('stamp');
+      say(k === 0 ? 'class of 2026' : li.textContent.includes('English') ? 'hello · hola' : li.querySelector('.cred') ? 'verified ✓' : 'done ✓', 1600);
     });
-    const how = box($('#principles'));
-    floor(how.b - 6, [[colL + 10, 90]]);
-
-    // Education: cada credencial se sella al pisarla.
-    const items = [...document.querySelectorAll('#education .list li')];
-    items.forEach((li, k) => {
-      const b = box(li), part = k % 2 ? [b.x + b.w * 0.35, b.w * 0.65] : [b.x, b.w * 0.65];
-      const cred = li.querySelector('.cred');
-      const words = k === 0 ? 'class of 2026' : li.textContent.includes('English') ? 'hello · hola' : cred ? 'verified ✓' : 'done ✓';
-      ledge(part[0], b.y, part[1], { kind: 'row', land: () => { li.classList.remove('stamp'); void li.offsetWidth; li.classList.add('stamp'); say(words); } });
-    });
-    const ed = box($('#education'));
     floor(ed.b - 6, [[(colL + colR) / 2 - 45, 90]]);
 
     // Contacto: el buzón es la meta.
@@ -177,7 +206,7 @@
     floor(ct.b - 20, []);
 
     for (const id of ['about', 'experience', 'projects', 'principles', 'education', 'contact']) { const b = box(document.getElementById(id)); checkpoints.push({ y: b.y, x: colL + 30 }); }
-    return { plats, things, pipe, bucket, mailbox, checkpoints, colL, colR, docH: document.documentElement.scrollHeight };
+    return { plats, things, walls, pipe, bucket, mailbox, checkpoints, colL, colR, docH: document.documentElement.scrollHeight };
   }
 
   // ---------- dibujo ----------
@@ -188,20 +217,20 @@
   }
   function dashedBox(x, y, w, h, r) { ctx.setLineDash([3, 7]); ctx.strokeStyle = 'rgba(94,234,212,.3)'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.roundRect(x, y, w, h, r); ctx.stroke(); ctx.setLineDash([]); }
   function drawGap(x, y, now) { const k = Math.sin(now / 250) * 3; text('↓', x, y + 4 + k, ACCENT, 'center', '14px "JetBrains Mono", monospace'); }
-  function drawBucket(b, open, now, period, openFor) {
+  function drawBucket(b, open, now, period, openFor, reads) {
     ctx.strokeStyle = ACCENT; ctx.lineWidth = 2; ctx.beginPath();
     ctx.moveTo(b.x - 6, b.y); ctx.lineTo(b.x + 6, b.y + b.d); ctx.lineTo(b.x + b.w - 6, b.y + b.d); ctx.lineTo(b.x + b.w + 6, b.y); ctx.stroke();
     ctx.beginPath(); ctx.ellipse(b.x + b.w / 2, b.y, b.w / 2 + 6, 5, 0, 0, Math.PI * 2); ctx.stroke();
     if (open) { ctx.fillStyle = INK; ctx.fillRect(b.x + 8, b.y + b.d - 2, b.w - 16, 4); }
     text('S3', b.x + b.w / 2, b.y + b.d / 2 + 6, ACCENT, 'center');
-    // El DAG de Airflow: sus tareas se encienden en orden y, cuando le toca correr, se abre la compuerta.
+    // El DAG de Airflow: una tarea por párrafo leído; con las tres hechas corre a horario y abre la compuerta.
     const cx = b.x + b.w + 22, cy = b.y + 22, left = (period - openFor - (now % period)) / 1000;
-    const lit = open ? 3 : Math.floor((now % period) / (period - openFor) * 3);
+    const all = reads.done >= reads.total;
     const nodes = [[cx, cy], [cx + 22, cy - 9], [cx + 22, cy + 9], [cx + 44, cy]];
     ctx.strokeStyle = MUTED; ctx.lineWidth = 1.2; ctx.beginPath();
     [[0, 1], [0, 2], [1, 3], [2, 3]].forEach(([a, z]) => { ctx.moveTo(nodes[a][0], nodes[a][1]); ctx.lineTo(nodes[z][0], nodes[z][1]); }); ctx.stroke();
-    nodes.forEach(([x, y], k) => { const on = (k === 0 ? 1 : k === 3 ? 3 : 2) <= lit; ctx.fillStyle = on ? ACCENT : INK; ctx.strokeStyle = on ? ACCENT : MUTED; ctx.beginPath(); ctx.arc(x, y, 4, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); });
-    text(open ? 'Airflow: DAG running' : `Airflow: next run ${Math.max(0, left).toFixed(0)}s`, cx + 54, cy + 4, open ? ACCENT : MUTED);
+    nodes.forEach(([x, y], k) => { const on = k === 3 ? open : k === 0 ? reads.done >= 1 : k === 1 ? reads.done >= 2 : all; ctx.fillStyle = on ? ACCENT : INK; ctx.strokeStyle = on ? ACCENT : MUTED; ctx.beginPath(); ctx.arc(x, y, 4, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); });
+    text(!all ? `Airflow: read about Luca first · ${reads.done}/${reads.total}` : open ? 'Airflow: DAG running' : `Airflow: next run ${Math.max(0, left).toFixed(0)}s`, cx + 54, cy + 4, open ? ACCENT : MUTED);
   }
   function drawPipe(p, now) {
     ctx.lineJoin = 'round'; ctx.lineCap = 'round';
@@ -245,6 +274,7 @@
     if (!won) text('contact', m.x + m.w / 2, m.y - 10, MUTED, 'center');
   }
   function drawPlat(p, now) {
+    if (p.hidden) return;
     if (p.kind === 'warehouse') {
       const on = p.size > 0;
       ctx.fillStyle = on ? 'rgba(94,234,212,.22)' : 'rgba(148,163,184,.12)'; ctx.strokeStyle = on ? ACCENT : MUTED; ctx.lineWidth = 1.5;
@@ -259,33 +289,10 @@
       text(`${p.built ? '✓ ' : ''}${p.name}`, p.x + 4, p.y + 20, p.built ? ACCENT : MUTED);
       return;
     }
-    if (p.kind === 'bubble') {
-      if (!p.solid && !p.typing) return;
-      const typing = !p.solid, me = p.who === 'me';
-      ctx.fillStyle = BG; ctx.strokeStyle = me ? ACCENT : MUTED; ctx.lineWidth = 1.5;
-      ctx.beginPath(); ctx.roundRect(p.x, p.y, p.w, 26, 10); ctx.fill(); ctx.stroke();
-      ctx.beginPath(); if (me) { ctx.moveTo(p.x + p.w - 14, p.y + 26); ctx.lineTo(p.x + p.w - 4, p.y + 34); ctx.lineTo(p.x + p.w - 24, p.y + 26); } else { ctx.moveTo(p.x + 14, p.y + 26); ctx.lineTo(p.x + 4, p.y + 34); ctx.lineTo(p.x + 24, p.y + 26); }
-      ctx.fill(); ctx.stroke();
-      if (typing) { for (let k = 0; k < 3; k++) { ctx.fillStyle = MUTED; ctx.globalAlpha = fade * (0.4 + 0.6 * ((Math.floor(now / 200) % 3) === k)); ctx.beginPath(); ctx.arc(p.x + 16 + k * 9, p.y + 13, 2.5, 0, Math.PI * 2); ctx.fill(); } ctx.globalAlpha = fade; }
-      else text(p.text, p.x + 10, p.y + 17, me ? ACCENT : '#e2e8f0');
-      return;
-    }
-    if (p.kind === 'card') {
-      if (p.gone) { ctx.globalAlpha = fade * 0.25; ctx.setLineDash([3, 4]); ctx.strokeStyle = MUTED; ctx.lineWidth = 1; ctx.beginPath(); ctx.roundRect(p.x, p.y, p.w, 28, 6); ctx.stroke(); ctx.setLineDash([]); ctx.globalAlpha = fade; return; }
-      const k = Math.abs(Math.cos(p.flip * Math.PI)), back = p.flip > 0.5;
-      ctx.save(); ctx.translate(0, p.y + 14); ctx.scale(1, Math.max(0.08, k)); ctx.translate(0, -14);
-      ctx.fillStyle = BG; ctx.strokeStyle = back ? ACCENT : MUTED; ctx.lineWidth = 1.5;
-      ctx.beginPath(); ctx.roundRect(p.x, 0, p.w, 28, 6); ctx.fill(); ctx.stroke();
-      text(back ? p.a : p.q, p.x + p.w / 2, 18, back ? ACCENT : '#e2e8f0', 'center');
-      ctx.restore();
-      return;
-    }
-    if (p.kind === 'step') {
-      ctx.globalAlpha = fade * (p.have ? 0.35 : 1);
-      ctx.fillStyle = p.have ? 'rgba(148,163,184,.15)' : 'rgba(94,234,212,.18)'; ctx.strokeStyle = p.have ? MUTED : ACCENT; ctx.lineWidth = 1.5;
-      ctx.beginPath(); ctx.roundRect(p.x, p.y, p.w, 10, 5); ctx.fill(); ctx.stroke();
-      if (p.have) text('✓ have it', p.x + p.w / 2, p.y + 24, MUTED, 'center');
-      ctx.globalAlpha = fade;
+    if (p.kind === 'read') {
+      if (!p.t || !p.solid) return;
+      ctx.strokeStyle = ACCENT; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(p.x + 4, p.y); ctx.lineTo(p.x + 4 + (p.w - 8) * Math.min(1, p.t / p.need), p.y); ctx.stroke();
       return;
     }
     if (p.floor) { ctx.strokeStyle = FAINT; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(p.x + p.w, p.y); ctx.stroke(); return; }
@@ -354,19 +361,20 @@
         drawPlat(p, now);
       }
       ctx.globalAlpha = fade = 1;
-    } else if (level && P.on && !P.on.floor) drawPlat(P.on, now);
+    } else if (level && P.on && !P.on.floor && !P.on.hidden) drawPlat(P.on, now);
     // La estela del muñequito cuando atraviesa el retrato.
     P.trail.forEach((t, k) => { ctx.globalAlpha = (k / P.trail.length) * 0.35; ctx.fillStyle = ACCENT; ctx.beginPath(); ctx.roundRect(t[0] + 4, t[1] + 4, S - 8, S - 8, 5); ctx.fill(); });
     ctx.globalAlpha = 1;
     if (mode === 'wait' || opened) drawEnvelope(envelope(), now);
     if (mode !== 'wait' && !(mode === 'intro' && intro && now < intro.t0) && seen(P.y)) drawPk(P.x, P.y, now);
     labels = labels.filter(l => now < l.until);
-    // Los cartelitos nunca se salen de la pantalla.
+    // Los diálogos, apilados sobre el muñequito y sin salirse de la pantalla.
     ctx.font = MONO;
-    for (const l of labels) {
-      const k = Math.min(1, (l.until - now) / 300), half = ctx.measureText(l.text).width / 2 + 8;
-      ctx.globalAlpha = k; text(l.text, Math.max(half, Math.min(W - half, l.x)), l.y - (1 - k) * 6, ACCENT, 'center'); ctx.globalAlpha = 1;
-    }
+    labels.forEach((l, k) => {
+      const a = Math.min(1, (l.until - now) / 300), half = ctx.measureText(l.text).width / 2 + 8;
+      const ly = P.y - 14 - (labels.length - 1 - k) * 16 - (1 - a) * 6;
+      ctx.globalAlpha = a; text(l.text, Math.max(half, Math.min(W - half, P.x + S / 2)), ly, ACCENT, 'center'); ctx.globalAlpha = 1;
+    });
     ctx.restore();
   }
 
@@ -385,7 +393,7 @@
       P.ride.d += dt * 620;
       const [x, y, end] = rideTo(P.ride.d);
       P.x = x - S / 2; P.y = y - S / 2;
-      if (!P.ride.scanned && Math.abs(y - level.pipe.scan[1]) < 12 && Math.abs(x - level.pipe.scan[0]) < 12) { P.ride.scanned = true; say('Monte Carlo: fresh, schema ok ✓', x + 70, y - 24, 1800); }
+      if (!P.ride.scanned && Math.abs(y - level.pipe.scan[1]) < 12 && Math.abs(x - level.pipe.scan[0]) < 12) { P.ride.scanned = true; say('Monte Carlo: fresh, schema ok ✓', 1800); }
       if (end) { P.ride = null; P.form = 'pk'; P.vy = 0; say('loaded into Snowflake'); }
       return;
     }
@@ -393,7 +401,13 @@
     const dir = control ? ((keys.right ? 1 : 0) - (keys.left ? 1 : 0)) : 0;
     if (dir) P.face = dir;
     P.vx = dir * SPEED + (P.on && P.on.belt ? P.on.belt : 0);
+    const prevX = P.x;
     P.x += P.vx * dt;
+    for (const w of level.walls) {
+      if (P.y + S <= w.y1 || P.y >= w.y2) continue;
+      if (prevX + S <= w.x && P.x + S > w.x) P.x = w.x - S;
+      if (prevX >= w.x && P.x < w.x) P.x = w.x;
+    }
     if (P.x > W) P.x -= W + S;
     if (P.x < -S) P.x += W + S;
     if (control && keys.jump && P.ground) { P.vy = -JUMP; P.ground = false; P.squash = -0.7; }
@@ -418,14 +432,21 @@
     P.squash *= Math.pow(0.002, dt);
     if (Math.abs(P.squash) < 0.01) P.squash = 0;
 
+    if (window.__portraitPoke && portrait && control) {
+      const r = portrait.getBoundingClientRect(), px = P.x + S / 2, py = P.y + S / 2 - scrollY;
+      const inside = px > r.left && px < r.right && py > r.top && py < r.bottom;
+      if (inside) window.__portraitPoke(px, py, P.vx * dt * 2.5, P.vy * dt * 2.5);
+      else if (P.inFigure) window.__portraitPoke(null);
+      P.inFigure = inside;
+    }
     const b = level.bucket, cx = P.x + S / 2;
     const inBucket = cx > b.x && cx < b.x + b.w && P.y + S > b.y - 2 && P.y < b.y + b.d + 20;
     if (P.form !== 'mail') P.form = inBucket ? 'file' : 'pk';
-    if (inBucket && P.y + S > b.y + b.d + 4) { P.ride = { d: 0 }; P.form = 'dot'; say('Airflow: load task running', P.x + 90, P.y, 1500); }
+    if (inBucket && P.y + S > b.y + b.d + 4) { P.ride = { d: 0 }; P.form = 'dot'; say('Airflow: load task running', 1500); }
 
     const m = level.mailbox;
     if (!won && P.x + S > m.x - 6 && P.x < m.x + m.w + 6 && P.y + S > m.y - 10 && P.y < m.y + m.h) {
-      won = true; P.form = 'mail'; say('delivered! now send the real one', m.x + m.w / 2, m.y - 24, 4000);
+      won = true; P.form = 'mail'; say('delivered! now send the real one', 4000);
       const hi = $('#contact .btn'); hi.classList.remove('wiggle'); void hi.offsetWidth; hi.classList.add('wiggle');
       setTimeout(() => { stop(); P.form = 'pk'; P.x = m.x + m.w / 2 - S / 2; P.y = m.y - S; P.vy = 0; }, 1600);
     }

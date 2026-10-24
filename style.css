@@ -460,3 +460,9 @@ html { scrollbar-width: thin; scrollbar-color: rgba(255, 255, 255, .16) transpar
 .list li.stamp .seal { animation: stamp .6s cubic-bezier(.3, 1.7, .5, 1); opacity: 1; }
 .list li.stamp .what { color: var(--accent); transition: color .3s; }
 @keyframes stamp { from { transform: scale(2.4) rotate(-40deg); opacity: 0; } to { transform: none; opacity: 1; } }
+/* Juego: lo que el muñequito ya leyó o pisó queda encendido. */
+.about p { transition: color .4s; }
+.playing .about p.read { color: var(--text); }
+.card.lit::before { width: 100%; }
+.card.lit h3 { color: var(--accent); }
+.card.lit .logo { transform: rotate(-6deg) scale(1.06); }
