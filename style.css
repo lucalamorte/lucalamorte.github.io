@@ -145,8 +145,7 @@ h1, h2, h3 { text-wrap: balance; }
 .rows { list-style: none; padding: 0; margin: 0; border-top: 1px solid var(--border); }
 .rows li { border-bottom: 1px solid var(--border); max-height: 140px; overflow: hidden; transition: max-height .4s ease, opacity .3s ease, border-color .3s; }
 .rows li.out { max-height: 0; opacity: 0; border-color: transparent; }
-.row { position: relative; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: baseline; column-gap: 14px; padding: 13px 2px; color: inherit; }
-.row:not(:has(.tick)) { grid-template-columns: minmax(0, 1fr) auto; }
+.row { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: baseline; column-gap: 14px; padding: 13px 2px; color: inherit; }
 a.row:hover { text-decoration: none; }
 a.row::after { content: ""; position: absolute; left: 0; right: 0; bottom: -1px; height: 1px; background: var(--accent); transform: scaleX(0); transform-origin: left; transition: transform .5s cubic-bezier(.2, .7, .2, 1); }
 a.row:hover::after, a.row:focus-visible::after { transform: scaleX(1); }
@@ -160,24 +159,15 @@ a.row:hover .what { color: var(--accent); transform: translateX(4px); }
 .who .go { color: var(--accent); opacity: 0; transform: translateY(6px); }
 a.row:hover .meta, a.row:focus-visible .meta { opacity: 0; transform: translateY(-6px); }
 a.row:hover .go, a.row:focus-visible .go { opacity: 1; transform: none; }
-.tick { width: 18px; height: 18px; align-self: center; fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
-.tick circle { stroke: var(--accent-line); }
-.tick path { stroke: var(--accent); stroke-dasharray: 12; stroke-dashoffset: 0; }
-.tick.dot circle { stroke: var(--border-strong); }
 .certs-head { display: flex; align-items: end; justify-content: space-between; gap: 20px; flex-wrap: wrap; margin: 48px 0 16px; }
 .certs-head h3 { margin: 0; color: var(--text); font-size: 1.15rem; font-weight: 600; letter-spacing: -.02em; }
-.tally { margin: 2px 0 0; font-family: var(--mono); font-size: .76rem; }
-.tally b { color: var(--accent); font-weight: 500; }
 .chips { display: flex; gap: 6px; flex-wrap: wrap; }
 .chip { height: 30px; padding: 0 2px; margin-right: 12px; border: 0; border-bottom: 1px solid transparent; border-radius: 0; background: transparent; color: var(--muted); font-family: var(--sans); font-size: .8rem; font-weight: 500; cursor: pointer; transition: border-color .2s, color .2s, background .2s; }
-.chip span { margin-left: 4px; font-family: var(--mono); font-size: .72rem; opacity: .7; }
 .chip:hover { color: var(--text); }
 .chip.on { color: var(--accent); border-bottom-color: var(--accent); }
 /* Las filas entran en cascada y los checks se dibujan al llegar a la sección. */
 .motion .edu .row { opacity: 0; transform: translateY(10px); transition: opacity .5s ease, transform .5s ease; transition-delay: calc(var(--i) * 70ms); }
 .motion .edu.live .row, .motion .edu[data-done] .row { opacity: 1; transform: none; }
-.motion .edu .tick path { stroke-dashoffset: 12; transition: stroke-dashoffset .5s ease; transition-delay: calc(var(--i) * 70ms + .35s); }
-.motion .edu[data-done] .tick path { stroke-dashoffset: 0; }
 footer { text-align: center; font-size: .8rem; padding: 28px 16px 40px; border-top: 1px solid var(--border); }
 footer a { color: var(--muted); }
 footer a:hover { color: var(--text); }
@@ -267,9 +257,8 @@ footer a:hover { color: var(--text); }
   .ba .arrow { width: 18px; }
   .principles { grid-template-columns: 1fr; gap: 16px; }
   .pr-item { padding: 11px 0 13px; font-size: .92rem; }
-  .row { grid-template-columns: auto minmax(0, 1fr); row-gap: 2px; }
-  .row:not(:has(.tick)) { grid-template-columns: 1fr; }
-  .row .who { grid-column: -2 / -1; justify-items: start; }
+  .row { grid-template-columns: 1fr; row-gap: 2px; }
+  .row .who { justify-items: start; }
   .certs-head { margin-top: 40px; }
   .projects.three { grid-template-columns: 1fr; }
   .nav { gap: 16px; }
@@ -322,7 +311,7 @@ footer a:hover { color: var(--text); }
 @media (prefers-reduced-motion: reduce) {
   .sc-flow, .pr-scene.on, .auto .pr-item.on .bar { animation: none; }
   .motion .ba .arrow, .motion .ba .after { transition: none; opacity: 1; transform: none; }
-  .motion .edu .row, .motion .edu .tick path { transition: none; opacity: 1; transform: none; stroke-dashoffset: 0; }
+  .motion .edu .row { transition: none; opacity: 1; transform: none; }
 }
 
 /* ---------- about: una frase y cuatro líneas ---------- */
