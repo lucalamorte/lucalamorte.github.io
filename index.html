@@ -35,7 +35,7 @@
 <a class="skip" href="#content">Skip to content</a>
 <nav class="nav" aria-label="Main">
   <a class="name" href="#top">Luca Lamorte</a>
-  <div class="links"><a href="#about">About</a><a href="#experience">Experience</a><a href="#projects">Projects</a><a href="#principles">How I build</a><a href="#education">Education</a></div>
+  <div class="links"><a href="#about">About</a><a href="#experience">Experience</a><a href="#projects">Projects</a><a href="#principles">How I work</a><a href="#education">Education</a></div>
   <div class="icons">
     <a href="mailto:lclamorte@gmail.com?subject=Let's%20connect!" aria-label="Email"><svg><use href="#i-mail"/></svg></a>
     <a href="https://www.linkedin.com/in/lclamorte/" aria-label="LinkedIn" rel="noopener"><svg><use href="#i-linkedin"/></svg></a>
@@ -63,15 +63,10 @@
     <h2><span>/</span> about me</h2>
     <div class="about-grid">
     <div>
-    <p class="about-lead">Hiring me should feel like a before and after. <span>So far, it has.</span></p>
-    <p class="about-sub">Right now I'm on the North America Marketing data &amp; analytics team at Kimberly-Clark.</p>
-    <ul class="ba">
-      <li style="--i:0"><span class="where">Kimberly-Clark</span><span class="before">$260K a month paid to a CDP vendor</span><i class="arrow" aria-label="became"></i><span class="after">An in-house CDP on Snowflake with <b data-count="65">65</b><b>M</b> customer profiles</span></li>
-      <li style="--i:1"><span class="where">Kimberly-Clark</span><span class="before">10 plants without real-time machine data</span><i class="arrow" aria-label="became"></i><span class="after">Live data and digital twins in 5 countries, tied to <b>$21.5M</b> annual ROI</span></li>
-      <li style="--i:2"><span class="where">On my own</span><span class="before">Weekend ideas</span><i class="arrow" aria-label="became"></i><span class="after"><b data-count="3">3</b> GenAI products live, with real users</span></li>
-      <li style="--i:3"><span class="where">Your company</span><span class="before">Today</span><i class="arrow" aria-label="becomes"></i><span class="after"><a href="#contact">Let's talk →</a></span></li>
-    </ul>
-    <p class="tech-label">Stack I reach for</p>
+    <p>I'm a data engineer at Kimberly-Clark, on the North America Marketing data &amp; analytics team. Most of my day is Snowflake: we replaced a vendor CDP with our own, and it now holds <b>65M</b> customer profiles.</p>
+    <p>Before that I spent two years in manufacturing, bringing real-time machine data to <b>10</b> plants in Colombia, Argentina, El Salvador, Peru and the US.</p>
+    <p>After hours I build my own products, mostly with GenAI. <b>Three</b> of them are live: Nutrigordo, PrimeroLab and DataChinchilla.</p>
+    <p class="tech-label">Tools I use most</p>
     <ul class="tech">
       <li>Python</li><li>SQL</li><li>Snowflake</li><li>dbt</li><li>Spark / PySpark</li><li>Airflow</li>
       <li>AWS · Azure · GCP</li><li>Postgres · pgvector</li><li>LLMs · RAG · agents</li>
@@ -83,44 +78,37 @@
 
   <section id="experience" class="reveal">
     <h2><span>/</span> experience</h2>
-    <div class="tabs">
-      <div class="tablist" role="tablist" aria-label="Roles">
-        <button role="tab" aria-selected="true" aria-controls="job-0" id="tab-0">Data Engineer</button>
-        <button role="tab" aria-selected="false" aria-controls="job-1" id="tab-1">Solution Engineer</button>
-        <button role="tab" aria-selected="false" aria-controls="job-2" id="tab-2">IT Trainee</button>
-      </div>
-      <div>
-        <div class="panel" role="tabpanel" id="job-0" aria-labelledby="tab-0">
+    <div class="roles">
+        <div class="panel">
           <h3>Data Engineer <b>@ Kimberly-Clark</b></h3>
           <p class="when">NOV 2025 · PRESENT</p>
+          <div class="built small"><p>Built with</p><ul><li>Snowflake</li><li>Python</li><li>AWS S3</li><li>SageMaker</li><li>Azure Data Factory</li><li>Control-M</li><li>Azure DevOps</li><li>Monte Carlo</li><li>Hightouch</li></ul></div>
           <ul>
             <li>Built an in-house Composable CDP on <b class="t">Snowflake</b> for the USA and Canada. It replaced a vendor that cost $260K a month, with $5M in projected savings.</li>
             <li>Built ELT pipelines that bring 12+ sources (<b class="t">AWS S3</b> files and APIs) into the warehouse with <b class="t">Python</b> and <b class="t">SageMaker</b>, scheduled in <b class="t">Azure Data Factory</b> and <b class="t">Control-M</b>, and pushed to marketing tools with <b class="t">Hightouch</b>.</li>
             <li>Modeled 35 dimension and fact tables in <b class="t">Snowflake</b> with daily incremental loads, so every person gets one Customer 360 profile. 65M of them.</li>
             <li>Set up CI/CD for <b class="t">Snowflake</b> in <b class="t">Azure DevOps</b>, and <b class="t">Monte Carlo</b> alerts so a broken source is caught before marketing uses it.</li>
           </ul>
-          <div class="built small"><p>Built with</p><ul><li>Snowflake</li><li>Python</li><li>AWS S3</li><li>SageMaker</li><li>Azure Data Factory</li><li>Control-M</li><li>Azure DevOps</li><li>Monte Carlo</li><li>Hightouch</li></ul></div>
           <a class="case" href="projects/cdp.html"><span class="badge"><svg><use href="#i-db"/></svg></span><span><b>Composable CDP</b><small>How we swapped the vendor for Snowflake</small></span><i>→</i></a>
         </div>
-        <div class="panel" role="tabpanel" id="job-1" aria-labelledby="tab-1" hidden>
+        <div class="panel">
           <h3>Solution Engineer <b>@ Kimberly-Clark</b></h3>
           <p class="when">JUL 2023 · OCT 2025</p>
+          <div class="built small"><p>Built with</p><ul><li>Azure</li><li>SAP</li><li>Power BI</li><li>Digital twins</li><li>Real-time data</li></ul></div>
           <ul>
             <li>Led the rollout of real-time machine data and digital twins in 10 plants across Colombia, Argentina, El Salvador, Peru and the USA. The program is worth $21.5M a year.</li>
             <li>Replicated <b class="t">SAP</b> and <b class="t">ERP</b> data into <b class="t">Azure</b> and got every plant to agree on one definition per metric, so they all report the same numbers in <b class="t">Power BI</b>.</li>
           </ul>
-          <div class="built small"><p>Built with</p><ul><li>Azure</li><li>SAP</li><li>Power BI</li><li>Digital twins</li><li>Real-time data</li></ul></div>
           <a class="case" href="projects/smom.html"><span class="badge"><svg><use href="#i-factory"/></svg></span><span><b>Smart Manufacturing Operations Management</b><small>How 10 plants got live machine data</small></span><i>→</i></a>
         </div>
-        <div class="panel" role="tabpanel" id="job-2" aria-labelledby="tab-2" hidden>
+        <div class="panel">
           <h3>IT Trainee <b>@ Kimberly-Clark</b></h3>
           <p class="when">AUG 2022 · JUN 2023</p>
+          <div class="built small"><p>Built with</p><ul><li>ServiceNow</li></ul></div>
           <ul>
             <li>Built <b class="t">ServiceNow</b> workflows for HR, R&amp;E and Legal requests across North America.</li>
           </ul>
-          <div class="built small"><p>Built with</p><ul><li>ServiceNow</li></ul></div>
         </div>
-      </div>
     </div>
   </section>
 
@@ -153,150 +141,47 @@
   </section>
 
   <section id="principles" class="reveal">
-    <h2><span>/</span> how I build</h2>
-    <p class="lead">Five rules I picked up shipping to real users.</p>
+    <h2><span>/</span> how I work</h2>
+    <p class="lead">Rules I work by, on data, on teams and on GenAI.</p>
     <div class="principles">
-      <div class="pr-list" role="tablist" aria-label="Principles">
-        <button type="button" class="pr-item on" role="tab" aria-selected="true" aria-controls="pr-0" id="pr-tab-0"><span class="n">01</span>The model interprets. The code decides.<i class="bar"></i></button>
-        <button type="button" class="pr-item" role="tab" aria-selected="false" aria-controls="pr-1" id="pr-tab-1"><span class="n">02</span>Every failure becomes a test.<i class="bar"></i></button>
-        <button type="button" class="pr-item" role="tab" aria-selected="false" aria-controls="pr-2" id="pr-tab-2"><span class="n">03</span>Everything has a ceiling.<i class="bar"></i></button>
-        <button type="button" class="pr-item" role="tab" aria-selected="false" aria-controls="pr-3" id="pr-tab-3"><span class="n">04</span>Security lives in the database.<i class="bar"></i></button>
-        <button type="button" class="pr-item" role="tab" aria-selected="false" aria-controls="pr-4" id="pr-tab-4"><span class="n">05</span>One rule, one place.<i class="bar"></i></button>
+      <div class="pr-list" role="tablist" aria-label="How I work">
+        <p class="pr-group">Data</p>
+        <button type="button" class="pr-item on" role="tab" aria-selected="true" aria-controls="pr-0" id="pr-tab-0"><span class="n">01</span><span class="tx"><b>One copy of the truth.</b><span class="desc">Everything lands once, in the warehouse, and every team reads that same copy.</span></span><i class="bar"></i></button>
+        <button type="button" class="pr-item" role="tab" aria-selected="false" aria-controls="pr-1" id="pr-tab-1"><span class="n">02</span><span class="tx"><b>Bad data stops at the gate.</b><span class="desc">Quality is checked inside the pipeline, so a broken source never reaches an audience.</span></span><i class="bar"></i></button>
+        <p class="pr-group">Team</p>
+        <button type="button" class="pr-item" role="tab" aria-selected="false" aria-controls="pr-2" id="pr-tab-2"><span class="n">03</span><span class="tx"><b>Agree on the math first.</b><span class="desc">Before any dashboard, every plant agreed on how each metric is calculated.</span></span><i class="bar"></i></button>
+        <button type="button" class="pr-item" role="tab" aria-selected="false" aria-controls="pr-3" id="pr-tab-3"><span class="n">04</span><span class="tx"><b>Roll out one plant at a time.</b><span class="desc">Ten plants in five countries went live one by one, each team trained before the next.</span></span><i class="bar"></i></button>
+        <p class="pr-group">GenAI</p>
+        <button type="button" class="pr-item" role="tab" aria-selected="false" aria-controls="pr-4" id="pr-tab-4"><span class="n">05</span><span class="tx"><b>The model reads. The code decides.</b><span class="desc">The model understands what people mean. Every number, date and delete happens in code.</span></span><i class="bar"></i></button>
+        <button type="button" class="pr-item" role="tab" aria-selected="false" aria-controls="pr-5" id="pr-tab-5"><span class="n">06</span><span class="tx"><b>Every failure becomes a test.</b><span class="desc">When something breaks for a real user, that conversation becomes a test.</span></span><i class="bar"></i></button>
       </div>
       <div class="pr-panel">
         <div class="pr-scene on" role="tabpanel" id="pr-0" aria-labelledby="pr-tab-0">
-          <svg viewBox="0 0 400 240" role="img" aria-label="A message reaches the model, the model returns fields, and code computes the number.">
-  <path class="sc-line sc-flow" d="M170 68 H260 V176 H170"/>
-  <circle r="5" fill="#5eead4"><animateMotion dur="3.2s" repeatCount="indefinite" path="M170 68 H260 V176 H170" keyPoints="0;1;1" keyTimes="0;.85;1" calcMode="linear"/></circle>
-  <rect class="sc-node" x="16" y="40" width="154" height="56" rx="12"/>
-  <text class="sc-t" x="93" y="63" text-anchor="middle">"the usual, but</text>
-  <text class="sc-t" x="93" y="81" text-anchor="middle">with two eggs"</text>
-  <circle cx="260" cy="68" r="28" fill="#5eead4"/>
-  <text class="sc-ink" x="260" y="72" text-anchor="middle">model</text>
-  <text class="sc-mut" x="298" y="72">interprets</text>
-  <text class="sc-mut" x="268" y="124">{eggs: 2}</text>
-  <rect class="sc-code" x="232" y="148" width="56" height="56" rx="6"/>
-  <text class="sc-t" x="260" y="180" text-anchor="middle">code</text>
-  <text class="sc-mut" x="298" y="180">decides</text>
-  <rect class="sc-node" x="16" y="152" width="154" height="48" rx="10"/>
-  <text class="sc-big" x="93" y="182" text-anchor="middle" opacity=".25">412 kcal ✓<animate attributeName="opacity" values=".25;.25;1;1" keyTimes="0;.8;.88;1" dur="3.2s" repeatCount="indefinite"/></text>
-</svg>
-          <h3>The model interprets. The code decides.</h3>
-          <p>Models are good at understanding how people talk and bad at math. So the model only fills in fields, and anything that has to be exact (numbers, dates, deletes) happens in code I can test.</p>
-          <a class="seen" href="projects/nutrigordo.html">Seen in Nutrigordo →</a>
+          <svg viewBox="0 0 400 240" role="img" aria-label="One copy of the truth. Everything lands once, in the warehouse, and every team reads that same copy."><text class="sc-cap" x="16" y="24" text-anchor="start">12+ sources</text><text class="sc-cap" x="200" y="24" text-anchor="middle">one copy</text><text class="sc-cap" x="384" y="24" text-anchor="end">everyone reads it</text><path class="sc-line sc-flow" d="M34 58 C110 58 120 120 166 120"/><circle cx="28" cy="58" r="5" fill="#94a3b8" fill-opacity=".6"/><path class="sc-line sc-flow" d="M34 84 C110 84 120 120 166 120"/><circle cx="28" cy="84" r="5" fill="#94a3b8" fill-opacity=".6"/><path class="sc-line sc-flow" d="M34 110 C110 110 120 120 166 120"/><circle cx="28" cy="110" r="5" fill="#94a3b8" fill-opacity=".6"/><path class="sc-line sc-flow" d="M34 136 C110 136 120 120 166 120"/><circle cx="28" cy="136" r="5" fill="#94a3b8" fill-opacity=".6"/><path class="sc-line sc-flow" d="M34 162 C110 162 120 120 166 120"/><circle cx="28" cy="162" r="5" fill="#94a3b8" fill-opacity=".6"/><path class="sc-line sc-flow" d="M34 188 C110 188 120 120 166 120"/><circle cx="28" cy="188" r="5" fill="#94a3b8" fill-opacity=".6"/><path class="sc-line sc-flow sc-acc-line" d="M234 120 C262 120 270 64 296 64"/><text class="sc-t" x="304" y="68" text-anchor="start">marketing</text><path class="sc-line sc-flow sc-acc-line" d="M234 120 C262 120 270 120 296 120"/><text class="sc-t" x="304" y="124" text-anchor="start">reports</text><path class="sc-line sc-flow sc-acc-line" d="M234 120 C262 120 270 176 296 176"/><text class="sc-t" x="304" y="180" text-anchor="start">data science</text><path d="M168 92 v56 a32 9 0 0 0 64 0 v-56" fill="rgba(94,234,212,.14)" stroke="#5eead4" stroke-width="1.5"/>
+<ellipse cx="200" cy="92" rx="32" ry="9" fill="#0b1120" stroke="#5eead4" stroke-width="1.5"/>
+<path d="M168 120 a32 9 0 0 0 64 0" fill="none" stroke="#5eead4" stroke-opacity=".5"/><text class="sc-t" x="200" y="182" text-anchor="middle">Snowflake</text><text class="sc-acc" x="200" y="200" text-anchor="middle">65M profiles</text></svg>
+          <a class="seen" href="projects/cdp.html">Seen in Composable CDP →</a>
         </div>
         <div class="pr-scene" role="tabpanel" id="pr-1" aria-labelledby="pr-tab-1">
-          <svg viewBox="0 0 400 240" role="img" aria-label="A real failure becomes one more passing test.">
-  <text class="sc-big" x="28" y="62">136 passing<animate attributeName="opacity" values="1;1;0;0" keyTimes="0;.55;.62;1" dur="5s" repeatCount="indefinite"/></text>
-  <text class="sc-big" x="28" y="62" opacity="0">137 passing<animate attributeName="opacity" values="0;0;1;1;0" keyTimes="0;.58;.66;.94;1" dur="5s" repeatCount="indefinite"/></text>
-  <circle cx="44" cy="110" r="9" fill="rgba(94,234,212,.14)" stroke="#5eead4" stroke-width="1.5"/>
-  <circle cx="76" cy="110" r="9" fill="rgba(94,234,212,.14)" stroke="#5eead4" stroke-width="1.5"/>
-  <circle cx="108" cy="110" r="9" fill="rgba(94,234,212,.14)" stroke="#5eead4" stroke-width="1.5"/>
-  <circle cx="140" cy="110" r="9" fill="rgba(94,234,212,.14)" stroke="#5eead4" stroke-width="1.5"/>
-  <circle cx="172" cy="110" r="9" fill="rgba(94,234,212,.14)" stroke="#5eead4" stroke-width="1.5"/>
-  <circle cx="204" cy="110" r="9" fill="rgba(94,234,212,.14)" stroke="#5eead4" stroke-width="1.5"/>
-  <circle cx="236" cy="110" r="9" fill="rgba(94,234,212,.14)" stroke="#5eead4" stroke-width="1.5"/>
-  <circle cx="268" cy="110" r="9" fill="rgba(94,234,212,.14)" stroke="#5eead4" stroke-width="1.5"/>
-  <circle cx="300" cy="110" r="9" fill="rgba(94,234,212,.14)" stroke="#5eead4" stroke-width="1.5"/>
-  <circle cx="332" cy="110" r="9" fill="rgba(94,234,212,.14)" stroke="#5eead4" stroke-width="1.5"/>
-  <g>
-    <animateTransform attributeName="transform" type="translate" values="0 80;0 80;0 0;0 0" keyTimes="0;.3;.55;1" dur="5s" repeatCount="indefinite" calcMode="spline" keySplines="0 0 1 1;.4 0 .2 1;0 0 1 1"/>
-    <circle cx="364" cy="110" r="9" stroke-width="1.5" fill="#f87171" stroke="#f87171">
-      <animate attributeName="fill" values="#f87171;#f87171;rgba(94,234,212,.14);rgba(94,234,212,.14)" keyTimes="0;.5;.6;1" dur="5s" repeatCount="indefinite"/>
-      <animate attributeName="stroke" values="#f87171;#f87171;#5eead4;#5eead4" keyTimes="0;.5;.6;1" dur="5s" repeatCount="indefinite"/>
-    </circle>
-    <path d="M360 106 l8 8 m0 -8 l-8 8" stroke="#0b1120" stroke-width="2" stroke-linecap="round"><animate attributeName="opacity" values="1;1;0;0" keyTimes="0;.5;.56;1" dur="5s" repeatCount="indefinite"/></path>
-  </g>
-  <text class="sc-mut" x="364" y="216" text-anchor="end" fill="#f87171">a real conversation fails<animate attributeName="opacity" values="1;1;0;0" keyTimes="0;.3;.4;1" dur="5s" repeatCount="indefinite"/></text>
-  <text class="sc-mut" x="28" y="160">failure → scenario → fixed test</text>
-</svg>
-          <h3>Every failure becomes a test.</h3>
-          <p>When something breaks for a real user, that conversation becomes a test before the fix goes out. The same bug does not get a second chance.</p>
-          <a class="seen" href="projects/nutrigordo.html">Seen in Nutrigordo →</a>
+          <svg viewBox="0 0 400 240" role="img" aria-label="Bad data stops at the gate. Quality is checked inside the pipeline, so a broken source never reaches an audience."><text class="sc-cap" x="16" y="24" text-anchor="start">sources</text><text class="sc-cap" x="200" y="24" text-anchor="middle">quality check</text><text class="sc-cap" x="384" y="24" text-anchor="end">audience</text><path d="M16 130 H384" stroke="#94a3b8" stroke-opacity=".35" stroke-width="1.5"/><path d="M200 60 V196" stroke="#5eead4" stroke-width="2" stroke-dasharray="6 5"/><text class="sc-mut" x="200" y="214" text-anchor="middle">Monte Carlo</text><rect x="-11" y="-7" width="22" height="14" rx="3" fill="rgba(94,234,212,.14)" stroke="#5eead4"><animateMotion path="M20 130 H372" dur="4.5s" begin="0.0s" repeatCount="indefinite"/></rect><rect x="-11" y="-7" width="22" height="14" rx="3" fill="rgba(94,234,212,.14)" stroke="#5eead4"><animateMotion path="M20 130 H372" dur="4.5s" begin="1.5s" repeatCount="indefinite"/></rect><rect x="-11" y="-7" width="22" height="14" rx="3" fill="rgba(94,234,212,.14)" stroke="#5eead4"><animateMotion path="M20 130 H372" dur="4.5s" begin="3.0s" repeatCount="indefinite"/></rect><g><rect x="-11" y="-7" width="22" height="14" rx="3" fill="#f87171" fill-opacity=".85"/><animateMotion path="M20 130 H182" keyPoints="0;1;1" keyTimes="0;.4;1" dur="4.5s" begin=".75s" repeatCount="indefinite" calcMode="linear"/></g><text class="sc-t" x="186" y="104" text-anchor="end" fill="#f87171" style="fill:#f87171" opacity="0">✕ blocked, alert sent<animate attributeName="opacity" values="0;0;1;1" keyTimes="0;.4;.45;1" dur="4.5s" repeatCount="indefinite" begin=".75s"/></text></svg>
+          <a class="seen" href="projects/cdp.html">Seen in Composable CDP →</a>
         </div>
         <div class="pr-scene" role="tabpanel" id="pr-2" aria-labelledby="pr-tab-2">
-          <svg viewBox="0 0 400 240" role="img" aria-label="An agent loop that stops at a hard ceiling of four rounds.">
-  <circle cx="112" cy="116" r="62" class="sc-line"/>
-  <g>
-    <animateTransform attributeName="transform" type="rotate" values="0 112 116;1440 112 116;1440 112 116" keyTimes="0;.7;1" dur="6s" repeatCount="indefinite" calcMode="spline" keySplines=".45 0 .25 1;0 0 1 1"/>
-    <path d="M112 54 A62 62 0 0 1 174 116" fill="none" stroke="#5eead4" stroke-width="3" stroke-linecap="round"/>
-    <path d="M166 108 l8 9 l8 -9" fill="none" stroke="#5eead4" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-  </g>
-  <text class="sc-t" x="112" y="112" text-anchor="middle">agent</text>
-  <text class="sc-t" x="112" y="130" text-anchor="middle">loop</text>
-  <rect x="228" y="44" width="148" height="22" rx="5" fill="#1b2740" stroke="rgba(148,163,184,.26)"><animate attributeName="fill" values="#1b2740;#1b2740;rgba(94,234,212,.14);rgba(94,234,212,.14);#1b2740" keyTimes="0;0.135;0.175;.95;1" dur="6s" repeatCount="indefinite"/></rect>
-  <text class="sc-t" x="240" y="59">round 1</text>
-  <rect x="228" y="74" width="148" height="22" rx="5" fill="#1b2740" stroke="rgba(148,163,184,.26)"><animate attributeName="fill" values="#1b2740;#1b2740;rgba(94,234,212,.14);rgba(94,234,212,.14);#1b2740" keyTimes="0;0.310;0.350;.95;1" dur="6s" repeatCount="indefinite"/></rect>
-  <text class="sc-t" x="240" y="89">round 2</text>
-  <rect x="228" y="104" width="148" height="22" rx="5" fill="#1b2740" stroke="rgba(148,163,184,.26)"><animate attributeName="fill" values="#1b2740;#1b2740;rgba(94,234,212,.14);rgba(94,234,212,.14);#1b2740" keyTimes="0;0.485;0.525;.95;1" dur="6s" repeatCount="indefinite"/></rect>
-  <text class="sc-t" x="240" y="119">round 3</text>
-  <rect x="228" y="134" width="148" height="22" rx="5" fill="#1b2740" stroke="rgba(148,163,184,.26)"><animate attributeName="fill" values="#1b2740;#1b2740;rgba(94,234,212,.14);rgba(94,234,212,.14);#1b2740" keyTimes="0;0.660;0.700;.95;1" dur="6s" repeatCount="indefinite"/></rect>
-  <text class="sc-t" x="240" y="149">round 4</text>
-  <line x1="228" y1="174" x2="376" y2="174" stroke="#5eead4" stroke-width="2.5" stroke-linecap="round"><animate attributeName="stroke-width" values="2.5;2.5;6;2.5;2.5" keyTimes="0;.68;.73;.8;1" dur="6s" repeatCount="indefinite"/></line>
-  <text class="sc-mut" x="228" y="198">ceiling: 4 rounds</text>
-  <text class="sc-mut" x="228" y="216">8 s and 6,000 chars per tool</text>
-</svg>
-          <h3>Everything has a ceiling.</h3>
-          <p>An agent loop with no limit is a bill with no limit. Rounds, timeouts and paid calls all have a hard cap, and the caps have tests.</p>
-          <a class="seen" href="projects/primerolab.html">Seen in PrimeroLab →</a>
+          <svg viewBox="0 0 400 240" role="img" aria-label="Agree on the math first. Before any dashboard, every plant agreed on how each metric is calculated."><text class="sc-cap" x="16" y="24" text-anchor="start">before</text><text class="sc-cap" x="236" y="24" text-anchor="start">after</text><text class="sc-t" x="16" y="62" text-anchor="start">Plant A</text><text class="sc-mut" x="140" y="62" text-anchor="end">71%</text><text class="sc-mut" x="16" y="78" text-anchor="start">uptime</text><text class="sc-t" x="16" y="112" text-anchor="start">Plant B</text><text class="sc-mut" x="140" y="112" text-anchor="end">64%</text><text class="sc-mut" x="16" y="128" text-anchor="start">uptime × speed</text><text class="sc-t" x="16" y="162" text-anchor="start">Plant C</text><text class="sc-mut" x="140" y="162" text-anchor="end">80%</text><text class="sc-mut" x="16" y="178" text-anchor="start">own spreadsheet</text><text class="sc-mut" x="16" y="222" text-anchor="start">3 plants, 3 formulas</text><path d="M168 118 H212" stroke="#5eead4" stroke-width="2"/><path d="M206 112 l7 6 l-7 6" fill="none" stroke="#5eead4" stroke-width="2"/><text class="sc-acc" x="190" y="104" text-anchor="middle">1 formula</text><text class="sc-t" x="236" y="62" text-anchor="start">A</text><rect x="254" y="50" width="88" height="16" rx="3" fill="#5eead4" fill-opacity=".8"><animate attributeName="width" values="0;0;88;88;0" keyTimes="0;.15;.45;.92;1" dur="6s" repeatCount="indefinite"/></rect><text class="sc-t" x="350" y="62" opacity="0">62%<animate attributeName="opacity" values="0;0;1;1;0" keyTimes="0;.44;.5;.92;1" dur="6s" repeatCount="indefinite"/></text><text class="sc-t" x="236" y="112" text-anchor="start">B</text><rect x="254" y="100" width="80" height="16" rx="3" fill="#5eead4" fill-opacity=".8"><animate attributeName="width" values="0;0;80;80;0" keyTimes="0;.15;.45;.92;1" dur="6s" repeatCount="indefinite"/></rect><text class="sc-t" x="342" y="112" opacity="0">58%<animate attributeName="opacity" values="0;0;1;1;0" keyTimes="0;.44;.5;.92;1" dur="6s" repeatCount="indefinite"/></text><text class="sc-t" x="236" y="162" text-anchor="start">C</text><rect x="254" y="150" width="96" height="16" rx="3" fill="#5eead4" fill-opacity=".8"><animate attributeName="width" values="0;0;96;96;0" keyTimes="0;.15;.45;.92;1" dur="6s" repeatCount="indefinite"/></rect><text class="sc-t" x="358" y="162" opacity="0">66%<animate attributeName="opacity" values="0;0;1;1;0" keyTimes="0;.44;.5;.92;1" dur="6s" repeatCount="indefinite"/></text><text class="sc-mut" x="236" y="222" text-anchor="start">same math, 10 plants</text></svg>
+          <a class="seen" href="projects/smom.html">Seen in SMOM →</a>
         </div>
         <div class="pr-scene" role="tabpanel" id="pr-3" aria-labelledby="pr-tab-3">
-          <svg viewBox="0 0 400 240" role="img" aria-label="A query returns only the rows the signed-in user owns; the others stay locked.">
-  <rect x="16" y="40" width="112" height="30" rx="15" fill="rgba(94,234,212,.14)" stroke="#5eead4"/>
-  <text class="sc-t" x="72" y="60" text-anchor="middle">query as you</text>
-  <text class="sc-mut" x="16" y="110">policy:</text>
-  <text class="sc-t" x="16" y="130">owner = you</text>
-  <rect x="150" y="40" width="234" height="22" rx="4" fill="#1b2740" stroke="rgba(148,163,184,.2)"><animate attributeName="fill" values="#1b2740;#1b2740;rgba(94,234,212,.14);rgba(94,234,212,.14);#1b2740" keyTimes="0;0.053;0.083;.85;1" dur="4s" repeatCount="indefinite"/></rect>
-  <circle cx="164" cy="51" r="5" fill="#5eead4"/>
-  <rect x="178" y="48" width="120" height="6" rx="3" fill="rgba(148,163,184,.3)"/>
-  <rect x="150" y="70" width="234" height="22" rx="4" fill="#1b2740" stroke="rgba(148,163,184,.2)"></rect>
-  <circle cx="164" cy="81" r="5" fill="#64748b"/>
-  <rect x="178" y="78" width="96" height="6" rx="3" fill="rgba(148,163,184,.3)"/>
-  <g opacity="0" fill="none" stroke="#94a3b8" stroke-width="1.5"><rect x="358" y="79" width="12" height="9" rx="2"/><path d="M361 79 v-3 a3 3 0 0 1 6 0 v3"/><animate attributeName="opacity" values="0;0;1;1;0" keyTimes="0;0.147;0.177;.85;1" dur="4s" repeatCount="indefinite"/></g>
-  <rect x="150" y="100" width="234" height="22" rx="4" fill="#1b2740" stroke="rgba(148,163,184,.2)"><animate attributeName="fill" values="#1b2740;#1b2740;rgba(94,234,212,.14);rgba(94,234,212,.14);#1b2740" keyTimes="0;0.241;0.271;.85;1" dur="4s" repeatCount="indefinite"/></rect>
-  <circle cx="164" cy="111" r="5" fill="#5eead4"/>
-  <rect x="178" y="108" width="120" height="6" rx="3" fill="rgba(148,163,184,.3)"/>
-  <rect x="150" y="130" width="234" height="22" rx="4" fill="#1b2740" stroke="rgba(148,163,184,.2)"></rect>
-  <circle cx="164" cy="141" r="5" fill="#64748b"/>
-  <rect x="178" y="138" width="96" height="6" rx="3" fill="rgba(148,163,184,.3)"/>
-  <g opacity="0" fill="none" stroke="#94a3b8" stroke-width="1.5"><rect x="358" y="139" width="12" height="9" rx="2"/><path d="M361 139 v-3 a3 3 0 0 1 6 0 v3"/><animate attributeName="opacity" values="0;0;1;1;0" keyTimes="0;0.334;0.364;.85;1" dur="4s" repeatCount="indefinite"/></g>
-  <rect x="150" y="160" width="234" height="22" rx="4" fill="#1b2740" stroke="rgba(148,163,184,.2)"></rect>
-  <circle cx="164" cy="171" r="5" fill="#64748b"/>
-  <rect x="178" y="168" width="96" height="6" rx="3" fill="rgba(148,163,184,.3)"/>
-  <g opacity="0" fill="none" stroke="#94a3b8" stroke-width="1.5"><rect x="358" y="169" width="12" height="9" rx="2"/><path d="M361 169 v-3 a3 3 0 0 1 6 0 v3"/><animate attributeName="opacity" values="0;0;1;1;0" keyTimes="0;0.428;0.458;.85;1" dur="4s" repeatCount="indefinite"/></g>
-  <rect x="150" y="190" width="234" height="22" rx="4" fill="#1b2740" stroke="rgba(148,163,184,.2)"><animate attributeName="fill" values="#1b2740;#1b2740;rgba(94,234,212,.14);rgba(94,234,212,.14);#1b2740" keyTimes="0;0.522;0.552;.85;1" dur="4s" repeatCount="indefinite"/></rect>
-  <circle cx="164" cy="201" r="5" fill="#5eead4"/>
-  <rect x="178" y="198" width="120" height="6" rx="3" fill="rgba(148,163,184,.3)"/>
-
-  <rect x="146" y="34" width="242" height="2" rx="1" fill="#5eead4"><animate attributeName="y" values="34;226;226" keyTimes="0;.6;1" dur="4s" repeatCount="indefinite"/><animate attributeName="opacity" values="1;1;0;0" keyTimes="0;.6;.62;1" dur="4s" repeatCount="indefinite"/></rect>
-  <text class="sc-big" x="16" y="196" opacity="0">3 rows<animate attributeName="opacity" values="0;0;1;1;0" keyTimes="0;.6;.66;.85;1" dur="4s" repeatCount="indefinite"/></text>
-  <text class="sc-mut" x="16" y="216">the rest never leave</text>
-</svg>
-          <h3>Security lives in the database.</h3>
-          <p>Access rules sit in the database, not in a check someone has to remember to write. Ask for another user's data and you get nothing back.</p>
-          <a class="seen" href="projects/primerolab.html">Seen in PrimeroLab →</a>
+          <svg viewBox="0 0 400 240" role="img" aria-label="Roll out one plant at a time. Ten plants in five countries went live one by one, each team trained before the next."><text class="sc-cap" x="16" y="24" text-anchor="start">10 plants, one at a time</text><path d="M28 168 H372" stroke="#94a3b8" stroke-opacity=".3" stroke-width="3" stroke-linecap="round"/><path d="M28 168 H372" stroke="#5eead4" stroke-width="3" stroke-linecap="round" pathLength="100" stroke-dasharray="0 100"><animate attributeName="stroke-dasharray" values="0 100;100 100;100 100;0 100" keyTimes="0;.8;.95;1" dur="9s" repeatCount="indefinite"/></path><text class="sc-mut" x="48" y="196" text-anchor="middle">Colombia</text><path d="M36 100 v-10 l7 4 v-4 l7 4 v-4 l6 4 v-10 h4 v16 z" fill="#94a3b8"><animate attributeName="fill" values="#94a3b8;#94a3b8;#5eead4;#5eead4;#94a3b8" keyTimes="0;0.040;0.060;.95;1" dur="9s" repeatCount="indefinite"/></path><path d="M36 140 v-10 l7 4 v-4 l7 4 v-4 l6 4 v-10 h4 v16 z" fill="#94a3b8"><animate attributeName="fill" values="#94a3b8;#94a3b8;#5eead4;#5eead4;#94a3b8" keyTimes="0;0.120;0.140;.95;1" dur="9s" repeatCount="indefinite"/></path><text class="sc-mut" x="124" y="196" text-anchor="middle">Argentina</text><path d="M112 100 v-10 l7 4 v-4 l7 4 v-4 l6 4 v-10 h4 v16 z" fill="#94a3b8"><animate attributeName="fill" values="#94a3b8;#94a3b8;#5eead4;#5eead4;#94a3b8" keyTimes="0;0.200;0.220;.95;1" dur="9s" repeatCount="indefinite"/></path><path d="M112 140 v-10 l7 4 v-4 l7 4 v-4 l6 4 v-10 h4 v16 z" fill="#94a3b8"><animate attributeName="fill" values="#94a3b8;#94a3b8;#5eead4;#5eead4;#94a3b8" keyTimes="0;0.280;0.300;.95;1" dur="9s" repeatCount="indefinite"/></path><text class="sc-mut" x="200" y="196" text-anchor="middle">El Salvador</text><path d="M188 100 v-10 l7 4 v-4 l7 4 v-4 l6 4 v-10 h4 v16 z" fill="#94a3b8"><animate attributeName="fill" values="#94a3b8;#94a3b8;#5eead4;#5eead4;#94a3b8" keyTimes="0;0.360;0.380;.95;1" dur="9s" repeatCount="indefinite"/></path><path d="M188 140 v-10 l7 4 v-4 l7 4 v-4 l6 4 v-10 h4 v16 z" fill="#94a3b8"><animate attributeName="fill" values="#94a3b8;#94a3b8;#5eead4;#5eead4;#94a3b8" keyTimes="0;0.440;0.460;.95;1" dur="9s" repeatCount="indefinite"/></path><text class="sc-mut" x="276" y="196" text-anchor="middle">Peru</text><path d="M264 100 v-10 l7 4 v-4 l7 4 v-4 l6 4 v-10 h4 v16 z" fill="#94a3b8"><animate attributeName="fill" values="#94a3b8;#94a3b8;#5eead4;#5eead4;#94a3b8" keyTimes="0;0.520;0.540;.95;1" dur="9s" repeatCount="indefinite"/></path><path d="M264 140 v-10 l7 4 v-4 l7 4 v-4 l6 4 v-10 h4 v16 z" fill="#94a3b8"><animate attributeName="fill" values="#94a3b8;#94a3b8;#5eead4;#5eead4;#94a3b8" keyTimes="0;0.600;0.620;.95;1" dur="9s" repeatCount="indefinite"/></path><text class="sc-mut" x="352" y="196" text-anchor="middle">USA</text><path d="M340 100 v-10 l7 4 v-4 l7 4 v-4 l6 4 v-10 h4 v16 z" fill="#94a3b8"><animate attributeName="fill" values="#94a3b8;#94a3b8;#5eead4;#5eead4;#94a3b8" keyTimes="0;0.680;0.700;.95;1" dur="9s" repeatCount="indefinite"/></path><path d="M340 140 v-10 l7 4 v-4 l7 4 v-4 l6 4 v-10 h4 v16 z" fill="#94a3b8"><animate attributeName="fill" values="#94a3b8;#94a3b8;#5eead4;#5eead4;#94a3b8" keyTimes="0;0.760;0.780;.95;1" dur="9s" repeatCount="indefinite"/></path><text class="sc-mut" x="16" y="224" text-anchor="start">install · train the team · next plant</text></svg>
+          <a class="seen" href="projects/smom.html">Seen in SMOM →</a>
         </div>
         <div class="pr-scene" role="tabpanel" id="pr-4" aria-labelledby="pr-tab-4">
-          <svg viewBox="0 0 400 240" role="img" aria-label="One rule in the center, read by every part of the system.">
-  <path class="sc-line sc-flow" d="M200 120 L70 46"/>
-  <rect class="sc-node" x="20" y="28" width="100" height="36" rx="8"/>
-  <text class="sc-t" x="70" y="51" text-anchor="middle">bot</text>
-  <path class="sc-line sc-flow" d="M200 120 L330 46"/>
-  <rect class="sc-node" x="280" y="28" width="100" height="36" rx="8"/>
-  <text class="sc-t" x="330" y="51" text-anchor="middle">web app</text>
-  <path class="sc-line sc-flow" d="M200 120 L70 194"/>
-  <rect class="sc-node" x="20" y="176" width="100" height="36" rx="8"/>
-  <text class="sc-t" x="70" y="199" text-anchor="middle">reports</text>
-  <path class="sc-line sc-flow" d="M200 120 L330 194"/>
-  <rect class="sc-node" x="280" y="176" width="100" height="36" rx="8"/>
-  <text class="sc-t" x="330" y="199" text-anchor="middle">tests</text>
-  <circle cx="200" cy="120" r="34" fill="none" stroke="#5eead4"><animate attributeName="r" values="34;76" dur="2.4s" repeatCount="indefinite"/><animate attributeName="opacity" values=".6;0" dur="2.4s" repeatCount="indefinite"/></circle>
-  <rect x="150" y="96" width="100" height="48" rx="10" fill="rgba(94,234,212,.14)" stroke="#5eead4" stroke-width="1.5"/>
-  <text class="sc-big" x="200" y="125" text-anchor="middle">rule</text>
-</svg>
-          <h3>One rule, one place.</h3>
-          <p>Each rule is written once and everything else reads it. Two copies of the same rule drift apart, and you find out in production.</p>
-          <a class="seen" href="projects/cdp.html">Seen in Composable CDP →</a>
+          <svg viewBox="0 0 400 240" role="img" aria-label="The model reads. The code decides. The model understands what people mean. Every number, date and delete happens in code."><text class="sc-cap" x="16" y="24" text-anchor="start">you say</text><path class="sc-line sc-flow" d="M170 68 H260 V176 H170"/><circle r="5" fill="#5eead4"><animateMotion dur="3.6s" repeatCount="indefinite" path="M170 68 H260 V176 H170" keyPoints="0;1;1" keyTimes="0;.85;1" calcMode="linear"/></circle><text class="sc-t" x="16" y="62" text-anchor="start">"the usual, but</text><text class="sc-t" x="16" y="80" text-anchor="start">with two eggs"</text><circle cx="260" cy="68" r="28" fill="#5eead4"/><text class="sc-ink" x="260" y="72" text-anchor="middle">model</text><text class="sc-mut" x="298" y="66" text-anchor="start">reads it</text><text class="sc-mut" x="268" y="118" text-anchor="start">{toast: 1,</text><text class="sc-mut" x="268" y="132" text-anchor="start"> eggs: 2}</text><rect class="sc-code" x="232" y="148" width="56" height="56" rx="6"/><text class="sc-t" x="260" y="180" text-anchor="middle">code</text><text class="sc-mut" x="298" y="174" text-anchor="start">does</text><text class="sc-mut" x="298" y="188" text-anchor="start">the math</text><text class="sc-big" x="16" y="182" opacity=".25">412 kcal<animate attributeName="opacity" values=".25;.25;1;1" keyTimes="0;.8;.88;1" dur="3.6s" repeatCount="indefinite"/></text><text class="sc-cap" x="16" y="212" text-anchor="start">exact, tested</text></svg>
+          <a class="seen" href="projects/nutrigordo.html">Seen in Nutrigordo →</a>
+        </div>
+        <div class="pr-scene" role="tabpanel" id="pr-5" aria-labelledby="pr-tab-5">
+          <svg viewBox="0 0 400 240" role="img" aria-label="Every failure becomes a test. When something breaks for a real user, that conversation becomes a test."><text class="sc-cap" x="16" y="24" text-anchor="start">test suite</text><text class="sc-big" x="16" y="66">136 passing<animate attributeName="opacity" values="1;1;0;0" keyTimes="0;.55;.62;1" dur="5s" repeatCount="indefinite"/></text><text class="sc-big" x="16" y="66" opacity="0">137 passing<animate attributeName="opacity" values="0;0;1;1;0" keyTimes="0;.58;.66;.94;1" dur="5s" repeatCount="indefinite"/></text><circle cx="44" cy="110" r="9" fill="rgba(94,234,212,.14)" stroke="#5eead4" stroke-width="1.5"/><circle cx="76" cy="110" r="9" fill="rgba(94,234,212,.14)" stroke="#5eead4" stroke-width="1.5"/><circle cx="108" cy="110" r="9" fill="rgba(94,234,212,.14)" stroke="#5eead4" stroke-width="1.5"/><circle cx="140" cy="110" r="9" fill="rgba(94,234,212,.14)" stroke="#5eead4" stroke-width="1.5"/><circle cx="172" cy="110" r="9" fill="rgba(94,234,212,.14)" stroke="#5eead4" stroke-width="1.5"/><circle cx="204" cy="110" r="9" fill="rgba(94,234,212,.14)" stroke="#5eead4" stroke-width="1.5"/><circle cx="236" cy="110" r="9" fill="rgba(94,234,212,.14)" stroke="#5eead4" stroke-width="1.5"/><circle cx="268" cy="110" r="9" fill="rgba(94,234,212,.14)" stroke="#5eead4" stroke-width="1.5"/><circle cx="300" cy="110" r="9" fill="rgba(94,234,212,.14)" stroke="#5eead4" stroke-width="1.5"/><circle cx="332" cy="110" r="9" fill="rgba(94,234,212,.14)" stroke="#5eead4" stroke-width="1.5"/><g><animateTransform attributeName="transform" type="translate" values="0 80;0 80;0 0;0 0" keyTimes="0;.3;.55;1" dur="5s" repeatCount="indefinite" calcMode="spline" keySplines="0 0 1 1;.4 0 .2 1;0 0 1 1"/>
+<circle cx="364" cy="110" r="9" stroke-width="1.5" fill="#f87171" stroke="#f87171"><animate attributeName="fill" values="#f87171;#f87171;rgba(94,234,212,.14);rgba(94,234,212,.14)" keyTimes="0;.5;.6;1" dur="5s" repeatCount="indefinite"/><animate attributeName="stroke" values="#f87171;#f87171;#5eead4;#5eead4" keyTimes="0;.5;.6;1" dur="5s" repeatCount="indefinite"/></circle></g><text class="sc-t" x="352" y="194" text-anchor="end" style="fill:#f87171">a real chat breaks<animate attributeName="opacity" values="1;1;0;0" keyTimes="0;.3;.4;1" dur="5s" repeatCount="indefinite"/></text><text class="sc-mut" x="16" y="160" text-anchor="start">the bug becomes a test, forever</text></svg>
+          <a class="seen" href="projects/nutrigordo.html">Seen in Nutrigordo →</a>
         </div>
       </div>
     </div>
@@ -307,7 +192,6 @@
     <div class="edu">
       <ul class="rows">
         <li><div class="row" style="--i:0"><span class="what"><b>Bachelor's Degree in Information Systems Management</b></span><span class="who"><span class="meta">UADE · expected 2026</span></span></div></li>
-        <li><div class="row" style="--i:1"><span class="what"><b>Spanish</b> (native) · <b>English</b> (fluent, <a href="https://cert.efset.org/2LxfZy" rel="noopener">EF SET C2 ↗</a>)</span><span class="who"><span class="meta">Languages</span></span></div></li>
       </ul>
       <div class="certs-head">
         <div>
@@ -325,6 +209,11 @@
         <li data-area="bi"><a class="row" href="https://skillshop.credential.net/ca87fab7-0ff1-48b2-8c95-75a754aa3c0f" rel="noopener" style="--i:6"><span class="what">Campaign Manager 360</span><span class="who"><span class="meta">Google Skillshop · 2026</span><span class="go">verify ↗</span></span></a></li>
         <li data-area="ml"><a class="row" href="https://www.credly.com/badges/8c637f8d-a946-4fdb-aeb4-79f877d4640e" rel="noopener" style="--i:7"><span class="what">Machine Learning with Python</span><span class="who"><span class="meta">IBM · 2025</span><span class="go">verify ↗</span></span></a></li>
         <li data-area="bi"><a class="row" href="https://learn.microsoft.com/en-us/users/lucalamorte-9631/achievements/3autwv3h" rel="noopener" style="--i:8"><span class="what">Power BI: DAX and reports</span><span class="who"><span class="meta">Microsoft · 2025</span><span class="go">verify ↗</span></span></a></li>
+      </ul>
+      <div class="certs-head"><div><h3>Languages</h3></div></div>
+      <ul class="rows">
+        <li><div class="row" style="--i:0"><span class="what">Spanish</span><span class="who"><span class="meta">Native</span></span></div></li>
+        <li><a class="row" href="https://cert.efset.org/2LxfZy" rel="noopener" style="--i:1"><span class="what">English</span><span class="who"><span class="meta">Fluent · C2</span><span class="go">EF SET ↗</span></span></a></li>
       </ul>
     </div>
   </section>
@@ -345,26 +234,6 @@
 <script src="portrait.js"></script>
 <script>
   // Pestañas de experiencia: una visible por vez, también con las flechas del teclado.
-  const tabs = [...document.querySelectorAll('[role="tab"]')];
-  function select(tab) {
-    tabs.forEach(other => {
-      const on = other === tab;
-      other.setAttribute('aria-selected', on);
-      other.tabIndex = on ? 0 : -1;
-      document.getElementById(other.getAttribute('aria-controls')).hidden = !on;
-    });
-  }
-  tabs.forEach((tab, index) => {
-    tab.tabIndex = index ? -1 : 0;
-    tab.addEventListener('click', () => select(tab));
-    tab.addEventListener('keydown', event => {
-      const step = { ArrowDown: 1, ArrowRight: 1, ArrowUp: -1, ArrowLeft: -1 }[event.key];
-      if (!step) return;
-      event.preventDefault();
-      const next = tabs[(index + step + tabs.length) % tabs.length];
-      select(next); next.focus();
-    });
-  });
   // Copiar el email: con el portapapeles si se puede; si no, queda seleccionado para copiarlo a mano.
   const copy = document.getElementById('copy');
   copy.addEventListener('click', async () => {
@@ -373,7 +242,7 @@
     catch { const range = document.createRange(); range.selectNodeContents(document.getElementById('email')); getSelection().removeAllRanges(); getSelection().addRange(range); label.textContent = 'Selected'; }
     setTimeout(() => { label.textContent = 'Copy'; }, 1800);
   });
-  // How I build: las reglas rotan solas mientras la sección está a la vista; un clic la deja quieta en la elegida.
+  // How I work: las reglas rotan solas mientras la sección está a la vista; un clic la deja quieta en la elegida.
   const principles = document.querySelector('.principles');
   const ruleTabs = [...principles.querySelectorAll('.pr-item')];
   const panels = [...principles.querySelectorAll('.pr-scene')];
@@ -403,7 +272,7 @@
       requestAnimationFrame(step);
     });
   }), { threshold: 0.2 });
-  document.querySelectorAll('.edu, .principles, .ba').forEach(el => motion.observe(el));
+  document.querySelectorAll('.edu, .principles').forEach(el => motion.observe(el));
   document.documentElement.classList.add('motion');
   // Cada bloque aparece al llegar a él.
   if ('IntersectionObserver' in window) {
