@@ -41,10 +41,10 @@ img { max-width: 100%; display: block; }
 .skip:focus { top: 12px; text-decoration: none; }
 
 main { max-width: 1040px; margin: 0 auto; padding: 0 clamp(16px, 5vw, 48px); }
-section { padding: 104px 0 24px; }
+section { padding: 72px 0 16px; }
 
 /* ---------- portada: el retrato a la izquierda, la presentación a la derecha ---------- */
-.hero { position: relative; min-height: calc(100vh - 64px); display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); align-items: center; gap: clamp(24px, 5vw, 64px); padding: 72px 0; }
+.hero { position: relative; min-height: min(760px, calc(100vh - 64px)); display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); align-items: center; gap: clamp(24px, 5vw, 64px); padding: 72px 0; }
 .portrait { min-width: 0; }
 .portrait canvas { display: block; width: 100%; max-width: 500px; aspect-ratio: 1; margin: 0 auto; cursor: crosshair; }
 .hero .game-status { min-height: 1.5em; max-width: none; margin: 6px 0 0; text-align: center; font-family: var(--mono); font-size: .76rem; color: var(--accent); }
@@ -380,7 +380,7 @@ footer a:hover { color: var(--text); }
 /* Experiencia: los tres puestos ocupan el mismo lugar, así la sección no cambia de alto al cambiar de pestaña. */
 .tabs > div:last-child { display: grid; }
 .tabs .panel { grid-area: 1 / 1; transition: opacity .35s ease, transform .35s ease; }
-.tabs .panel[hidden] { display: block; visibility: hidden; opacity: 0; transform: translateY(6px); }
+.tabs .panel.off { visibility: hidden; opacity: 0; transform: translateY(6px); pointer-events: none; }
 .role-stack { display: flex; flex-wrap: wrap; gap: 4px 20px; margin: 0 0 6px !important; padding: 0; list-style: none; }
 .panel .role-stack li { margin: 0; padding: 0; color: var(--text); font-size: .95rem; font-weight: 600; letter-spacing: -.01em; }
 .panel .role-stack li::before { content: none; }
@@ -402,3 +402,19 @@ footer a:hover { color: var(--text); }
 /* Experiencia: los logros separados por aire, sin líneas. */
 .panel ul.wins { border-top: 0; margin-top: 14px; }
 .panel .wins li { border-bottom: 0; padding: 6px 0; }
+/* Que se note lo que se toca: flecha en cada puesto y el link al caso en color. */
+.tablist button { position: relative; padding-right: 30px !important; }
+.tablist button::after { content: "→"; position: absolute; right: 10px; top: 50%; transform: translate(-4px, -50%); opacity: .35; transition: opacity .2s, transform .2s; }
+.tablist button:hover::after { opacity: 1; transform: translate(0, -50%); }
+.tablist button[aria-selected="true"]::after { opacity: 1; transform: translate(0, -50%); color: var(--accent); }
+.case small { color: var(--accent) !important; font-weight: 500; }
+.case:hover small { text-decoration: underline; }
+.case i { display: none; }
+@media (max-width: 760px) { .tablist button { padding-right: 24px !important; } .tablist button::after { right: 6px; } }
+.pr-item:focus-visible, .tablist button:focus-visible { outline: none; }
+.pr-item:focus-visible .tx b, .tablist button:focus-visible { color: var(--accent); }
+/* Fondo de pipelines y juego de plataformas. */
+.pipelines { position: fixed; inset: 0; z-index: -1; width: 100%; height: 100%; pointer-events: none; }
+.play-layer { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 2; }
+.play-status { position: absolute; top: 26px; right: 0; margin: 0 !important; font-family: var(--mono); font-size: .74rem !important; color: var(--accent) !important; max-width: none !important; }
+.hero.playing .portrait canvas { opacity: .35; transition: opacity .3s; }
