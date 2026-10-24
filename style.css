@@ -372,3 +372,21 @@ footer a:hover { color: var(--text); }
 .pr-item:hover .tx b { color: var(--text); }
 @media (prefers-reduced-motion: reduce) { .pr-scene, .pr-item .desc, .pr-item::after { transition: none; } }
 .panel .wins + .case { border-top: 0; margin-top: 4px; padding-top: 4px; }
+/* Etapa del ciclo de vida junto al número. */
+.pr-item .n { flex: none; width: 64px; display: flex; flex-direction: column; gap: 1px; line-height: 1.2; }
+.pr-item .n em { font-style: normal; font-size: .64rem; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.pr-item.on .n em { color: var(--accent); }
+.pr-list { position: relative; }
+/* Experiencia: los tres puestos ocupan el mismo lugar, así la sección no cambia de alto al cambiar de pestaña. */
+.tabs > div:last-child { display: grid; }
+.tabs .panel { grid-area: 1 / 1; transition: opacity .35s ease, transform .35s ease; }
+.tabs .panel[hidden] { display: block; visibility: hidden; opacity: 0; transform: translateY(6px); }
+.role-stack { display: flex; flex-wrap: wrap; gap: 4px 20px; margin: 0 0 6px !important; padding: 0; list-style: none; }
+.panel .role-stack li { margin: 0; padding: 0; color: var(--text); font-size: .95rem; font-weight: 600; letter-spacing: -.01em; }
+.panel .role-stack li::before { content: none; }
+@media (prefers-reduced-motion: reduce) { .tabs .panel { transition: none; } }
+/* Herramientas arriba del About, en una línea como el stack de cada puesto. */
+.about p.tech-label { margin: 0 0 8px !important; }
+.about .tech { margin: 0 0 28px; gap: 4px 20px; }
+.about .tech li { color: var(--text); font-family: var(--sans); font-size: .98rem; font-weight: 600; letter-spacing: -.01em; }
+.about .tech li::before { content: none; }
