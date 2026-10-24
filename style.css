@@ -394,8 +394,6 @@ footer a:hover { color: var(--text); }
 .list { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--border); }
 .list li { display: flex; justify-content: space-between; align-items: baseline; gap: 20px; padding: 12px 0; border-bottom: 1px solid var(--border); }
 .list .what { color: var(--text); }
-.list .what a { color: var(--text); text-decoration: underline; text-decoration-color: var(--accent-line); text-underline-offset: 3px; }
-.list .what a:hover { color: var(--accent); text-decoration-color: var(--accent); }
 .list .who { flex: none; font-family: var(--mono); font-size: .76rem; color: var(--muted); }
 .list-label { margin: 40px 0 10px; font-family: var(--mono); font-size: .74rem; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
 @media (max-width: 760px) { .list li { flex-direction: column; gap: 2px; } }
@@ -438,3 +436,17 @@ footer a:hover { color: var(--text); }
 /* La barra de desplazamiento de Nutrigordo: fina, sin flechas y del color de la página. */
 html { scrollbar-width: thin; scrollbar-color: rgba(255, 255, 255, .16) transparent; overflow-y: scroll; }
 @media (prefers-reduced-motion: reduce) { .play-btn .pk { animation: none; } }
+/* Credenciales: un sello junto al nombre; al pasar, el sello se estampa, la fila se subraya entera y a la derecha aparece adónde lleva. */
+.list li { position: relative; }
+.list li::after { content: ""; position: absolute; left: 0; right: 0; bottom: -1px; height: 1px; background: var(--accent); transform: scaleX(0); transform-origin: left; transition: transform .5s cubic-bezier(.2, .7, .2, 1); }
+.list li:has(.cred:hover)::after, .list li:has(.cred:focus-visible)::after { transform: scaleX(1); }
+.list li.one .cred::after { content: ""; position: absolute; inset: 0; }
+.cred { color: var(--text); transition: color .2s; white-space: nowrap; }
+.cred:hover, .cred:focus-visible { color: var(--accent); text-decoration: none; }
+.cred .seal { display: inline-block; width: 17px; height: 17px; margin-right: 6px; vertical-align: -3px; color: var(--accent); opacity: .5; transition: opacity .2s, transform .45s cubic-bezier(.3, 1.7, .5, 1); }
+.cred:hover .seal, .cred:focus-visible .seal { opacity: 1; transform: rotate(-14deg) scale(1.3); }
+.list li:has(.cred:hover) .meta, .list li:has(.cred:focus-visible) .meta { opacity: 0; transform: translateY(-6px); }
+.list li:has(.cred:hover) .go, .list li:has(.cred:focus-visible) .go { opacity: 1; transform: none; }
+@media (hover: none) { .cred { color: var(--accent); } .cred .seal { opacity: 1; } }
+@media (max-width: 760px) { .list .who { justify-items: start; } }
+@media (prefers-reduced-motion: reduce) { .cred .seal, .list li::after { transition: none; } }
