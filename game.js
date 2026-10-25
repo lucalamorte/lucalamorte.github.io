@@ -33,7 +33,7 @@
   help.className = 'play-help'; help.textContent = '← → move · ↑ jump · ↓ drop · scroll to read · esc';
   const pad = document.createElement('div');
   pad.className = 'pad'; pad.hidden = true;
-  pad.innerHTML = '<button type="button" data-k="left" aria-label="Left">◀</button><button type="button" data-k="right" aria-label="Right">▶</button><button type="button" data-k="jump" class="jump" aria-label="Jump">▲</button><button type="button" class="x" aria-label="Stop playing">✕</button>';
+  pad.innerHTML = '<button type="button" data-k="left" aria-label="Left">◀</button><button type="button" data-k="right" aria-label="Right">▶</button><button type="button" data-k="down" class="down" aria-label="Go down">▼</button><button type="button" data-k="jump" class="jump" aria-label="Jump">▲</button><button type="button" class="x" aria-label="Stop playing">✕</button>';
   document.body.append(canvas, hit, hint, mission, help, pad);
 
   let fade = 1, mode = 'wait', missionUntil = 0, opened = 0, W = 0, H = 0, level = null, keys = {}, last = 0, labels = [], expected = -1, intro = null, won = false;
@@ -45,12 +45,14 @@
   const envelope = () => { const b = box($('.hero .cta .btn')); return { x: b.r + 22, y: b.b - 32, w: 46, h: 32 }; };
   // Un cartelito que flota sobre el muñequito o sobre una pieza.
   // Los diálogos siempre salen justo arriba del muñequito y lo siguen mientras se mueve.
+  const readyHint = () => say(touch ? '▼ when you are ready' : '↓ when you are ready', 2200);
   const say = (text, ms = 2000) => { labels = labels.filter(l => l.text !== text); labels.push({ text, until: performance.now() + ms }); };
 
   // ---------- el nivel ----------
   function build() {
     W = document.documentElement.clientWidth;
     const plats = [], things = [], checkpoints = [], walls = [];
+    let level_mc = null;
     const h = box(hero), colL = Math.max(16, h.x), colR = Math.min(W - 16, h.r);
     const ledge = (x, y, w, extra = {}) => { const p = { x, y, w, solid: true, ...extra }; plats.push(p); return p; };
     // Un piso de lado a lado con huecos: por ahí se baja.
@@ -59,34 +61,53 @@
       for (const [gx, gw] of [...gaps, [W + 60, 0]]) { if (gx > x) ledge(x, y, gx - x, { floor: true, ...extra }); x = gx + gw; }
       gaps.forEach(([gx, gw]) => things.push({ draw: now => drawGap(gx + gw / 2, y, now) }));
     };
+    // Lectura obligada: paredes a los costados de una lista y cada fila es un piso. Mientras se lee, una
+    // barrita se llena; recién entonces se baja con ↓ (o se abre sola si es auto). Con ↑ se vuelve a la de arriba.
+    const chute = (els, top, seconds, onLand, auto = false) => {
+      const first = box(els[0]), lastRow = box(els[els.length - 1]);
+      walls.push({ x: first.x - 4, y1: top, y2: lastRow.b }, { x: first.r + 4, y1: top, y2: lastRow.b });
+      els.forEach((el, k) => {
+        const b = box(el);
+        const p = ledge(first.x - 4, b.y, first.w + 8, { kind: 'read', t: 0, need: seconds, land: () => onLand(el, k), tick: () => { p.y = el.getBoundingClientRect().top + scrollY; } });
+        p.stand = dt => { if (p.t >= p.need) return; p.t += dt; if (p.t >= p.need) { if (auto) p.solid = false; else readyHint(); } };
+      });
+      return first;
+    };
 
-    // Portada: el título es el piso, sin línea encima. Con el retrato al costado, los hombros son el otro piso
-    // y la única salida es un hueco en el medio del pecho: para bajar hay que cruzar la figura de Luca.
+    // Portada: el título es el piso, sin línea encima, y no hay ningún hueco. La única salida es la cara de
+    // Luca: al entrar el muñequito se zambulle, cruza la cabeza (las rayas se ondulan) y sale por abajo.
     const h1 = box($('.hero h1')), fig = portrait ? box(portrait) : null;
+    let face = null;
     if (fig && fig.b > h1.y) {
-      ledge(h1.x, h1.y + 4, W + 60 - h1.x, { hidden: true });
-      const sy = fig.y + fig.h * 0.8, gx = fig.x + fig.w * 0.42, gw = 70;
-      ledge(-60, sy, gx + 60, { hidden: true }); ledge(gx + gw, sy, h1.x + 30 - gx - gw, { hidden: true });
-      things.push({ draw: now => drawGap(gx + gw / 2, sy, now) });
+      // Con el retrato al costado, los hombros son un piso de lado a lado.
+      ledge(h1.x, h1.y + 4, W + 60 - h1.x, { hidden: true, floor: true });
+      ledge(-60, fig.y + fig.h * 0.8, W + 120, { hidden: true, floor: true });
     } else {
-      // En el celu el retrato queda arriba del título: se baja por el costado.
-      ledge(h1.x, h1.y + 4, h1.w, { hidden: true });
-      floor(h.b - 8, [[colR - 110, 90]]);
+      // En el celu el retrato queda arriba del título: se salta desde el título hacia la cara.
+      ledge(h1.x, h1.y + 4, h1.w, { hidden: true, floor: true });
+      floor(h.b - 8);
+    }
+    if (fig) {
+      face = { x1: fig.x + fig.w * 0.3, x2: fig.x + fig.w * 0.7, y1: fig.y + fig.h * 0.08, y2: fig.y + fig.h * (fig.b > h1.y ? 0.62 : 0.74), ex: fig.x + fig.w * 0.42, ey: h.b + 10 };
+      // Un anillo que late en la cara marca por dónde se pasa.
+      things.push({ draw: now => {
+        if (P.y > h.b) return;
+        const r = 26 + Math.sin(now / 300) * 4;
+        ctx.globalAlpha = 0.5; ctx.setLineDash([4, 6]); ctx.strokeStyle = ACCENT; ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.arc(fig.x + fig.w * 0.5, fig.y + fig.h * 0.36, r, 0, Math.PI * 2); ctx.stroke(); ctx.setLineDash([]); ctx.globalAlpha = 1;
+      } });
     }
 
-    // About: todo pasa adentro de AWS. Cada párrafo es un escalón: al pisarlo se ilumina y el muñequito
-    // reacciona. El DAG de Airflow tiene una tarea por párrafo y no corre hasta que los tres estén leídos.
+    // About: todo pasa adentro de AWS. Los párrafos se leen de a uno, entre paredes: al caer en uno se
+    // ilumina y el muñequito reacciona. El DAG de Airflow tiene una tarea por párrafo y no corre hasta que los tres estén leídos.
     const ab = box($('#about')), grid = box($('.about-grid'));
     things.push({ draw: () => { dashedBox(grid.x - 18, grid.y - 22, grid.w + 36, grid.h + 44, 26); text('AWS', grid.x - 4, grid.y - 28, ACCENT); } });
     const paras = [...document.querySelectorAll('#about .about-grid p:not(.tech-label)')];
     const REACT = ['interesting… 65M profiles', '10 plants, 5 countries. noted', 'three live products? ok, impressed'];
     const reads = { done: paras.filter(el => el.classList.contains('read')).length, total: paras.length };
-    paras.forEach((el, k) => {
-      const b = box(el), part = k % 2 ? [b.x + b.w * 0.3, b.w * 0.7] : [b.x, b.w * 0.7];
-      ledge(part[0], b.y + 2, part[1], { hidden: true, land: () => {
-        if (!el.classList.contains('read')) { el.classList.add('read'); reads.done++; }
-        say(reads.done === reads.total && k === paras.length - 1 ? 'all read. Airflow can run now ↓' : REACT[k] || 'noted', 2400);
-      } });
+    if (paras.length) chute(paras, ab.y + 40, 2.2, (el, k) => {
+      if (!el.classList.contains('read')) { el.classList.add('read'); reads.done++; }
+      say(reads.done === reads.total && k === paras.length - 1 ? 'all read. Airflow can run now ↓' : REACT[k] || 'noted', 2400);
     });
     const fy = ab.b - 6, bw = 84, bx = Math.max(colL + 30, 24);
     floor(fy, [[bx, bw]]);
@@ -97,44 +118,48 @@
     const bucket = { x: bx, y: fy, w: bw, d: 52 };
     things.push({ draw: now => drawBucket(bucket, gateOpen(now), now, PERIOD, OPEN, reads) });
 
-    // Experience: la tarea de Airflow carga el archivo por el margen y Monte Carlo lo revisa a mitad de camino.
+    // Experience: la tarea de Airflow carga el archivo por el margen hasta Snowflake (extract y load).
     const exp = box($('#experience')), tl = box($('.tablist'));
     // El warehouse queda en el hueco libre bajo las pestañas, arriba del piso.
     const mx = Math.max(colL - 30, 10), wy = exp.b - 72, wx = tl.x;
     const top = wy - 240;
     const path = [[bx + bw / 2, fy + 56], [bx + bw / 2, fy + 70], [mx, fy + 70], [mx, top], [wx + 28, top], [wx + 28, top + 30]];
-    const scan = [mx, (fy + 70 + top) / 2];
-    const pipe = { path, scan, mouth: [bx + bw / 2, fy + 56] };
+    const pipe = { path, mouth: [bx + bw / 2, fy + 56] };
     things.push({ draw: now => drawPipe(pipe, now) });
 
-    // Snowflake es una caja cerrada: las paredes no dejan salir y la única salida es una compuerta en el piso
-    // que se abre cuando dbt construyó los tres modelos (raw, staging, mart). Adentro, el warehouse escala
-    // mientras lo usas y se suspende solo cuando lo dejas.
+    // Snowflake es una caja cerrada: las paredes no dejan salir. Adentro, las capas de dbt van de pared a
+    // pared y se construyen de a una (raw, staging, mart): no se puede saltear ninguna. Al fondo, la salida
+    // pasa por Monte Carlo, que revisa los datos ya transformados. El warehouse escala mientras lo usas.
     const sfW = Math.max(210, Math.min(tl.w + 28, W - wx - 16)), boxL = wx - 14, boxR = boxL + sfW, boxB = wy + 28;
     walls.push({ x: boxL, y1: top - 180, y2: boxB }, { x: boxR, y1: top - 180, y2: boxB });
-    const models = [['raw.orders', 0], ['stg_orders', 1], ['fct_orders', 2]].map(([name, k]) => {
-      const m = ledge(wx + (k % 2 ? 70 : 0), top + 60 + k * 50, 118, { kind: 'model', name, built: false });
-      m.land = () => {
+    const models = [['raw.orders', 0.8], ['stg_orders', 1.4], ['fct_orders', 1.4]].map(([name, need], k) => {
+      const m = ledge(boxL + 2, top + 60 + k * 50, sfW - 4, { kind: 'model', name, t: 0, need, built: false });
+      m.land = () => { if (!m.built) say(k === 0 ? 'loaded into raw' : `dbt run · ${name}…`, 1400); };
+      m.stand = dt => {
         if (m.built) return;
-        m.built = true;
-        say(models.every(x => x.built) ? 'dbt build done · the hatch is open ↓' : k === 0 ? `dbt: ${name} loaded` : `dbt run · ${name} ✓`, 2000);
+        m.t += dt;
+        if (m.t >= m.need) { m.built = true; say(k === 2 ? 'dbt build done ✓' : `${name} ✓`, 1400); readyHint(); }
       };
       return m;
     });
-    const built = () => models.every(m => m.built);
     const hatch = { x: boxR - 74, w: 58 };
-    const locked = () => { if (!built()) say('build all the dbt models to get out ↑', 2200); };
-    ledge(boxL, boxB, hatch.x - boxL, { floor: true, land: locked });
-    ledge(hatch.x + hatch.w, boxB, boxR - hatch.x - hatch.w, { floor: true, land: locked });
-    const lid = ledge(hatch.x, boxB, hatch.w, { floor: true, tick: () => { lid.solid = !built(); }, land: locked });
+    ledge(boxL, boxB, hatch.x - boxL, { floor: true, land: () => say('the way out is Monte Carlo →', 1800) });
+    ledge(hatch.x + hatch.w, boxB, boxR - hatch.x - hatch.w, { floor: true });
+    const mc = { checked: false };
     things.push({ draw: now => {
-      const open = built();
-      ctx.setLineDash(open ? [3, 7] : []); ctx.strokeStyle = open ? 'rgba(94,234,212,.3)' : 'rgba(94,234,212,.55)'; ctx.lineWidth = 1.5;
-      ctx.beginPath(); ctx.roundRect(boxL, top - 18, sfW, boxB - top + 18, 18); ctx.stroke(); ctx.setLineDash([]);
+      // La caja: el borde de abajo se corta en la salida, para que se vea que ahí se pasa.
+      ctx.strokeStyle = 'rgba(94,234,212,.55)'; ctx.lineWidth = 1.5; ctx.beginPath();
+      ctx.moveTo(hatch.x, boxB); ctx.lineTo(boxL + 18, boxB); ctx.arcTo(boxL, boxB, boxL, boxB - 18, 18); ctx.lineTo(boxL, top - 18 + 18);
+      ctx.arcTo(boxL, top - 18, boxL + 18, top - 18, 18); ctx.lineTo(boxR - 18, top - 18); ctx.arcTo(boxR, top - 18, boxR, top, 18);
+      ctx.lineTo(boxR, boxB - 18); ctx.arcTo(boxR, boxB, boxR - 18, boxB, 18); ctx.lineTo(hatch.x + hatch.w, boxB); ctx.stroke();
       snowflake(wx + 2, top - 26, 5, ACCENT); text('Snowflake', wx + 12, top - 22, ACCENT);
-      if (open) drawGap(hatch.x + hatch.w / 2, boxB, now);
-      else { ctx.strokeStyle = MUTED; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(hatch.x, boxB); ctx.lineTo(hatch.x + hatch.w, boxB); ctx.stroke(); text('🔒︎ dbt', hatch.x + hatch.w / 2, boxB + 16, MUTED, 'center'); }
+      // Monte Carlo en la salida: un marco con una línea que escanea.
+      const k = (Math.sin(now / 300) + 1) / 2, cx = hatch.x + hatch.w / 2;
+      ctx.strokeStyle = ACCENT; ctx.lineWidth = 2; ctx.beginPath(); ctx.roundRect(hatch.x + 4, boxB - 6, hatch.w - 8, 34, 6); ctx.stroke();
+      ctx.globalAlpha = 0.5 + k * 0.5; ctx.beginPath(); ctx.moveTo(hatch.x + 8, boxB - 2 + k * 26); ctx.lineTo(hatch.x + hatch.w - 8, boxB - 2 + k * 26); ctx.stroke(); ctx.globalAlpha = 1;
+      text('Monte Carlo', cx, boxB + 44, ACCENT, 'center');
     } });
+    level_mc = { x: hatch.x, w: hatch.w, y: boxB, state: mc };
     const SIZES = ['XS', 'S', 'M', 'L', 'XL'], maxW = sfW - 28;
     const wh = ledge(wx, wy, 56, { size: 0, idle: 0, grow: 0, kind: 'warehouse' });
     wh.land = () => say(wh.size ? 'warehouse resumed' : 'warehouse running · it scales while you use it', 2200);
@@ -153,39 +178,41 @@
     ledge(gx + 90, ey, W - gx - 30, { floor: true, belt: -70 });
     things.push({ draw: now => { drawGap(gx + 45, ey, now); drawBelt(colL - 10, gx - 6, ey, now, 1); drawBelt(gx + 96, Math.max(gx + 140, colR), ey, now, -1); } });
 
-    // Projects: el borde de arriba de cada tarjeta es el piso. Al pisarla se enciende como en hover y el
-    // muñequito usa el producto: le habla a Nutrigordo, estudia con PrimeroLab, pide un camino a DataChinchilla.
+    // Projects: entre paredes, el borde de arriba de cada tarjeta es el piso. Al pisarla se enciende como
+    // en hover y el muñequito usa el producto mientras la lee. Una fila se abre recién cuando se leyeron
+    // todas sus tarjetas, así que hay que pasar por cada una.
     const cardEls = [...document.querySelectorAll('#projects .card')];
     const USE = [['2 eggs and toast', 'logged · 412 kcal ✓'], ['what is RAG?', 'search + generate ✓ · see you in 3 days'], ['I want to be a data engineer', 'your path: 23 steps, only what you miss']];
-    const stacked = cardEls.length > 1 && box(cardEls[1]).y > box(cardEls[0]).y + 10;
-    cardEls.forEach((el, k) => {
-      const c = box(el), part = !stacked ? [c.x, c.w] : k % 2 ? [c.x + c.w * 0.3, c.w * 0.7] : [c.x, c.w * 0.7];
-      ledge(part[0], c.y, part[1], { hidden: true, land: () => {
-        cardEls.forEach(other => other.classList.toggle('lit', other === el));
-        const [ask, answer] = USE[k] || ['', ''];
-        if (!ask || el.dataset.used) return;
-        el.dataset.used = '1'; say(ask, 1300); setTimeout(() => say(answer, 2600), 1100);
-      } });
-    });
-    // Lectura obligada: paredes a los costados de una lista y cada fila es un piso que se abre recién
-    // después de leerla un rato. Así se baja de a una, en orden.
-    const chute = (els, top, seconds, onLand) => {
-      const first = box(els[0]), lastRow = box(els[els.length - 1]);
-      walls.push({ x: first.x - 4, y1: top, y2: lastRow.b }, { x: first.r + 4, y1: top, y2: lastRow.b });
-      els.forEach((el, k) => {
-        const b = box(el);
-        const p = ledge(first.x - 4, b.y, first.w + 8, { kind: 'read', t: 0, need: seconds, land: () => onLand(el, k) });
-        p.stand = dt => { if (p.solid) { p.t += dt; if (p.t >= p.need) p.solid = false; } };
+    if (cardEls.length) {
+      const gridBox = box($('#projects .projects'));
+      walls.push({ x: gridBox.x - 4, y1: box($('#projects')).y + 40, y2: gridBox.b }, { x: gridBox.r + 4, y1: box($('#projects')).y + 40, y2: gridBox.b });
+      const byRow = new Map();
+      cardEls.forEach((el, k) => {
+        const c = box(el), key = Math.round(c.y);
+        const p = ledge(c.x - (c.x - gridBox.x < 20 ? 4 : 8), c.y, c.w + 16, { kind: 'read', t: 0, need: 2.4, row: key, land: () => {
+          cardEls.forEach(other => other.classList.toggle('lit', other === el));
+          const [ask, answer] = USE[k] || ['', ''];
+          if (ask && !el.dataset.used) { el.dataset.used = '1'; say(ask, 1300); setTimeout(() => say(answer, 2600), 1100); }
+        } });
+        p.stand = dt => {
+          if (p.t >= p.need) return;
+          p.t += dt;
+          if (p.t < p.need) return;
+          const mates = byRow.get(key);
+          if (mates.every(q => q.t >= q.need)) readyHint();
+          else say('now the one next to it →', 1600);
+        };
+        p.ready = () => byRow.get(key).every(q => q.t >= q.need);
+        byRow.set(key, [...(byRow.get(key) || []), p]);
       });
-      return first;
-    };
+    }
     const rows = [...document.querySelectorAll('.pr-item')], how = box($('#principles'));
     const list = rows.length ? box(rows[0]) : { x: colL, w: 200 };
     // Projects se deja por un hueco justo arriba de la lista de reglas.
     const pr = box($('#projects'));
     floor(pr.b - 6, [[list.x + list.w / 2 - 45, 90]]);
     // How I work: seis reglas, de la 1 a la 6. Al caer en una se abre su escena para leerla.
-    if (rows.length) chute(rows, how.y + 40, 2.6, (row, k) => { row.click(); say(`${String(k + 1).padStart(2, '0')} · ${row.querySelector('.n em').textContent.toLowerCase()}`, 2600); });
+    if (rows.length) chute(rows, how.y + 40, 2.6, row => row.click());
     floor(how.b - 6, [[list.x + list.w / 2 - 45, 90]]);
 
     // Education: lo mismo, fila por fila; cada credencial se sella al leerla.
@@ -193,7 +220,7 @@
     if (items.length) chute(items, ed.y + 40, 1.2, (li, k) => {
       li.classList.remove('stamp'); void li.offsetWidth; li.classList.add('stamp');
       say(k === 0 ? 'class of 2026' : li.textContent.includes('English') ? 'hello · hola' : li.querySelector('.cred') ? 'verified ✓' : 'done ✓', 1600);
-    });
+    }, true);
     floor(ed.b - 6, [[(colL + colR) / 2 - 45, 90]]);
 
     // Contacto: el buzón es la meta.
@@ -206,7 +233,7 @@
     floor(ct.b - 20, []);
 
     for (const id of ['about', 'experience', 'projects', 'principles', 'education', 'contact']) { const b = box(document.getElementById(id)); checkpoints.push({ y: b.y, x: colL + 30 }); }
-    return { plats, things, walls, pipe, bucket, mailbox, checkpoints, colL, colR, docH: document.documentElement.scrollHeight };
+    return { plats, things, walls, face, mc: level_mc, pipe, bucket, mailbox, checkpoints, colL, colR, docH: document.documentElement.scrollHeight };
   }
 
   // ---------- dibujo ----------
@@ -239,11 +266,6 @@
     ctx.strokeStyle = ACCENT; ctx.lineWidth = 1.5; ctx.setLineDash([6, 10]); ctx.lineDashOffset = -now / 30; ctx.stroke(); ctx.setLineDash([]);
     const [x2, y2] = p.path[2];
     text('Airflow · load', x2 + 16, y2 - 14, ACCENT);
-    const [sx, sy] = p.scan, k = (Math.sin(now / 300) + 1) / 2;
-    ctx.strokeStyle = ACCENT; ctx.lineWidth = 2; ctx.beginPath(); ctx.roundRect(sx - 16, sy - 20, 32, 40, 8); ctx.stroke();
-    ctx.globalAlpha = 0.5 + k * 0.5; ctx.beginPath(); ctx.moveTo(sx - 13, sy - 16 + k * 32); ctx.lineTo(sx + 13, sy - 16 + k * 32); ctx.stroke(); ctx.globalAlpha = 1;
-    // La etiqueta va del lado del margen cuando hay lugar, para no tapar el texto.
-    if (sx > 120) text('Monte Carlo', sx - 22, sy + 4, ACCENT, 'right'); else text('Monte Carlo', sx + 22, sy + 4, ACCENT);
   }
   function drawBelt(x1, x2, y, now, dir) {
     ctx.strokeStyle = FAINT; ctx.lineWidth = 1;
@@ -284,9 +306,16 @@
       return;
     }
     if (p.kind === 'model') {
-      ctx.fillStyle = p.built ? 'rgba(94,234,212,.18)' : 'rgba(148,163,184,.1)'; ctx.strokeStyle = p.built ? ACCENT : MUTED; ctx.lineWidth = 1.5;
-      ctx.beginPath(); ctx.roundRect(p.x, p.y, p.w, 6, 3); ctx.fill(); ctx.stroke();
-      text(`${p.built ? '✓ ' : ''}${p.name}`, p.x + 4, p.y + 20, p.built ? ACCENT : MUTED);
+      if (p.built) {
+        ctx.setLineDash([3, 6]); ctx.strokeStyle = 'rgba(94,234,212,.35)'; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(p.x + 8, p.y + 3); ctx.lineTo(p.x + p.w - 8, p.y + 3); ctx.stroke(); ctx.setLineDash([]);
+        text(`✓ ${p.name}`, p.x + 12, p.y + 18, ACCENT);
+        return;
+      }
+      ctx.fillStyle = 'rgba(148,163,184,.1)'; ctx.strokeStyle = MUTED; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.roundRect(p.x + 6, p.y, p.w - 12, 6, 3); ctx.fill(); ctx.stroke();
+      if (p.t) { ctx.fillStyle = ACCENT; ctx.beginPath(); ctx.roundRect(p.x + 6, p.y, (p.w - 12) * Math.min(1, p.t / p.need), 6, 3); ctx.fill(); }
+      text(p.name, p.x + 12, p.y + 20, MUTED);
       return;
     }
     if (p.kind === 'read') {
@@ -389,11 +418,19 @@
     const [x, y] = path[path.length - 1]; return [x, y, true];
   }
   function step(dt, now, control) {
+    if (P.dive) {
+      const d = P.dive, px = P.x, py = P.y;
+      d.t = Math.min(1, d.t + dt / 0.9);
+      const e = d.t * d.t * (3 - 2 * d.t);
+      P.x = d.a[0] + (d.b[0] - d.a[0]) * e; P.y = d.a[1] + (d.b[1] - d.a[1]) * e;
+      if (window.__portraitPoke) window.__portraitPoke(P.x + S / 2, P.y + S / 2 - scrollY, (P.x - px) * 3, (P.y - py) * 3);
+      if (d.t === 1) { P.dive = null; P.vy = 200; if (window.__portraitPoke) window.__portraitPoke(null); }
+      return;
+    }
     if (P.ride) {
       P.ride.d += dt * 620;
       const [x, y, end] = rideTo(P.ride.d);
       P.x = x - S / 2; P.y = y - S / 2;
-      if (!P.ride.scanned && Math.abs(y - level.pipe.scan[1]) < 12 && Math.abs(x - level.pipe.scan[0]) < 12) { P.ride.scanned = true; say('Monte Carlo: fresh, schema ok ✓', 1800); }
       if (end) { P.ride = null; P.form = 'pk'; P.vy = 0; say('loaded into Snowflake'); }
       return;
     }
@@ -411,15 +448,19 @@
     if (P.x > W) P.x -= W + S;
     if (P.x < -S) P.x += W + S;
     if (control && keys.jump && P.ground) { P.vy = -JUMP; P.ground = false; P.squash = -0.7; }
-    if (control && keys.down && P.ground && P.on && !P.on.floor) { P.dropUntil = now + 220; P.ground = false; }
+    if (control && keys.down && P.ground && P.on && !P.on.floor) {
+      const p = P.on, done = p.ready ? p.ready() : p.need === undefined || p.t >= p.need;
+      if (done) { P.dropUntil = now + 260; P.dropFrom = p; P.ground = false; keys.down = false; }
+      else if (now > (P.nagUntil || 0)) { P.nagUntil = now + 1500; say(p.ready ? 'read every card in this row first' : 'still reading…', 1400); }
+    }
     const prevBottom = P.y + S;
-    P.vy = Math.min(P.vy + GRAVITY * dt, 1300);
+    P.vy = Math.min(P.vy + GRAVITY * dt, 560);
     P.y += P.vy * dt;
     const was = P.on; P.on = null; P.ground = false;
     if (P.vy >= 0) {
       for (const p of level.plats) {
         if (!p.solid) continue;
-        if (now < P.dropUntil && !p.floor && p === was) continue;
+        if (now < P.dropUntil && p === P.dropFrom) continue;
         if (prevBottom <= p.y + 2 && P.y + S >= p.y && P.x + S > p.x && P.x < p.x + p.w) {
           if (P.vy > 450) P.squash = Math.min(1, P.vy / 1100);
           P.y = p.y - S; P.vy = 0; P.ground = true; P.on = p;
@@ -439,6 +480,14 @@
       else if (P.inFigure) window.__portraitPoke(null);
       P.inFigure = inside;
     }
+    const f = level.face;
+    if (f && control && P.x + S / 2 > f.x1 && P.x + S / 2 < f.x2 && P.y + S / 2 > f.y1 && P.y + S / 2 < f.y2) {
+      P.dive = { t: 0, a: [P.x, P.y], b: [f.ex - S / 2, f.ey] }; P.on = null; P.ground = false;
+      say("through Luca's head ↓", 1500);
+      return;
+    }
+    const mc = level.mc;
+    if (mc && !mc.state.checked && P.x + S / 2 > mc.x && P.x + S / 2 < mc.x + mc.w && P.y > mc.y - 4 && P.y < mc.y + 40) { mc.state.checked = true; say('Monte Carlo: fresh, schema ok ✓', 2000); }
     const b = level.bucket, cx = P.x + S / 2;
     const inBucket = cx > b.x && cx < b.x + b.w && P.y + S > b.y - 2 && P.y < b.y + b.d + 20;
     if (P.form !== 'mail') P.form = inBucket ? 'file' : 'pk';
@@ -475,7 +524,8 @@
   function rebuild() { level = build(); }
   function start() {
     if (mode === 'play') return;
-    document.querySelectorAll('.reveal').forEach(el => el.classList.add('in'));
+    document.querySelectorAll('.reveal').forEach(el => { el.style.transition = 'none'; el.classList.add('in'); });
+    void document.body.offsetHeight;
     document.documentElement.style.scrollBehavior = 'auto';
     if (mode === 'intro') endIntro();
     rebuild();
@@ -588,7 +638,7 @@
   addEventListener('resize', () => { resize(); if (level) { rebuild(); P.on = null; } });
 
   // Para probarlo desde afuera.
-  window.__pk = { activate, state: () => ({ mode, x: Math.round(P.x), y: Math.round(P.y), form: P.form, ride: !!P.ride, won, on: P.on && (P.on.kind || (P.on.floor ? 'floor' : 'ledge')), scrollY }), start, stop, keys: k => Object.assign(keys, k), place: (x, y) => { P.x = x; P.y = y; P.vy = 0; }, sim: ms => { let t = performance.now(); for (let k = 0; k < ms / 16; k++) { t += 16; step(0.016, t, mode === 'play'); } return window.__pk.state(); } };
+  window.__pk = { activate, state: () => ({ dive: !!P.dive, mode, x: Math.round(P.x), y: Math.round(P.y), form: P.form, ride: !!P.ride, won, on: P.on && (P.on.kind || (P.on.floor ? 'floor' : 'ledge')), scrollY }), start, stop, keys: k => Object.assign(keys, k), place: (x, y) => { P.x = x; P.y = y; P.vy = 0; }, sim: ms => { let t = performance.now(); for (let k = 0; k < ms / 16; k++) { t += 16; step(0.016, t, mode === 'play'); } return window.__pk.state(); } };
 
   resize();
   last = performance.now(); requestAnimationFrame(frame);
