@@ -467,3 +467,8 @@ html { scrollbar-width: thin; scrollbar-color: rgba(255, 255, 255, .16) transpar
 .card.lit::before { width: 100%; }
 .card.lit h3 { color: var(--accent); }
 .card.lit .logo { transform: rotate(-6deg) scale(1.06); }
+/* El globito al costado del muñequito, con la punta hacia él. */
+.pk-hint.side { transform: translate(0, -50%); }
+.pk-hint.side::after { left: -6px; top: 50%; bottom: auto; margin: -5px 0 0; border-width: 0 0 1px 1px; }
+.pk-hint.side.on { animation: pk-nudge-side 1.8s ease-in-out infinite; }
+@keyframes pk-nudge-side { 50% { transform: translate(5px, -50%); } }

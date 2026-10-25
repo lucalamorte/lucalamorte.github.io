@@ -1,13 +1,13 @@
-// El portfolio como nivel. Al lado del botón de la portada espera un mensaje para Luca: el de quien visita.
-// Al enviarlo, el muñequito (ese mensaje) sale disparado del sobre, cruza el retrato de Luca, cae sobre el
-// título y cuenta su misión: llegar a la casilla de Luca viajando por el mismo camino que sus datos. Se mueve con ← → ↑ o con los controles del celu; scrollear o Esc lo pausa.
+// El portfolio como nivel, contado como un camino del héroe sin exagerar: el muñequito espera junto al botón
+// de la portada; al tocarlo salta, cruza el retrato de Luca y cae sobre el título. Cada sección es una etapa
+// (el mentor, las pruebas, lo construido, las lecciones, el entrenamiento, el regreso) y el final es el contacto. Se mueve con ← → ↑ o con los controles del celu; scrollear o Esc lo pausa.
 // Es un dato que viaja por el stack hasta llegar al contacto, y cada pieza hace lo que hace de verdad:
 // todo pasa en AWS, S3 lo guarda como archivo, el DAG de Airflow lo deja pasar a horario y lo carga,
 // Monte Carlo lo revisa, en Snowflake dbt lo transforma de raw a mart, el warehouse escala mientras
 // lo usas y el hueco te deja justo arriba del primer producto, el chat de Nutrigordo contesta, las flashcards de PrimeroLab vuelven
 // más tarde, DataChinchilla salta los pasos que ya tienes, las reglas de How I work se abren al pisarlas
 // y las credenciales se sellan.
-// Los costados no son paredes: lo que sale por un lado entra por el otro.
+// El camino es siempre el mismo: los bordes de la columna son paredes y cada sección tiene una sola salida.
 (() => {
   const $ = s => document.querySelector(s);
   const hero = $('.hero'), portrait = $('#portrait');
@@ -22,13 +22,13 @@
   canvas.className = 'play-layer'; canvas.setAttribute('aria-hidden', 'true');
   const ctx = canvas.getContext('2d');
   const hit = document.createElement('button');
-  hit.type = 'button'; hit.className = 'pk-hit'; hit.setAttribute('aria-label', 'Send a message to Luca and play the portfolio as a game');
+  hit.type = 'button'; hit.className = 'pk-hit'; hit.setAttribute('aria-label', 'Start the journey: play the portfolio as a game');
   const hint = document.createElement('span');
-  hint.className = 'pk-hint'; hint.textContent = touch ? 'message for Luca · tap to send' : 'message for Luca · click to send';
+  hint.className = 'pk-hint'; hint.textContent = touch ? 'tap to start' : 'click to start the journey'; hint.classList.add('side');
   // La misión, con las teclas para moverse, en un globo sobre el muñequito.
   const mission = document.createElement('div');
   mission.className = 'pk-say'; mission.setAttribute('role', 'status');
-  mission.innerHTML = `<p>Hi! I'm your message to Luca. To reach his inbox I travel the way his data does. Take me there.</p>${touch ? '<p class="go">use the buttons below ↓</p>' : '<p class="go"><kbd>←</kbd><kbd>→</kbd> move <kbd>↑</kbd> jump</p>'}`;
+  mission.innerHTML = `<p>Your journey through Luca's work starts here. Find him at the end.</p>${touch ? '<p class="go">use the buttons below ↓</p>' : '<p class="go"><kbd>←</kbd><kbd>→</kbd> move <kbd>↑</kbd> jump</p>'}`;
   const help = document.createElement('p');
   help.className = 'play-help'; help.textContent = '← → move · ↑ jump · ↓ drop · scroll to read · esc';
   const pad = document.createElement('div');
@@ -36,13 +36,14 @@
   pad.innerHTML = '<button type="button" data-k="left" aria-label="Left">◀</button><button type="button" data-k="right" aria-label="Right">▶</button><button type="button" data-k="down" class="down" aria-label="Go down">▼</button><button type="button" data-k="jump" class="jump" aria-label="Jump">▲</button><button type="button" class="x" aria-label="Stop playing">✕</button>';
   document.body.append(canvas, hit, hint, mission, help, pad);
 
-  let fade = 1, mode = 'wait', missionUntil = 0, opened = 0, W = 0, H = 0, level = null, keys = {}, last = 0, labels = [], expected = -1, intro = null, won = false;
+  let fade = 1, mode = 'wait', missionUntil = 0, W = 0, H = 0, level = null, keys = {}, last = 0, labels = [], expected = -1, intro = null, won = false;
   const P = { x: 0, y: 0, vx: 0, vy: 0, ground: false, on: null, face: 1, squash: 0, form: 'pk', ride: null, dropUntil: 0, trail: [] };
 
   const box = el => { const r = el.getBoundingClientRect(); return { x: r.left, y: r.top + scrollY, w: r.width, h: r.height, r: r.right, b: r.bottom + scrollY }; };
   const home = () => { const b = box($('.hero h1')); return { x: b.x + 6, y: b.y + 4 - S }; };
-  // El sobre espera al lado del primer botón de la portada.
-  const envelope = () => { const b = box($('.hero .cta .btn')); return { x: b.r + 22, y: b.b - 32, w: 46, h: 32 }; };
+  // Donde espera antes de empezar: al lado del primer botón de la portada, más grande y saltando.
+  const BIG = 1.5;
+  const waitSpot = () => { const b = box($('.hero .cta .btn')); return { x: b.r + 26, y: b.b - S }; };
   // Un cartelito que flota sobre el muñequito o sobre una pieza.
   // Los diálogos siempre salen justo arriba del muñequito y lo siguen mientras se mueve.
   const readyHint = () => say(touch ? '▼ when you are ready' : '↓ when you are ready', 2200);
@@ -79,8 +80,9 @@
     const h1 = box($('.hero h1')), fig = portrait ? box(portrait) : null;
     let face = null;
     if (fig && fig.b > h1.y) {
-      // Con el retrato al costado, los hombros son un piso de lado a lado.
-      ledge(h1.x, h1.y + 4, W + 60 - h1.x, { hidden: true, floor: true });
+      // Con el retrato al costado, el título llega hasta la cara: caminando a la izquierda se entra de frente.
+      // Los hombros cierran por debajo, así que no hay otra forma de bajar.
+      ledge(fig.r - fig.w * 0.25, h1.y + 4, W + 60 - (fig.r - fig.w * 0.25), { hidden: true, floor: true });
       ledge(-60, fig.y + fig.h * 0.8, W + 120, { hidden: true, floor: true });
     } else {
       // En el celu el retrato queda arriba del título: se salta desde el título hacia la cara.
@@ -88,7 +90,8 @@
       floor(h.b - 8);
     }
     if (fig) {
-      face = { x1: fig.x + fig.w * 0.3, x2: fig.x + fig.w * 0.7, y1: fig.y + fig.h * 0.08, y2: fig.y + fig.h * (fig.b > h1.y ? 0.62 : 0.74), ex: fig.x + fig.w * 0.42, ey: h.b + 10 };
+      face = { x1: fig.x + fig.w * 0.3, x2: fig.x + fig.w * 0.7, y1: fig.y - fig.h * 0.4, y2: fig.y + fig.h * (fig.b > h1.y ? 0.62 : 0.74), ex: fig.x + fig.w * 0.42, ey: h.b + 10 };
+      if (fig.b > h1.y) things.push({ draw: () => { ctx.setLineDash([2, 6]); ctx.strokeStyle = 'rgba(94,234,212,.35)'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(fig.x, fig.y + fig.h * 0.8); ctx.lineTo(fig.r, fig.y + fig.h * 0.8); ctx.stroke(); ctx.setLineDash([]); } });
       // Un anillo que late en la cara marca por dónde se pasa.
       things.push({ draw: now => {
         if (P.y > h.b) return;
@@ -232,8 +235,10 @@
     things.push({ draw: now => drawMailbox(mailbox, now) });
     floor(ct.b - 20, []);
 
-    for (const id of ['about', 'experience', 'projects', 'principles', 'education', 'contact']) { const b = box(document.getElementById(id)); checkpoints.push({ y: b.y, x: colL + 30 }); }
-    return { plats, things, walls, face, mc: level_mc, pipe, bucket, mailbox, checkpoints, colL, colR, docH: document.documentElement.scrollHeight };
+    const STAGES = { about: 'the mentor', experience: 'the trials', projects: 'what was built', principles: 'the lessons', education: 'the training', contact: 'the return' };
+    for (const [id, stage] of Object.entries(STAGES)) { const b = box(document.getElementById(id)); checkpoints.push({ y: b.y, x: colL + 30, stage }); }
+    const bounds = { l: Math.max(0, colL - 44), r: Math.min(W, colR + 44) };
+    return { plats, things, walls, bounds, face, mc: level_mc, pipe, bucket, mailbox, checkpoints, colL, colR, docH: document.documentElement.scrollHeight };
   }
 
   // ---------- dibujo ----------
@@ -328,41 +333,12 @@
     ctx.strokeStyle = p.solid ? LINE : 'rgba(94,234,212,.15)'; ctx.lineWidth = 2; ctx.setLineDash([8, 6]);
     ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(p.x + p.w, p.y); ctx.stroke(); ctx.setLineDash([]);
   }
-  function drawEnvelope(e, now) {
-    const open = opened ? Math.min(1, (now - opened) / 300) : 0;
-    const gone = opened ? Math.min(1, Math.max(0, (now - opened - 2600) / 600)) : 0;
-    if (gone >= 1) return;
-    const hop = opened || still ? 0 : (now % 1800 < 500 ? Math.sin((now % 1800) / 500 * Math.PI) * 7 : 0);
-    const x = e.x, y = e.y - hop;
-    ctx.globalAlpha = 1 - gone;
-    ctx.fillStyle = INK; ctx.strokeStyle = ACCENT; ctx.lineWidth = 2; ctx.lineJoin = 'round';
-    ctx.shadowColor = ACCENT; ctx.shadowBlur = opened ? 0 : 12;
-    ctx.beginPath(); ctx.roundRect(x, y, e.w, e.h, 4); ctx.fill(); ctx.stroke(); ctx.shadowBlur = 0;
-    // La solapa: cerrada apunta hacia abajo, abierta se da vuelta hacia arriba.
-    const tip = y + e.h * 0.55 - open * e.h * 1.1;
-    ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + e.w / 2, tip); ctx.lineTo(x + e.w, y); ctx.stroke();
-    if (!opened) {
-      ctx.fillStyle = RED; ctx.beginPath(); ctx.arc(x + e.w - 2, y + 2, 7, 0, Math.PI * 2); ctx.fill();
-      ctx.fillStyle = '#fff'; ctx.font = '600 9px Inter, sans-serif'; ctx.textAlign = 'center'; ctx.fillText('1', x + e.w - 2, y + 5.5);
-    } else if (now - opened < 700) {
-      // El disparo: un anillo que se abre desde la boca del sobre.
-      const k = (now - opened - 250) / 450;
-      if (k > 0) { ctx.globalAlpha = (1 - k) * (1 - gone); ctx.strokeStyle = ACCENT; ctx.beginPath(); ctx.arc(x + e.w / 2, y, 6 + k * 28, 0, Math.PI * 2); ctx.stroke(); }
-    }
-    ctx.globalAlpha = 1;
-  }
   function drawPk(x, y, now) {
     if (P.form === 'dot') { ctx.shadowColor = ACCENT; ctx.shadowBlur = 14; ctx.fillStyle = ACCENT; ctx.beginPath(); ctx.arc(x + S / 2, y + S / 2, 6, 0, Math.PI * 2); ctx.fill(); ctx.shadowBlur = 0; return; }
     if (P.form === 'file') {
       ctx.fillStyle = INK; ctx.strokeStyle = ACCENT; ctx.lineWidth = 2;
       ctx.beginPath(); ctx.moveTo(x + 3, y); ctx.lineTo(x + 15, y); ctx.lineTo(x + 21, y + 6); ctx.lineTo(x + 21, y + S); ctx.lineTo(x + 3, y + S); ctx.closePath(); ctx.fill(); ctx.stroke();
       ctx.fillStyle = ACCENT; [9, 14, 19].forEach(ly => ctx.fillRect(x + 7, y + ly, 10, 2));
-      return;
-    }
-    if (P.form === 'mail') {
-      ctx.fillStyle = INK; ctx.strokeStyle = ACCENT; ctx.lineWidth = 2;
-      ctx.beginPath(); ctx.rect(x, y + 6, S, 16); ctx.fill(); ctx.stroke();
-      ctx.beginPath(); ctx.moveTo(x, y + 6); ctx.lineTo(x + S / 2, y + 15); ctx.lineTo(x + S, y + 6); ctx.stroke();
       return;
     }
     // El muñequito: se aplasta al caer, se estira al saltar, pestañea y mira hacia donde va.
@@ -394,8 +370,19 @@
     // La estela del muñequito cuando atraviesa el retrato.
     P.trail.forEach((t, k) => { ctx.globalAlpha = (k / P.trail.length) * 0.35; ctx.fillStyle = ACCENT; ctx.beginPath(); ctx.roundRect(t[0] + 4, t[1] + 4, S - 8, S - 8, 5); ctx.fill(); });
     ctx.globalAlpha = 1;
-    if (mode === 'wait' || opened) drawEnvelope(envelope(), now);
-    if (mode !== 'wait' && !(mode === 'intro' && intro && now < intro.t0) && seen(P.y)) drawPk(P.x, P.y, now);
+    if (mode === 'wait') {
+      const ws = waitSpot(), hop = still ? 0 : (now % 1600 < 520 ? Math.sin((now % 1600) / 520 * Math.PI) * 12 : 0);
+      P.face = -1;
+      ctx.save(); ctx.translate(ws.x + S / 2, ws.y + S - hop); ctx.scale(BIG, BIG); ctx.translate(-(ws.x + S / 2), -(ws.y + S));
+      drawPk(ws.x, ws.y, now); ctx.restore();
+    } else if (seen(P.y)) {
+      if (P.on && (P.on.hidden || P.on.kind === 'read') && mode === 'play') {
+        const g2 = ctx.createLinearGradient(P.x - 30, 0, P.x + S + 30, 0);
+        g2.addColorStop(0, 'rgba(94,234,212,0)'); g2.addColorStop(0.5, 'rgba(94,234,212,.75)'); g2.addColorStop(1, 'rgba(94,234,212,0)');
+        ctx.strokeStyle = g2; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(P.x - 30, P.on.y); ctx.lineTo(P.x + S + 30, P.on.y); ctx.stroke();
+      }
+      drawPk(P.x, P.y, now);
+    }
     labels = labels.filter(l => now < l.until);
     // Los diálogos, apilados sobre el muñequito y sin salirse de la pantalla.
     ctx.font = MONO;
@@ -445,8 +432,7 @@
       if (prevX + S <= w.x && P.x + S > w.x) P.x = w.x - S;
       if (prevX >= w.x && P.x < w.x) P.x = w.x;
     }
-    if (P.x > W) P.x -= W + S;
-    if (P.x < -S) P.x += W + S;
+    P.x = Math.max(level.bounds.l, Math.min(level.bounds.r - S, P.x));
     if (control && keys.jump && P.ground) { P.vy = -JUMP; P.ground = false; P.squash = -0.7; }
     if (control && keys.down && P.ground && P.on && !P.on.floor) {
       const p = P.on, done = p.ready ? p.ready() : p.need === undefined || p.t >= p.need;
@@ -490,17 +476,18 @@
     if (mc && !mc.state.checked && P.x + S / 2 > mc.x && P.x + S / 2 < mc.x + mc.w && P.y > mc.y - 4 && P.y < mc.y + 40) { mc.state.checked = true; say('Monte Carlo: fresh, schema ok ✓', 2000); }
     const b = level.bucket, cx = P.x + S / 2;
     const inBucket = cx > b.x && cx < b.x + b.w && P.y + S > b.y - 2 && P.y < b.y + b.d + 20;
-    if (P.form !== 'mail') P.form = inBucket ? 'file' : 'pk';
+    P.form = inBucket ? 'file' : 'pk';
     if (inBucket && P.y + S > b.y + b.d + 4) { P.ride = { d: 0 }; P.form = 'dot'; say('Airflow: load task running', 1500); }
 
     const m = level.mailbox;
     if (!won && P.x + S > m.x - 6 && P.x < m.x + m.w + 6 && P.y + S > m.y - 10 && P.y < m.y + m.h) {
-      won = true; P.form = 'mail'; say('delivered! now send the real one', 4000);
+      won = true; P.squash = 0.6; say('journey complete. say hi to Luca', 4000);
       const hi = $('#contact .btn'); hi.classList.remove('wiggle'); void hi.offsetWidth; hi.classList.add('wiggle');
-      setTimeout(() => { stop(); P.form = 'pk'; P.x = m.x + m.w / 2 - S / 2; P.y = m.y - S; P.vy = 0; }, 1600);
+      setTimeout(() => { stop(); P.x = m.x + m.w / 2 - S / 2; P.y = m.y - S; P.vy = 0; }, 1600);
     }
     for (const c of level.checkpoints) if (P.y > c.y + 40) level.respawn = c;
-    if (P.y > level.docH + 60) { const c = level.respawn || level.checkpoints[0]; P.x = c.x; P.y = c.y + 30; P.vy = 0; say('back on track'); }
+    if (level.respawn && level.respawn !== level.announced) { level.announced = level.respawn; say(level.respawn.stage, 1800); }
+    if (P.y > level.docH + 60) { const c = level.respawn || level.checkpoints[0]; P.x = c.x; P.y = c.y + 30; P.vy = 0; say('back to the last stage'); }
   }
 
   // ---------- cámara: sigue al muñequito pero deja leer ----------
@@ -573,15 +560,14 @@
     if (k === 1) endIntro();
   }
   function beginIntro() {
-    const spot = home(), env = envelope();
-    opened = performance.now(); hint.classList.remove('on');
-    // Sin movimiento, o si el sobre ya no está a la vista, aterriza directo.
-    if (still || !portrait || env.y < scrollY || env.y > scrollY + H) { endIntro(); return; }
-    const r = box(portrait), out = [env.x + env.w / 2 - S / 2, env.y - S];
+    const spot = home(), ws = waitSpot();
+    hint.classList.remove('on');
+    // Sin movimiento, o si ya no está a la vista, aterriza directo.
+    if (still || !portrait || ws.y < scrollY || ws.y > scrollY + H) { endIntro(); return; }
+    const r = box(portrait), out = [ws.x, ws.y];
     P.x = out[0]; P.y = out[1];
     const points = [out, [out[0] - 20, out[1] - 160], [r.r - r.w * 0.12, r.y + r.h * 0.5], [r.x + r.w * 0.15, r.y + r.h * 0.42], [r.x + r.w * 0.5, r.y + r.h * 0.02], [spot.x, spot.y]];
-    // La solapa se abre primero; el disparo sale a los 300 ms.
-    intro = { t0: opened + 300, ms: 2100, points };
+    intro = { t0: performance.now(), ms: 2100, points };
     mode = 'intro';
   }
 
@@ -592,13 +578,13 @@
     if (P.trail.length && mode !== 'intro') P.trail.shift();
     draw(now);
     // El botón invisible sobre el muñequito: para tocarlo en el celu o llegar con Tab.
-    const env = envelope(), showHit = mode === 'idle' || mode === 'wait';
+    const ws = waitSpot(), showHit = mode === 'idle' || mode === 'wait', big = S * BIG + 24;
     hit.style.display = showHit ? '' : 'none';
-    if (mode === 'wait') Object.assign(hit.style, { left: `${env.x - 10}px`, top: `${env.y - 14}px`, width: `${env.w + 20}px`, height: `${env.h + 24}px` });
+    if (mode === 'wait') Object.assign(hit.style, { left: `${ws.x + S / 2 - big / 2}px`, top: `${ws.y + S + 6 - big}px`, width: `${big}px`, height: `${big}px` });
     else if (showHit) Object.assign(hit.style, { left: `${P.x - 10}px`, top: `${P.y - 10}px`, width: '44px', height: '44px' });
-    // El globito del mail mientras espera, y la misión sobre el muñequito al aterrizar.
-    hint.classList.toggle('on', mode === 'wait' && env.y > scrollY && env.y < scrollY + H);
-    if (mode === 'wait') { hint.style.left = `${env.x + env.w / 2}px`; hint.style.top = `${env.y - 16}px`; }
+    // El globito mientras espera, y la misión sobre el muñequito al aterrizar.
+    hint.classList.toggle('on', mode === 'wait' && ws.y > scrollY && ws.y < scrollY + H);
+    if (mode === 'wait') { hint.style.left = `${ws.x + S / 2 + S * BIG / 2 + 14}px`; hint.style.top = `${ws.y + S - S * BIG / 2}px`; }
     const talk = mode === 'play' && now < missionUntil;
     mission.classList.toggle('on', talk);
     if (talk) { mission.style.left = `${Math.max(170, Math.min(W - 170, P.x + S / 2))}px`; mission.style.top = `${P.y - 16}px`; }
