@@ -28,7 +28,7 @@
   // La misión, con las teclas para moverse, en un globo sobre el muñequito.
   const mission = document.createElement('div');
   mission.className = 'pk-say'; mission.setAttribute('role', 'status');
-  mission.innerHTML = `<p>Your journey through Luca's work starts here. Find him at the end.</p>${touch ? '<p class="go">use the buttons below ↓</p>' : '<p class="go"><kbd>←</kbd><kbd>→</kbd> move <kbd>↑</kbd> jump</p>'}`;
+  mission.innerHTML = `<p>Find Luca. He's at the end.</p>${touch ? '<p class="go">use the buttons below ↓</p>' : '<p class="go"><kbd>←</kbd><kbd>→</kbd> move <kbd>↑</kbd> jump</p>'}`;
   const help = document.createElement('p');
   help.className = 'play-help'; help.textContent = '← → move · ↑ jump · ↓ drop · scroll to read · esc';
   const pad = document.createElement('div');
@@ -46,7 +46,7 @@
   const waitSpot = () => { const b = box($('.hero .cta .btn')); return { x: b.r + 26, y: b.b - S }; };
   // Un cartelito que flota sobre el muñequito o sobre una pieza.
   // Los diálogos siempre salen justo arriba del muñequito y lo siguen mientras se mueve.
-  const readyHint = () => say(touch ? '▼ when you are ready' : '↓ when you are ready', 2200);
+  const readyHint = side => { const d = touch ? '▼' : '↓'; say(side ? `door open ${side} · or ${d}` : `${d} when ready`, 2400); };
   const say = (text, ms = 2000) => { labels = labels.filter(l => l.text !== text); labels.push({ text, until: performance.now() + ms }); };
 
   // ---------- el nivel ----------
@@ -62,15 +62,32 @@
       for (const [gx, gw] of [...gaps, [W + 60, 0]]) { if (gx > x) ledge(x, y, gx - x, { floor: true, ...extra }); x = gx + gw; }
       gaps.forEach(([gx, gw]) => things.push({ draw: now => drawGap(gx + gw / 2, y, now) }));
     };
-    // Lectura obligada: paredes a los costados de una lista y cada fila es un piso. Mientras se lee, una
-    // barrita se llena; recién entonces se baja con ↓ (o se abre sola si es auto). Con ↑ se vuelve a la de arriba.
+    // Lectura obligada: paredes a los costados de una lista y, debajo de cada fila, un piso. Parado ahí se lee
+    // lo de arriba; cuando la barrita se llena se abre una compuerta en una punta (alternando lados) y se baja
+    // caminando hasta ella. La flecha ↓ es un atajo. Con auto, el piso se abre solo al terminar.
+    const GATE = 56;
+    const gated = (L, R, k, yOf, extra) => {
+      const right = k % 2 === 0;
+      const p = ledge(right ? L : L + GATE, yOf(), R - L - GATE, { kind: 'read', t: 0, ...extra });
+      const gate = ledge(right ? R - GATE : L, yOf(), GATE, { kind: 'gate', main: p });
+      p.gate = gate; p.side = right ? '→' : '←';
+      p.tick = () => { const ny = yOf(); for (const q of [p, gate]) { if (P.on === q) P.y += ny - q.y; q.y = ny; } };
+      p.open = () => { gate.solid = false; gate.open = true; };
+      return p;
+    };
     const chute = (els, top, seconds, onLand, auto = false) => {
-      const first = box(els[0]), lastRow = box(els[els.length - 1]);
-      walls.push({ x: first.x - 4, y1: top, y2: lastRow.b }, { x: first.r + 4, y1: top, y2: lastRow.b });
+      const first = box(els[0]), last = box(els[els.length - 1]), L = first.x - 4, R = first.r + 4;
+      walls.push({ x: L, y1: top, y2: last.b + 200 }, { x: R, y1: top, y2: last.b + 200 });
       els.forEach((el, k) => {
-        const b = box(el);
-        const p = ledge(first.x - 4, b.y, first.w + 8, { kind: 'read', t: 0, need: seconds, land: () => onLand(el, k), tick: () => { p.y = el.getBoundingClientRect().top + scrollY; } });
-        p.stand = dt => { if (p.t >= p.need) return; p.t += dt; if (p.t >= p.need) { if (auto) p.solid = false; else readyHint(); } };
+        const p = gated(L, R, k, () => el.getBoundingClientRect().bottom + scrollY + 4, { need: seconds, land: () => onLand(el, k) });
+        p.stand = p.gate.stand = dt => {
+          if (p.t >= p.need) return;
+          p.t += dt;
+          if (p.t < p.need) return;
+          p.open();
+          if (auto) p.solid = false; else readyHint(p.side);
+        };
+        p.gate.land = p.land;
       });
       return first;
     };
@@ -82,23 +99,15 @@
     if (fig && fig.b > h1.y) {
       // Con el retrato al costado, el título llega hasta la cara: caminando a la izquierda se entra de frente.
       // Los hombros cierran por debajo, así que no hay otra forma de bajar.
-      ledge(fig.r - fig.w * 0.25, h1.y + 4, W + 60 - (fig.r - fig.w * 0.25), { hidden: true, floor: true });
-      ledge(-60, fig.y + fig.h * 0.8, W + 120, { hidden: true, floor: true });
+      ledge(fig.r - fig.w * 0.25, h1.y + 4, W + 60 - (fig.r - fig.w * 0.25), { floor: true });
+      ledge(-60, fig.y + fig.h * 0.8, fig.r + 60, { floor: true });
     } else {
       // En el celu el retrato queda arriba del título: se salta desde el título hacia la cara.
-      ledge(h1.x, h1.y + 4, h1.w, { hidden: true, floor: true });
+      ledge(h1.x, h1.y + 4, h1.w, { floor: true });
       floor(h.b - 8);
     }
     if (fig) {
-      face = { x1: fig.x + fig.w * 0.3, x2: fig.x + fig.w * 0.7, y1: fig.y - fig.h * 0.4, y2: fig.y + fig.h * (fig.b > h1.y ? 0.62 : 0.74), ex: fig.x + fig.w * 0.42, ey: h.b + 10 };
-      if (fig.b > h1.y) things.push({ draw: () => { ctx.setLineDash([2, 6]); ctx.strokeStyle = 'rgba(94,234,212,.35)'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(fig.x, fig.y + fig.h * 0.8); ctx.lineTo(fig.r, fig.y + fig.h * 0.8); ctx.stroke(); ctx.setLineDash([]); } });
-      // Un anillo que late en la cara marca por dónde se pasa.
-      things.push({ draw: now => {
-        if (P.y > h.b) return;
-        const r = 26 + Math.sin(now / 300) * 4;
-        ctx.globalAlpha = 0.5; ctx.setLineDash([4, 6]); ctx.strokeStyle = ACCENT; ctx.lineWidth = 1.5;
-        ctx.beginPath(); ctx.arc(fig.x + fig.w * 0.5, fig.y + fig.h * 0.36, r, 0, Math.PI * 2); ctx.stroke(); ctx.setLineDash([]); ctx.globalAlpha = 1;
-      } });
+      face = { x1: fig.x + fig.w * 0.3, x2: fig.x + fig.w * 0.7, y1: fig.y + fig.h * 0.08, y2: fig.y + fig.h * (fig.b > h1.y ? 0.62 : 0.74), ex: fig.x + fig.w * 0.42, ey: h.b + 10 };
     }
 
     // About: todo pasa adentro de AWS. Los párrafos se leen de a uno, entre paredes: al caer en uno se
@@ -106,20 +115,20 @@
     const ab = box($('#about')), grid = box($('.about-grid'));
     things.push({ draw: () => { dashedBox(grid.x - 18, grid.y - 22, grid.w + 36, grid.h + 44, 26); text('AWS', grid.x - 4, grid.y - 28, ACCENT); } });
     const paras = [...document.querySelectorAll('#about .about-grid p:not(.tech-label)')];
-    const REACT = ['interesting… 65M profiles', '10 plants, 5 countries. noted', 'three live products? ok, impressed'];
+    const REACT = ["65M profiles. that's a lot of rows", '10 plants streaming live. noted', '3 products, after hours. respect'];
     const reads = { done: paras.filter(el => el.classList.contains('read')).length, total: paras.length };
     if (paras.length) chute(paras, ab.y + 40, 2.2, (el, k) => {
       if (!el.classList.contains('read')) { el.classList.add('read'); reads.done++; }
-      say(reads.done === reads.total && k === paras.length - 1 ? 'all read. Airflow can run now ↓' : REACT[k] || 'noted', 2400);
+      say(reads.done === reads.total && k === paras.length - 1 ? 'done reading. to the bucket ↓' : REACT[k] || 'noted', 2400);
     });
     const fy = ab.b - 6, bw = 84, bx = Math.max(colL + 30, 24);
     floor(fy, [[bx, bw]]);
-    const PERIOD = 5000, OPEN = 900;
-    const ready = () => reads.done >= reads.total;
-    const gateOpen = now => ready() && now % PERIOD > PERIOD - OPEN;
-    const gate = ledge(bx + 4, fy + 48, bw - 8, { tick: now => { gate.solid = !gateOpen(now); }, land: () => say(ready() ? 'stored in S3. waiting for the next Airflow run' : 'Airflow is waiting: read about Luca first ↑', 2600) });
-    const bucket = { x: bx, y: fy, w: bw, d: 52 };
-    things.push({ draw: now => drawBucket(bucket, gateOpen(now), now, PERIOD, OPEN, reads) });
+    // Airflow corre 3 segundos después de que el archivo cae al bucket (si About ya se leyó).
+    const RUN = 3000, ready = () => reads.done >= reads.total;
+    const bucket = { x: bx, y: fy, w: bw, d: 52, since: 0, ready };
+    const gateOpen = now => ready() && bucket.since && now - bucket.since >= RUN;
+    const gate = ledge(bx + 4, fy + 48, bw - 8, { tick: now => { gate.solid = !gateOpen(now); }, land: () => say(ready() ? 'zzz… waiting for Airflow' : 'you skipped the reading ↑', 2200) });
+    things.push({ draw: now => drawBucket(bucket, gateOpen(now), now, RUN, reads) });
 
     // Experience: la tarea de Airflow carga el archivo por el margen hasta Snowflake (extract y load).
     const exp = box($('#experience')), tl = box($('.tablist'));
@@ -130,23 +139,26 @@
     const pipe = { path, mouth: [bx + bw / 2, fy + 56] };
     things.push({ draw: now => drawPipe(pipe, now) });
 
-    // Snowflake es una caja cerrada: las paredes no dejan salir. Adentro, las capas de dbt van de pared a
-    // pared y se construyen de a una (raw, staging, mart): no se puede saltear ninguna. Al fondo, la salida
-    // pasa por Monte Carlo, que revisa los datos ya transformados. El warehouse escala mientras lo usas.
+    // Snowflake es una caja cerrada: las paredes no dejan salir. Adentro, todo va de pared a pared y en orden:
+    // primero se prende el warehouse (sin cómputo no corre nada), después dbt construye raw, staging y mart.
+    // No se puede saltear ninguna capa. Al fondo, la salida pasa por Monte Carlo.
     const sfW = Math.max(210, Math.min(tl.w + 28, W - wx - 16)), boxL = wx - 14, boxR = boxL + sfW, boxB = wy + 28;
     walls.push({ x: boxL, y1: top - 180, y2: boxB }, { x: boxR, y1: top - 180, y2: boxB });
-    const models = [['raw.orders', 0.8], ['stg_orders', 1.4], ['fct_orders', 1.4]].map(([name, need], k) => {
-      const m = ledge(boxL + 2, top + 60 + k * 50, sfW - 4, { kind: 'model', name, t: 0, need, built: false });
-      m.land = () => { if (!m.built) say(k === 0 ? 'loaded into raw' : `dbt run · ${name}…`, 1400); };
-      m.stand = dt => {
+    const LAYERS = [['warehouse', 1.5, 'warming up the warehouse', 'XS → M. money well spent'], ['raw.orders', 0.8, 'raw. messy, but mine', 'loaded'],
+      ['stg_orders', 1.4, 'dbt run · cleaning up', 'clean ✓'], ['fct_orders', 1.4, 'dbt run · almost useful', 'dbt build ✓ · 0 failed tests']];
+    LAYERS.forEach(([name, need, start, done], k) => {
+      const m = gated(boxL + 2, boxR - 2, k, () => top + 50 + k * 50, { kind: 'model', name, need, built: false });
+      if (k === 0) m.label = () => m.built ? 'warehouse M · running' : `warehouse ${['XS', 'S', 'M'][Math.min(2, Math.floor(m.t / m.need * 3))]}`;
+      m.land = () => { if (!m.built) say(start, 1400); };
+      m.stand = m.gate.stand = dt => {
         if (m.built) return;
         m.t += dt;
-        if (m.t >= m.need) { m.built = true; say(k === 2 ? 'dbt build done ✓' : `${name} ✓`, 1400); readyHint(); }
+        if (m.t >= m.need) { m.built = true; m.open(); say(done, 1600); setTimeout(() => readyHint(m.side), 900); }
       };
-      return m;
+      m.gate.land = m.land;
     });
     const hatch = { x: boxR - 74, w: 58 };
-    ledge(boxL, boxB, hatch.x - boxL, { floor: true, land: () => say('the way out is Monte Carlo →', 1800) });
+    ledge(boxL, boxB, hatch.x - boxL, { floor: true, land: () => say('exit →', 1400) });
     ledge(hatch.x + hatch.w, boxB, boxR - hatch.x - hatch.w, { floor: true });
     const mc = { checked: false };
     things.push({ draw: now => {
@@ -163,16 +175,6 @@
       text('Monte Carlo', cx, boxB + 44, ACCENT, 'center');
     } });
     level_mc = { x: hatch.x, w: hatch.w, y: boxB, state: mc };
-    const SIZES = ['XS', 'S', 'M', 'L', 'XL'], maxW = sfW - 28;
-    const wh = ledge(wx, wy, 56, { size: 0, idle: 0, grow: 0, kind: 'warehouse' });
-    wh.land = () => say(wh.size ? 'warehouse resumed' : 'warehouse running · it scales while you use it', 2200);
-    wh.stand = dt => { wh.idle = 0; wh.grow += dt; if (wh.grow > 0.55 && wh.size < SIZES.length - 1) { wh.size++; wh.grow = 0; say(`warehouse scaled up to ${SIZES[wh.size]}`, 900); } };
-    wh.tick = (now, dt) => {
-      if (P.on !== wh) { wh.grow = 0; wh.idle += dt; if (wh.idle > 1.6 && wh.size) { wh.size = 0; } }
-      const target = 56 + (maxW - 56) * wh.size / (SIZES.length - 1);
-      wh.w += (target - wh.w) * Math.min(1, dt * 6);
-    };
-    wh.label = () => SIZES[wh.size];
     // El piso es la línea de una planta, en tiempo real: te lleva hacia la salida.
     // El hueco de salida cae sobre la primera tarjeta de Projects.
     const card0 = $('#projects .card'), c0 = card0 ? box(card0) : { r: colR, w: 200 };
@@ -189,24 +191,29 @@
     if (cardEls.length) {
       const gridBox = box($('#projects .projects'));
       walls.push({ x: gridBox.x - 4, y1: box($('#projects')).y + 40, y2: gridBox.b }, { x: gridBox.r + 4, y1: box($('#projects')).y + 40, y2: gridBox.b });
-      const byRow = new Map();
-      cardEls.forEach((el, k) => {
-        const c = box(el), key = Math.round(c.y);
-        const p = ledge(c.x - (c.x - gridBox.x < 20 ? 4 : 8), c.y, c.w + 16, { kind: 'read', t: 0, need: 2.4, row: key, land: () => {
-          cardEls.forEach(other => other.classList.toggle('lit', other === el));
-          const [ask, answer] = USE[k] || ['', ''];
-          if (ask && !el.dataset.used) { el.dataset.used = '1'; say(ask, 1300); setTimeout(() => say(answer, 2600), 1100); }
-        } });
-        p.stand = dt => {
-          if (p.t >= p.need) return;
-          p.t += dt;
-          if (p.t < p.need) return;
-          const mates = byRow.get(key);
-          if (mates.every(q => q.t >= q.need)) readyHint();
-          else say('now the one next to it →', 1600);
+      const NEED = 2.4, byRow = new Map();
+      cardEls.forEach((el, k) => { const c = box(el), key = Math.round(c.y); byRow.set(key, [...(byRow.get(key) || []), { el, k, x: c.x, r: c.r, w: c.w, t: 0 }]); });
+      [...byRow.values()].forEach((cards, r) => {
+        const yOf = () => Math.max(...cards.map(c => c.el.getBoundingClientRect().bottom)) + scrollY + 4;
+        const p = gated(gridBox.x - 4, gridBox.r + 4, r, yOf, { cards, need: NEED });
+        let current = null;
+        p.ready = () => cards.every(c => c.t >= NEED);
+        // Parado debajo de una tarjeta se la lee: se enciende y el muñequito usa el producto.
+        p.stand = p.gate.stand = dt => {
+          const cx = P.x + S / 2, c = cards.find(q => cx >= q.x - 8 && cx <= q.r + 8);
+          if (!c) return;
+          if (current !== c) {
+            current = c;
+            cardEls.forEach(other => other.classList.toggle('lit', other === c.el));
+            const [ask, answer] = USE[c.k] || ['', ''];
+            if (ask && !c.el.dataset.used) { c.el.dataset.used = '1'; say(ask, 1300); setTimeout(() => say(answer, 2600), 1100); }
+          }
+          if (c.t >= NEED) return;
+          c.t += dt;
+          if (c.t < NEED) return;
+          if (p.ready()) { p.open(); readyHint(p.side); }
+          else say(cards.findIndex(q => q.t < NEED) > cards.indexOf(c) ? 'next one →' : 'next one ←', 1800);
         };
-        p.ready = () => byRow.get(key).every(q => q.t >= q.need);
-        byRow.set(key, [...(byRow.get(key) || []), p]);
       });
     }
     const rows = [...document.querySelectorAll('.pr-item')], how = box($('#principles'));
@@ -249,20 +256,22 @@
   }
   function dashedBox(x, y, w, h, r) { ctx.setLineDash([3, 7]); ctx.strokeStyle = 'rgba(94,234,212,.3)'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.roundRect(x, y, w, h, r); ctx.stroke(); ctx.setLineDash([]); }
   function drawGap(x, y, now) { const k = Math.sin(now / 250) * 3; text('↓', x, y + 4 + k, ACCENT, 'center', '14px "JetBrains Mono", monospace'); }
-  function drawBucket(b, open, now, period, openFor, reads) {
+  function drawBucket(b, open, now, run, reads) {
     ctx.strokeStyle = ACCENT; ctx.lineWidth = 2; ctx.beginPath();
     ctx.moveTo(b.x - 6, b.y); ctx.lineTo(b.x + 6, b.y + b.d); ctx.lineTo(b.x + b.w - 6, b.y + b.d); ctx.lineTo(b.x + b.w + 6, b.y); ctx.stroke();
     ctx.beginPath(); ctx.ellipse(b.x + b.w / 2, b.y, b.w / 2 + 6, 5, 0, 0, Math.PI * 2); ctx.stroke();
     if (open) { ctx.fillStyle = INK; ctx.fillRect(b.x + 8, b.y + b.d - 2, b.w - 16, 4); }
     text('S3', b.x + b.w / 2, b.y + b.d / 2 + 6, ACCENT, 'center');
-    // El DAG de Airflow: una tarea por párrafo leído; con las tres hechas corre a horario y abre la compuerta.
-    const cx = b.x + b.w + 22, cy = b.y + 22, left = (period - openFor - (now % period)) / 1000;
+    // El DAG de Airflow: una tarea por párrafo leído; con las tres hechas, 3 segundos después de entrar corre.
+    const cx = b.x + b.w + 22, cy = b.y + 22, left = b.since ? Math.max(0, (run - (now - b.since)) / 1000) : run / 1000;
     const all = reads.done >= reads.total;
     const nodes = [[cx, cy], [cx + 22, cy - 9], [cx + 22, cy + 9], [cx + 44, cy]];
     ctx.strokeStyle = MUTED; ctx.lineWidth = 1.2; ctx.beginPath();
     [[0, 1], [0, 2], [1, 3], [2, 3]].forEach(([a, z]) => { ctx.moveTo(nodes[a][0], nodes[a][1]); ctx.lineTo(nodes[z][0], nodes[z][1]); }); ctx.stroke();
     nodes.forEach(([x, y], k) => { const on = k === 3 ? open : k === 0 ? reads.done >= 1 : k === 1 ? reads.done >= 2 : all; ctx.fillStyle = on ? ACCENT : INK; ctx.strokeStyle = on ? ACCENT : MUTED; ctx.beginPath(); ctx.arc(x, y, 4, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); });
-    text(!all ? `Airflow: read about Luca first · ${reads.done}/${reads.total}` : open ? 'Airflow: DAG running' : `Airflow: next run ${Math.max(0, left).toFixed(0)}s`, cx + 54, cy + 4, open ? ACCENT : MUTED);
+    text(!all ? `Airflow: read about Luca first · ${reads.done}/${reads.total}` : open ? 'Airflow: DAG running' : b.since ? 'Airflow: run starts in' : 'Airflow: drop the file in S3', cx + 54, cy + 4, open ? ACCENT : MUTED);
+    // La cuenta, grande, arriba del bucket.
+    if (all && b.since && !open) text(String(Math.ceil(left)), b.x + b.w / 2, b.y - 22, ACCENT, 'center', '600 28px "JetBrains Mono", monospace');
   }
   function drawPipe(p, now) {
     ctx.lineJoin = 'round'; ctx.lineCap = 'round';
@@ -302,31 +311,33 @@
   }
   function drawPlat(p, now) {
     if (p.hidden) return;
-    if (p.kind === 'warehouse') {
-      const on = p.size > 0;
-      ctx.fillStyle = on ? 'rgba(94,234,212,.22)' : 'rgba(148,163,184,.12)'; ctx.strokeStyle = on ? ACCENT : MUTED; ctx.lineWidth = 1.5;
-      ctx.beginPath(); ctx.roundRect(p.x, p.y, p.w, 7, 3); ctx.fill(); ctx.stroke();
-      snowflake(p.x + 10, p.y + 18, 6, on ? ACCENT : MUTED);
-      text(`warehouse ${p.label()}`, p.x + 22, p.y + 22, on ? ACCENT : MUTED);
-      return;
-    }
     if (p.kind === 'model') {
       if (p.built) {
         ctx.setLineDash([3, 6]); ctx.strokeStyle = 'rgba(94,234,212,.35)'; ctx.lineWidth = 1;
         ctx.beginPath(); ctx.moveTo(p.x + 8, p.y + 3); ctx.lineTo(p.x + p.w - 8, p.y + 3); ctx.stroke(); ctx.setLineDash([]);
-        text(`✓ ${p.name}`, p.x + 12, p.y + 18, ACCENT);
+        text(`✓ ${p.label ? p.label() : p.name}`, p.x + 12, p.y + 18, ACCENT);
         return;
       }
       ctx.fillStyle = 'rgba(148,163,184,.1)'; ctx.strokeStyle = MUTED; ctx.lineWidth = 1.5;
       ctx.beginPath(); ctx.roundRect(p.x + 6, p.y, p.w - 12, 6, 3); ctx.fill(); ctx.stroke();
       if (p.t) { ctx.fillStyle = ACCENT; ctx.beginPath(); ctx.roundRect(p.x + 6, p.y, (p.w - 12) * Math.min(1, p.t / p.need), 6, 3); ctx.fill(); }
-      text(p.name, p.x + 12, p.y + 20, MUTED);
+      text(p.label ? p.label() : p.name, p.x + 12, p.y + 20, MUTED);
+      if (p.label && !p.built) snowflake(p.x + p.w - 18, p.y + 16, 5, p.t ? ACCENT : MUTED);
       return;
     }
     if (p.kind === 'read') {
-      if (!p.t || !p.solid) return;
-      ctx.strokeStyle = ACCENT; ctx.lineWidth = 2;
-      ctx.beginPath(); ctx.moveTo(p.x + 4, p.y); ctx.lineTo(p.x + 4 + (p.w - 8) * Math.min(1, p.t / p.need), p.y); ctx.stroke();
+      if (!p.solid) return;
+      ctx.setLineDash([2, 6]); ctx.strokeStyle = 'rgba(148,163,184,.45)'; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(p.x + p.w, p.y); ctx.stroke(); ctx.setLineDash([]);
+      ctx.strokeStyle = ACCENT; ctx.lineWidth = 2; ctx.beginPath();
+      if (p.cards) p.cards.forEach(c => { if (c.t) { const x0 = Math.max(p.x, c.x); ctx.moveTo(x0, p.y); ctx.lineTo(x0 + (Math.min(c.r, p.x + p.w) - x0) * Math.min(1, c.t / p.need), p.y); } });
+      else if (p.t) { ctx.moveTo(p.x, p.y); ctx.lineTo(p.x + p.w * Math.min(1, p.t / p.need), p.y); }
+      ctx.stroke();
+      return;
+    }
+    if (p.kind === 'gate') {
+      if (p.open) { drawGap(p.x + p.w / 2, p.y, now); return; }
+      ctx.strokeStyle = MUTED; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(p.x + 3, p.y); ctx.lineTo(p.x + p.w - 3, p.y); ctx.stroke();
       return;
     }
     if (p.floor) { ctx.strokeStyle = FAINT; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(p.x + p.w, p.y); ctx.stroke(); return; }
@@ -359,6 +370,10 @@
     const seen = (y, h = 0) => y + h > top - 120 && y < top + H + 120;
     if (mode === 'play' && level) {
       for (const t of level.things) t.draw(now);
+      ctx.setLineDash([2, 8]); ctx.strokeStyle = 'rgba(148,163,184,.25)'; ctx.lineWidth = 1; ctx.beginPath();
+      for (const w of level.walls) { const y1 = Math.max(w.y1, top - 20), y2 = Math.min(w.y2, top + H + 20); if (y2 > y1) { ctx.moveTo(w.x, y1); ctx.lineTo(w.x, y2); } }
+      for (const x of [level.bounds.l, level.bounds.r]) { ctx.moveTo(x, top); ctx.lineTo(x, top + H); }
+      ctx.stroke(); ctx.setLineDash([]);
       // Lo que queda lejos del muñequito se apaga, para que el texto de la página se lea tranquilo.
       for (const p of level.plats) {
         if (!seen(p.y)) continue;
@@ -418,7 +433,7 @@
       P.ride.d += dt * 620;
       const [x, y, end] = rideTo(P.ride.d);
       P.x = x - S / 2; P.y = y - S / 2;
-      if (end) { P.ride = null; P.form = 'pk'; P.vy = 0; say('loaded into Snowflake'); }
+      if (end) { P.ride = null; P.form = 'pk'; P.vy = 0; say('brr. cold in here', 1600); }
       return;
     }
     for (const p of level.plats) if (p.tick) p.tick(now, dt);
@@ -435,9 +450,9 @@
     P.x = Math.max(level.bounds.l, Math.min(level.bounds.r - S, P.x));
     if (control && keys.jump && P.ground) { P.vy = -JUMP; P.ground = false; P.squash = -0.7; }
     if (control && keys.down && P.ground && P.on && !P.on.floor) {
-      const p = P.on, done = p.ready ? p.ready() : p.need === undefined || p.t >= p.need;
-      if (done) { P.dropUntil = now + 260; P.dropFrom = p; P.ground = false; keys.down = false; }
-      else if (now > (P.nagUntil || 0)) { P.nagUntil = now + 1500; say(p.ready ? 'read every card in this row first' : 'still reading…', 1400); }
+      const p = P.on.main || P.on, done = p.ready ? p.ready() : p.need === undefined || p.t >= p.need;
+      if (done) { P.dropUntil = now + 260; P.dropFrom = P.on; P.ground = false; keys.down = false; }
+      else if (now > (P.nagUntil || 0)) { P.nagUntil = now + 1500; say(p.cards ? 'not so fast. read them all' : 'still reading…', 1400); }
     }
     const prevBottom = P.y + S;
     P.vy = Math.min(P.vy + GRAVITY * dt, 560);
@@ -469,25 +484,27 @@
     const f = level.face;
     if (f && control && P.x + S / 2 > f.x1 && P.x + S / 2 < f.x2 && P.y + S / 2 > f.y1 && P.y + S / 2 < f.y2) {
       P.dive = { t: 0, a: [P.x, P.y], b: [f.ex - S / 2, f.ey] }; P.on = null; P.ground = false;
-      say("through Luca's head ↓", 1500);
+      say('excuse me', 1200);
       return;
     }
     const mc = level.mc;
-    if (mc && !mc.state.checked && P.x + S / 2 > mc.x && P.x + S / 2 < mc.x + mc.w && P.y > mc.y - 4 && P.y < mc.y + 40) { mc.state.checked = true; say('Monte Carlo: fresh, schema ok ✓', 2000); }
+    if (mc && !mc.state.checked && P.x + S / 2 > mc.x && P.x + S / 2 < mc.x + mc.w && P.y > mc.y - 4 && P.y < mc.y + 40) { mc.state.checked = true; say('Monte Carlo: no anomalies. phew', 2000); }
     const b = level.bucket, cx = P.x + S / 2;
+    const inside = cx > b.x && cx < b.x + b.w && P.y + S > b.y - 2 && P.y < b.y + b.d + 20;
+    if (!inside) b.since = 0; else if (!b.since && b.ready()) b.since = now;
     const inBucket = cx > b.x && cx < b.x + b.w && P.y + S > b.y - 2 && P.y < b.y + b.d + 20;
     P.form = inBucket ? 'file' : 'pk';
-    if (inBucket && P.y + S > b.y + b.d + 4) { P.ride = { d: 0 }; P.form = 'dot'; say('Airflow: load task running', 1500); }
+    if (inBucket && P.y + S > b.y + b.d + 4) { P.ride = { d: 0 }; P.form = 'dot'; say('wheee', 1200); }
 
     const m = level.mailbox;
     if (!won && P.x + S > m.x - 6 && P.x < m.x + m.w + 6 && P.y + S > m.y - 10 && P.y < m.y + m.h) {
-      won = true; P.squash = 0.6; say('journey complete. say hi to Luca', 4000);
+      won = true; P.squash = 0.6; say('found him. say hi', 4000);
       const hi = $('#contact .btn'); hi.classList.remove('wiggle'); void hi.offsetWidth; hi.classList.add('wiggle');
       setTimeout(() => { stop(); P.x = m.x + m.w / 2 - S / 2; P.y = m.y - S; P.vy = 0; }, 1600);
     }
     for (const c of level.checkpoints) if (P.y > c.y + 40) level.respawn = c;
     if (level.respawn && level.respawn !== level.announced) { level.announced = level.respawn; say(level.respawn.stage, 1800); }
-    if (P.y > level.docH + 60) { const c = level.respawn || level.checkpoints[0]; P.x = c.x; P.y = c.y + 30; P.vy = 0; say('back to the last stage'); }
+    if (P.y > level.docH + 60) { const c = level.respawn || level.checkpoints[0]; P.x = c.x; P.y = c.y + 30; P.vy = 0; say('oops. back a bit'); }
   }
 
   // ---------- cámara: sigue al muñequito pero deja leer ----------
@@ -509,13 +526,47 @@
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   }
   function rebuild() { level = build(); }
+  // Si se entra a un proyecto y se vuelve, el muñequito y lo ya leído siguen donde estaban.
+  const SAVE = 'pk-progress';
+  function snapshot() {
+    if (!level) return null;
+    return {
+      x: P.x, y: P.y, won,
+      reads: [...document.querySelectorAll('#about .about-grid p.read')].map(el => [...el.parentNode.children].indexOf(el)),
+      plats: level.plats.map((p, i) => (p.t || p.built || p.solid === false || (p.gate && p.gate.open)) ? { i, t: p.t, b: p.built, s: p.solid, o: !!(p.gate && p.gate.open), c: p.cards && p.cards.map(c => c.t) } : null).filter(Boolean),
+    };
+  }
+  function apply(snap) {
+    for (const st of snap.plats) {
+      const p = level.plats[st.i];
+      if (!p) continue;
+      p.t = st.t; p.built = st.b; p.solid = st.s;
+      if (st.o && p.open) p.open();
+      if (st.c && p.cards) p.cards.forEach((c, k) => { c.t = st.c[k] || 0; });
+    }
+    P.x = snap.x; P.y = snap.y; P.vy = 0; P.on = null; won = snap.won;
+  }
+  addEventListener('pagehide', () => { const snap = mode === 'wait' || mode === 'intro' ? null : snapshot(); try { if (snap) sessionStorage.setItem(SAVE, JSON.stringify(snap)); } catch (e) {} });
+  function restore() {
+    let snap = null;
+    try { snap = JSON.parse(sessionStorage.getItem(SAVE) || 'null'); } catch (e) {}
+    if (!snap) return;
+    const ps = [...document.querySelectorAll('#about .about-grid > div > *')];
+    snap.reads.forEach(k => { const el = document.querySelector('#about .about-grid > div').children[k]; if (el) el.classList.add('read'); });
+    document.querySelectorAll('.reveal').forEach(el => { el.style.transition = 'none'; el.classList.add('in'); });
+    void document.body.offsetHeight;
+    rebuild(); apply(snap); mode = 'idle';
+  }
   function start() {
     if (mode === 'play') return;
     document.querySelectorAll('.reveal').forEach(el => { el.style.transition = 'none'; el.classList.add('in'); });
     void document.body.offsetHeight;
     document.documentElement.style.scrollBehavior = 'auto';
     if (mode === 'intro') endIntro();
+    // El nivel se mide de nuevo, pero sin perder lo ya hecho.
+    const snap = level && snapshot();
     rebuild();
+    if (snap) apply(snap);
     // Si el muñequito quedó lejos de lo que estás mirando, cae desde arriba de la pantalla.
     if (P.y < scrollY - 20 || P.y > scrollY + H) { P.x = level.colL + 30; P.y = scrollY + 70; P.vy = 0; P.on = null; }
     mode = 'play'; keys = {}; expected = scrollY;
@@ -621,11 +672,12 @@
     ['pointerup', 'pointercancel', 'lostpointercapture'].forEach(type => button.addEventListener(type, off));
   });
   pad.querySelector('.x').addEventListener('click', () => stop());
-  addEventListener('resize', () => { resize(); if (level) { rebuild(); P.on = null; } });
+  addEventListener('resize', () => { resize(); if (level) { const snap = snapshot(); rebuild(); apply(snap); } });
 
   // Para probarlo desde afuera.
   window.__pk = { activate, state: () => ({ dive: !!P.dive, mode, x: Math.round(P.x), y: Math.round(P.y), form: P.form, ride: !!P.ride, won, on: P.on && (P.on.kind || (P.on.floor ? 'floor' : 'ledge')), scrollY }), start, stop, keys: k => Object.assign(keys, k), place: (x, y) => { P.x = x; P.y = y; P.vy = 0; }, sim: ms => { let t = performance.now(); for (let k = 0; k < ms / 16; k++) { t += 16; step(0.016, t, mode === 'play'); } return window.__pk.state(); } };
 
   resize();
+  if (document.readyState === 'complete') restore(); else addEventListener('load', restore);
   last = performance.now(); requestAnimationFrame(frame);
 })();
