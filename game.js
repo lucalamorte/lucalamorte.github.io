@@ -29,11 +29,13 @@
   const mission = document.createElement('div');
   mission.className = 'pk-say'; mission.setAttribute('role', 'status');
   mission.innerHTML = `<p>Find Luca. He's at the end.</p>${touch ? '<p class="go">use the buttons below ↓</p>' : '<p class="go"><kbd>←</kbd><kbd>→</kbd> move <kbd>↑</kbd> jump</p>'}`;
-  const help = document.createElement('p');
-  help.className = 'play-help'; help.textContent = '← → move · ↑ jump · ↓ drop · scroll to read · esc';
+  // El panel fijo con los controles y el botón para reiniciar; aparece cuando el juego ya empezó.
+  const help = document.createElement('div');
+  help.className = 'play-help';
+  help.innerHTML = '<span><kbd>←</kbd><kbd>→</kbd> move</span><span><kbd>↑</kbd> jump</span><span><kbd>↓</kbd> down</span><span><kbd>esc</kbd> pause</span><button type="button" class="restart">↺ restart</button>';
   const pad = document.createElement('div');
   pad.className = 'pad'; pad.hidden = true;
-  pad.innerHTML = '<button type="button" data-k="left" aria-label="Left">◀</button><button type="button" data-k="right" aria-label="Right">▶</button><button type="button" data-k="down" class="down" aria-label="Go down">▼</button><button type="button" data-k="jump" class="jump" aria-label="Jump">▲</button><button type="button" class="x" aria-label="Stop playing">✕</button>';
+  pad.innerHTML = '<button type="button" data-k="left" aria-label="Left">◀</button><button type="button" data-k="right" aria-label="Right">▶</button><button type="button" data-k="down" class="down" aria-label="Go down">▼</button><button type="button" data-k="jump" class="jump" aria-label="Jump">▲</button><button type="button" class="x" aria-label="Stop playing">✕</button><button type="button" class="restart re" aria-label="Restart the game">↺</button>';
   document.body.append(canvas, hit, hint, mission, help, pad);
 
   let fade = 1, mode = 'wait', missionUntil = 0, W = 0, H = 0, level = null, keys = {}, last = 0, labels = [], expected = -1, intro = null, won = false;
@@ -521,6 +523,15 @@
     document.documentElement.style.scrollBehavior = '';
     document.body.classList.remove('playing'); pad.hidden = true;
   }
+  function restart() {
+    try { sessionStorage.removeItem(SAVE); } catch (e) {}
+    document.querySelectorAll('#about .stat, #projects .card').forEach(el => { el.classList.remove('read', 'lit'); delete el.dataset.said; delete el.dataset.used; });
+    won = false; labels = []; P.ride = null; P.dive = null; P.form = 'pk'; P.vy = 0; P.on = null;
+    document.body.classList.remove('playing'); pad.hidden = true;
+    rebuild();
+    document.documentElement.style.scrollBehavior = 'auto'; scrollTo(0, 0);
+    mode = 'wait'; beginIntro();
+  }
   function endIntro() {
     intro = null; P.trail = []; if (window.__portraitPoke) window.__portraitPoke(null);
     const spot = home(); P.x = spot.x; P.y = spot.y; P.vy = 0; mode = 'idle';
@@ -585,6 +596,7 @@
       hint.style.left = `${side ? ws.x + S / 2 + S * BIG / 2 + 14 : Math.min(W - 70, ws.x + S / 2)}px`;
       hint.style.top = `${side ? ws.y + S - S * BIG / 2 : ws.y + S - S * BIG - 14}px`;
     }
+    help.classList.toggle('on', !!level && (mode === 'play' || mode === 'idle'));
     const talk = mode === 'play' && now < missionUntil;
     mission.classList.toggle('on', talk);
     if (talk) { mission.style.left = `${Math.max(170, Math.min(W - 170, P.x + S / 2))}px`; mission.style.top = `${P.y - 16}px`; }
@@ -621,6 +633,7 @@
     ['pointerup', 'pointercancel', 'lostpointercapture'].forEach(type => button.addEventListener(type, off));
   });
   pad.querySelector('.x').addEventListener('click', () => stop());
+  document.querySelectorAll('.restart').forEach(button => button.addEventListener('click', event => { event.stopPropagation(); restart(); }));
   addEventListener('resize', () => { resize(); if (level) { const snap = snapshot(); rebuild(); apply(snap); } });
 
   // Para probarlo desde afuera.

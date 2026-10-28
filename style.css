@@ -448,8 +448,14 @@ html { scrollbar-width: thin; scrollbar-color: rgba(255, 255, 255, .16) transpar
 .pad.pulse button[data-k] { animation: pad-pulse .9s ease 3; }
 @keyframes pad-pulse { 50% { box-shadow: 0 0 0 10px rgba(94, 234, 212, .18); border-color: var(--accent); } }
 @media (prefers-reduced-motion: reduce) { .pk-hint.on, .pad.pulse button[data-k] { animation: none; } }
-.play-help { position: fixed; left: 50%; bottom: 18px; z-index: 21; margin: 0; padding: 6px 12px; border-radius: 8px; background: rgba(11, 17, 32, .88); font-family: var(--mono); font-size: .72rem; color: var(--muted); white-space: nowrap; transform: translateX(-50%); opacity: 0; pointer-events: none; transition: opacity .3s; }
-.playing .play-help { opacity: 1; }
+/* Panel fijo de controles, abajo a la derecha. */
+.play-help { position: fixed; right: 18px; bottom: 18px; z-index: 24; display: flex; align-items: center; gap: 12px; padding: 8px 10px 8px 14px; border: 1px solid var(--border-strong); border-radius: 12px; background: rgba(11, 17, 32, .9); backdrop-filter: blur(8px); font-family: var(--mono); font-size: .7rem; color: var(--muted); opacity: 0; pointer-events: none; transform: translateY(8px); transition: opacity .3s, transform .3s; }
+.play-help.on { opacity: 1; pointer-events: auto; transform: none; }
+.play-help span { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
+.play-help kbd { display: inline-grid; place-items: center; min-width: 22px; height: 22px; padding: 0 4px; border: 1px solid var(--border-strong); border-bottom-width: 2px; border-radius: 5px; color: var(--text-2); font: inherit; }
+.play-help .restart { height: 28px; padding: 0 10px; border: 1px solid var(--accent-line); border-radius: 8px; background: transparent; color: var(--accent); font: inherit; cursor: pointer; }
+.play-help .restart:hover { background: var(--accent-tint); }
+.pad .re { position: fixed; top: 76px; right: 64px; width: 40px; height: 40px; font-size: 16px; }
 .pad { position: fixed; left: 0; right: 0; bottom: 0; z-index: 25; display: flex; align-items: flex-end; gap: 14px; padding: 0 18px calc(18px + env(safe-area-inset-bottom)); pointer-events: none; }
 .pad[hidden] { display: none; }
 .pad button { pointer-events: auto; width: 64px; height: 64px; border-radius: 50%; border: 1px solid var(--accent-line); background: rgba(11, 17, 32, .72); color: var(--accent); font-size: 20px; touch-action: none; -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; backdrop-filter: blur(6px); }
@@ -502,3 +508,13 @@ main { max-width: 1240px; }
 .page { padding-top: 24px; }
 @media (max-width: 760px) { .stats { grid-template-columns: 1fr; gap: 8px; } .hero { min-height: auto; } }
 @media (max-width: 760px) { .hero { grid-template-columns: minmax(0, 1fr); } .portrait canvas { max-width: 300px; } .hero h1 { font-size: clamp(2.4rem, 11vw, 3.2rem); } }
+/* Sin líneas separadoras al leer: solo aparecen mientras se juega, porque ahí son el piso del muñequito. */
+h2::after { display: none; }
+.nav { border-bottom-color: transparent; }
+footer { border-top: 0; }
+.card, .stat { border-top-color: transparent; }
+.playing .card, .playing .stat { border-top-color: var(--border); }
+.playing .stat.lit, .playing .stat.read { border-top-color: var(--accent-line); }
+.case { border-top: 0; }
+.list, .list li { border-top: 0; border-bottom: 0; }
+.pr-item, .pr-list { border-bottom: 0 !important; border-top: 0 !important; }
