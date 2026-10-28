@@ -518,3 +518,15 @@ footer { border-top: 0; }
 .case { border-top: 0; }
 .list, .list li { border-top: 0; border-bottom: 0; }
 .pr-item, .pr-list { border-bottom: 0 !important; border-top: 0 !important; }
+/* Lo más importante, primero y grande: lo construido en Kimberly-Clark. */
+.flagship { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 40px; }
+.card.big h3 { font-size: 1.6rem; letter-spacing: -.03em; }
+.card.big p { font-size: 1rem; color: var(--text-2); }
+.card.big .badge { width: 34px; height: 34px; }
+.card.big .badge svg { width: 30px; height: 30px; }
+.nums { display: flex; flex-wrap: wrap; gap: 8px 32px; margin: 4px 0 22px; padding: 0; list-style: none; }
+.nums li { display: flex; flex-direction: column; font-size: .82rem; color: var(--muted); }
+.nums b { color: var(--accent); font-size: 1.7rem; font-weight: 700; letter-spacing: -.03em; line-height: 1.15; }
+.card.big .visual { order: 0; margin: 0 0 14px; }
+.stat small { display: block; margin-top: 10px; font-family: var(--mono); font-size: .72rem; color: var(--accent); opacity: .85; }
+@media (max-width: 980px) { .flagship { grid-template-columns: 1fr; } }

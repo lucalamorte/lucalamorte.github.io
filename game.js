@@ -131,6 +131,11 @@
     rowRead(statEls, box($('#about')).y - 20, 1.6, c => { if (REACT[c.k] && !c.el.dataset.said) { c.el.dataset.said = '1'; say(REACT[c.k], 2200); } },
       c => { if (!c.el.classList.contains('read')) { c.el.classList.add('read'); reads.done++; } });
 
+    // Lo construido en Kimberly-Clark: las dos tarjetas grandes, cada una con su comentario.
+    const flagEls = [...document.querySelectorAll('#flagship .card')];
+    const WOW = ["$260K a month, gone. nice", "10 plants. that's a lot of machines"];
+    rowRead(flagEls, box($('#flagship')).y + 40, 1.8, c => { if (WOW[c.k] && !c.el.dataset.said) { c.el.dataset.said = '1'; say(WOW[c.k], 2400); } });
+
     // Productos: el muñequito usa cada uno mientras lo lee.
     const cardEls = [...document.querySelectorAll('#projects .card')];
     const USE = [['2 eggs and toast', 'logged · 412 kcal ✓'], ['what is RAG?', 'search + generate ✓ · see you in 3 days'], ['I want to be a data engineer', 'your path: only what you miss']];
@@ -207,7 +212,7 @@
     things.push({ draw: now => drawMailbox(mailbox, now) });
     floor(btn.b, []);
 
-    const STAGES = { about: 'the numbers', projects: 'what was built', experience: 'the trials', contact: 'the return' };
+    const STAGES = { about: 'the numbers', flagship: 'the big ones', projects: 'what was built', experience: 'the trials', contact: 'the return' };
     for (const [id, stage] of Object.entries(STAGES)) { const b = box(document.getElementById(id)); checkpoints.push({ y: b.y, x: colL + 30, stage }); }
     const bounds = { l: Math.max(0, colL - 44), r: Math.min(W, colR + 44) };
     return { plats, things, walls, bounds, face, mc: level_mc, pipe, bucket, mailbox, checkpoints, colL, colR, docH: document.documentElement.scrollHeight };
@@ -525,7 +530,7 @@
   }
   function restart() {
     try { sessionStorage.removeItem(SAVE); } catch (e) {}
-    document.querySelectorAll('#about .stat, #projects .card').forEach(el => { el.classList.remove('read', 'lit'); delete el.dataset.said; delete el.dataset.used; });
+    document.querySelectorAll('#about .stat, #flagship .card, #projects .card').forEach(el => { el.classList.remove('read', 'lit'); delete el.dataset.said; delete el.dataset.used; });
     won = false; labels = []; P.ride = null; P.dive = null; P.form = 'pk'; P.vy = 0; P.on = null;
     document.body.classList.remove('playing'); pad.hidden = true;
     rebuild();
