@@ -583,3 +583,8 @@ section .stats .stat { padding-top: 0; border-top: 0; }
   mask-image: linear-gradient(180deg, #000 80%, transparent 100%), linear-gradient(90deg, transparent 0, #000 12%, #000 88%, transparent 100%);
   mask-composite: intersect;
 }
+/* Las dos tarjetas de experiencia, simétricas: tres números en tres columnas y el link siempre al fondo. */
+.card.big { display: flex; flex-direction: column; }
+.card.big .nums { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px 20px; }
+.card.big .more { margin-top: auto; }
+@media (max-width: 420px) { .card.big .nums { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
