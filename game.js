@@ -38,7 +38,7 @@
   pad.innerHTML = '<button type="button" data-k="left" aria-label="Left">◀</button><button type="button" data-k="right" aria-label="Right">▶</button><button type="button" data-k="down" class="down" aria-label="Go down">▼</button><button type="button" data-k="jump" class="jump" aria-label="Jump">▲</button><button type="button" class="x" aria-label="Stop playing">✕</button><button type="button" class="restart re" aria-label="Restart the game">↺</button>';
   document.body.append(canvas, hit, hint, mission, help, pad);
 
-  let exited = false, fade = 1, mode = 'wait', missionUntil = 0, W = 0, H = 0, level = null, keys = {}, last = 0, labels = [], expected = -1, intro = null, won = false;
+  let fade = 1, mode = 'wait', missionUntil = 0, W = 0, H = 0, level = null, keys = {}, last = 0, labels = [], expected = -1, intro = null, won = false;
   const P = { x: 0, y: 0, vx: 0, vy: 0, ground: false, on: null, face: 1, squash: 0, form: 'pk', ride: null, dropUntil: 0, trail: [] };
 
   const box = el => { const r = el.getBoundingClientRect(); return { x: r.left, y: r.top + scrollY, w: r.width, h: r.height, r: r.right, b: r.bottom + scrollY }; };
@@ -515,14 +515,20 @@
     document.documentElement.style.scrollBehavior = '';
     document.body.classList.remove('playing'); pad.hidden = true;
   }
-  function restart() {
+  // Vuelve todo al estado de la página recién cargada: el muñequito espera junto al botón y no queda nada leído.
+  function reset() {
     try { sessionStorage.removeItem(SAVE); } catch (e) {}
     document.querySelectorAll('#experience .card, #projects .card').forEach(el => { el.classList.remove('read', 'lit'); delete el.dataset.said; delete el.dataset.used; });
     won = false; labels = []; P.ride = null; P.dive = null; P.form = 'pk'; P.vy = 0; P.on = null;
+    keys = {}; mode = 'wait';
     document.body.classList.remove('playing'); pad.hidden = true;
+    document.documentElement.style.scrollBehavior = '';
     rebuild();
+  }
+  function restart() {
+    reset();
     document.documentElement.style.scrollBehavior = 'auto'; scrollTo(0, 0);
-    mode = 'wait'; beginIntro();
+    beginIntro();
   }
   function endIntro() {
     intro = null; P.trail = []; if (window.__portraitPoke) window.__portraitPoke(null);
@@ -588,8 +594,7 @@
       hint.style.left = `${side ? ws.x + S / 2 + S * BIG / 2 + 14 : Math.min(W - 70, ws.x + S / 2)}px`;
       hint.style.top = `${side ? ws.y + S - S * BIG / 2 : ws.y + S - S * BIG - 14}px`;
     }
-    if (mode === 'play') exited = false;
-    help.classList.toggle('on', !!level && !exited && (mode === 'play' || mode === 'idle'));
+    help.classList.toggle('on', !!level && (mode === 'play' || mode === 'idle'));
     const talk = mode === 'play' && now < missionUntil;
     mission.classList.toggle('on', talk);
     if (talk) { mission.style.left = `${Math.max(170, Math.min(W - 170, P.x + S / 2))}px`; mission.style.top = `${P.y - 16}px`; }
@@ -626,8 +631,8 @@
     ['pointerup', 'pointercancel', 'lostpointercapture'].forEach(type => button.addEventListener(type, off));
   });
   pad.querySelector('.x').addEventListener('click', () => stop());
-  // Salir del todo: se pausa y el panel se esconde hasta que se vuelva a tocar el muñequito.
-  help.querySelector('.exit').addEventListener('click', () => { stop(); exited = true; });
+  // Salir del todo: el muñequito vuelve a esperar junto al botón, como al cargar la página.
+  help.querySelector('.exit').addEventListener('click', event => { event.stopPropagation(); reset(); });
   document.querySelectorAll('.restart').forEach(button => button.addEventListener('click', event => { event.stopPropagation(); restart(); }));
   addEventListener('resize', () => { resize(); if (level) { const snap = snapshot(); rebuild(); apply(snap); } });
 
