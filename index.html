@@ -195,6 +195,19 @@
     }), { threshold: 0.12 });
     document.querySelectorAll('.reveal').forEach(el => seen.observe(el));
   }
+
+  // Un link a una sección la centra debajo del menú, sin el aire de arriba; si no entra entera, muestra su comienzo.
+  document.querySelectorAll('a[href^="#"]').forEach(link => {
+    const section = document.getElementById(link.getAttribute('href').slice(1));
+    if (!section || section.tagName !== 'SECTION') return;
+    link.addEventListener('click', event => {
+      const first = section.firstElementChild.getBoundingClientRect(), last = section.lastElementChild.getBoundingClientRect();
+      const nav = 76, room = innerHeight - nav, height = last.bottom - first.top;
+      event.preventDefault();
+      scrollTo({ top: first.top + scrollY - nav - Math.max(24, (room - height) / 2) });
+      history.replaceState(null, '', '#' + section.id);
+    });
+  });
 </script>
 </body>
 </html>
