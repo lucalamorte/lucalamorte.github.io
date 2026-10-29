@@ -1,13 +1,9 @@
-// El portfolio como nivel, contado como un camino del héroe sin exagerar: el muñequito espera junto al botón
-// de la portada; al tocarlo salta, cruza el retrato de Luca y cae sobre el título. Cada sección es una etapa
-// (el mentor, las pruebas, lo construido, las lecciones, el entrenamiento, el regreso) y el final es el contacto. Se mueve con ← → ↑ o con los controles del celu; scrollear o Esc lo pausa.
-// Es un dato que viaja por el stack hasta llegar al contacto, y cada pieza hace lo que hace de verdad:
-// todo pasa en AWS, S3 lo guarda como archivo, el DAG de Airflow lo deja pasar a horario y lo carga,
-// Monte Carlo lo revisa, en Snowflake dbt lo transforma de raw a mart, el warehouse escala mientras
-// lo usas y el hueco te deja justo arriba del primer producto, el chat de Nutrigordo contesta, las flashcards de PrimeroLab vuelven
-// más tarde, DataChinchilla salta los pasos que ya tienes, las reglas de How I work se abren al pisarlas
-// y las credenciales se sellan.
-// El camino es siempre el mismo: los bordes de la columna son paredes y cada sección tiene una sola salida.
+// El portfolio como nivel. El muñequito espera parado sobre el título; al tocarlo da una vuelta por el retrato
+// y vuelve a caer ahí. Desde el título se salta a la cara de Luca: la zambullida lo deja en un DAG que recorre
+// la experiencia y los productos (cada tarjeta es una tarea que corre mientras se lee, y una compuerta
+// all_success cierra cada sección). El DAG desemboca en el bucket de S3, Airflow lo carga a Snowflake, el
+// warehouse se prende, dbt construye raw, staging y mart, Monte Carlo lo revisa a la salida y el final es el
+// buzón del contacto. Se mueve con las flechas o con los controles del celu; scrollear o Esc lo pausa.
 (() => {
   const $ = s => document.querySelector(s);
   const hero = $('.hero'), portrait = $('#portrait');
@@ -43,9 +39,10 @@
 
   const box = el => { const r = el.getBoundingClientRect(); return { x: r.left, y: r.top + scrollY, w: r.width, h: r.height, r: r.right, b: r.bottom + scrollY }; };
   const home = () => { const b = box($('.hero h1')); return { x: b.x + 6, y: b.y + 4 - S }; };
-  // Donde espera antes de empezar: al lado del primer botón de la portada, más grande y saltando.
+  // Donde espera antes de empezar: parado sobre el título, más grande y saltando, en el mismo lugar donde
+  // después arranca el juego.
   const BIG = 1.5;
-  const waitSpot = () => { const b = box($('.hero .cta .btn')); return { x: b.r + 26, y: b.b - S }; };
+  const waitSpot = home;
   // Un cartelito que flota sobre el muñequito o sobre una pieza.
   // Los diálogos siempre salen justo arriba del muñequito y lo siguen mientras se mueve.
   const say = (text, ms = 2000) => { labels = labels.filter(l => l.text !== text); labels.push({ text, until: performance.now() + ms }); };
