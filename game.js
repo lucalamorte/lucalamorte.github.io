@@ -32,13 +32,13 @@
   // El panel fijo con los controles y el botón para reiniciar; aparece cuando el juego ya empezó.
   const help = document.createElement('div');
   help.className = 'play-help';
-  help.innerHTML = '<span><kbd>←</kbd><kbd>→</kbd> move</span><span><kbd>↑</kbd> jump</span><span><kbd>↓</kbd> down</span><span><kbd>esc</kbd> pause</span><button type="button" class="restart">↺ restart</button>';
+  help.innerHTML = '<span><kbd>←</kbd><kbd>→</kbd> move</span><span><kbd>↑</kbd> jump</span><span><kbd>↓</kbd> down</span><button type="button" class="restart">↺ restart</button><button type="button" class="exit">✕ exit</button>';
   const pad = document.createElement('div');
   pad.className = 'pad'; pad.hidden = true;
   pad.innerHTML = '<button type="button" data-k="left" aria-label="Left">◀</button><button type="button" data-k="right" aria-label="Right">▶</button><button type="button" data-k="down" class="down" aria-label="Go down">▼</button><button type="button" data-k="jump" class="jump" aria-label="Jump">▲</button><button type="button" class="x" aria-label="Stop playing">✕</button><button type="button" class="restart re" aria-label="Restart the game">↺</button>';
   document.body.append(canvas, hit, hint, mission, help, pad);
 
-  let fade = 1, mode = 'wait', missionUntil = 0, W = 0, H = 0, level = null, keys = {}, last = 0, labels = [], expected = -1, intro = null, won = false;
+  let exited = false, fade = 1, mode = 'wait', missionUntil = 0, W = 0, H = 0, level = null, keys = {}, last = 0, labels = [], expected = -1, intro = null, won = false;
   const P = { x: 0, y: 0, vx: 0, vy: 0, ground: false, on: null, face: 1, squash: 0, form: 'pk', ride: null, dropUntil: 0, trail: [] };
 
   const box = el => { const r = el.getBoundingClientRect(); return { x: r.left, y: r.top + scrollY, w: r.width, h: r.height, r: r.right, b: r.bottom + scrollY }; };
@@ -120,19 +120,14 @@
     if (fig) {
       face = fig.b > h1.y
         // Con el retrato al costado, todo lo que quede a la izquierda del título entra por la cara, salte por donde salte.
-        ? { x1: -60, x2: fig.r - fig.w * 0.25, y1: h.y - 200, y2: fig.y + fig.h * 0.8, ex: fig.x + fig.w * 0.42, ey: landY, via: [fig.x + fig.w * 0.5, fig.y + fig.h * 0.38] }
+        ? { x1: -60, x2: fig.r - fig.w * 0.25 + 14, y1: h.y - 200, y2: fig.y + fig.h * 0.8, ex: fig.x + fig.w * 0.42, ey: landY, via: [fig.x + fig.w * 0.5, fig.y + fig.h * 0.38] }
         : { x1: fig.x + fig.w * 0.3, x2: fig.x + fig.w * 0.7, y1: fig.y + fig.h * 0.08, y2: fig.y + fig.h * 0.74, ex: fig.x + fig.w * 0.42, ey: landY };
     }
 
-    // Los números: cada uno se lee parado sobre su línea y el muñequito comenta. Airflow espera a que estén leídos.
-    const statEls = [...document.querySelectorAll('#about .stat')];
-    const reads = { done: statEls.filter(el => el.classList.contains('read')).length, total: statEls.length };
-    rowRead(statEls, box($('#about')).y - 20, 1.6, () => {},
-      c => { if (!c.el.classList.contains('read')) { c.el.classList.add('read'); reads.done++; } });
-
     // Lo construido en Kimberly-Clark: las dos tarjetas grandes, cada una con su comentario.
     const flagEls = [...document.querySelectorAll('#experience .card.big')];
-    rowRead(flagEls, box($('#experience')).y + 40, 1.8, () => {});
+    const reads = { done: flagEls.filter(el => el.classList.contains('read')).length, total: flagEls.length };
+    rowRead(flagEls, box($('#experience')).y + 40, 1.8, () => {}, c => { if (!c.el.classList.contains('read')) { c.el.classList.add('read'); reads.done++; } });
 
     // Productos: el muñequito usa cada uno mientras lo lee.
     const cardEls = [...document.querySelectorAll('#projects .card')];
@@ -202,7 +197,7 @@
     things.push({ draw: now => drawMailbox(mailbox, now) });
     floor(btn.b, []);
 
-    const STAGES = { about: 'the numbers', experience: 'the work', projects: 'what was built', contact: 'the return' };
+    const STAGES = { experience: 'the work', projects: 'what was built', contact: 'the return' };
     for (const [id, stage] of Object.entries(STAGES)) { const b = box(document.getElementById(id)); checkpoints.push({ y: b.y, x: colL + 30, stage }); }
     const bounds = { l: Math.max(0, colL - 44), r: Math.min(W, colR + 44) };
     return { plats, things, walls, bounds, face, mc: level_mc, pipe, bucket, mailbox, checkpoints, colL, colR, docH: document.documentElement.scrollHeight };
@@ -229,7 +224,7 @@
     ctx.strokeStyle = MUTED; ctx.lineWidth = 1.2; ctx.beginPath();
     [[0, 1], [0, 2], [1, 3], [2, 3]].forEach(([a, z]) => { ctx.moveTo(nodes[a][0], nodes[a][1]); ctx.lineTo(nodes[z][0], nodes[z][1]); }); ctx.stroke();
     nodes.forEach(([x, y], k) => { const on = k === 3 ? open : k === 0 ? reads.done >= 1 : k === 1 ? reads.done >= 2 : all; ctx.fillStyle = on ? ACCENT : INK; ctx.strokeStyle = on ? ACCENT : MUTED; ctx.beginPath(); ctx.arc(x, y, 4, 0, Math.PI * 2); ctx.fill(); ctx.stroke(); });
-    text(!all ? `Airflow: read the numbers first · ${reads.done}/${reads.total}` : open ? 'Airflow: DAG running' : b.since ? 'Airflow: run starts in' : 'Airflow: drop the file in S3', cx + 54, cy + 4, open ? ACCENT : MUTED);
+    text(!all ? `Airflow: read the work first · ${reads.done}/${reads.total}` : open ? 'Airflow: DAG running' : b.since ? 'Airflow: run starts in' : 'Airflow: drop the file in S3', cx + 54, cy + 4, open ? ACCENT : MUTED);
     // La cuenta, grande, arriba del bucket.
     if (all && b.since && !open) text(String(Math.ceil(left)), b.x + b.w / 2, b.y - 22, ACCENT, 'center', '600 28px "JetBrains Mono", monospace');
   }
@@ -472,7 +467,7 @@
     if (!level) return null;
     return {
       x: P.x, y: P.y, won,
-      reads: [...document.querySelectorAll('#about .stat')].map((el, k) => el.classList.contains('read') ? k : -1).filter(k => k >= 0),
+      reads: [...document.querySelectorAll('#experience .card.big')].map((el, k) => el.classList.contains('read') ? k : -1).filter(k => k >= 0),
       plats: level.plats.map((p, i) => (p.t || p.built || p.solid === false || (p.gate && p.gate.open)) ? { i, t: p.t, b: p.built, s: p.solid, o: !!(p.gate && p.gate.open), c: p.cards && p.cards.map(c => c.t) } : null).filter(Boolean),
     };
   }
@@ -491,7 +486,7 @@
     let snap = null;
     try { snap = JSON.parse(sessionStorage.getItem(SAVE) || 'null'); } catch (e) {}
     if (!snap) return;
-    const stats = document.querySelectorAll('#about .stat');
+    const stats = document.querySelectorAll('#experience .card.big');
     snap.reads.forEach(k => { if (stats[k]) stats[k].classList.add('read'); });
     document.querySelectorAll('.reveal').forEach(el => { el.style.transition = 'none'; el.classList.add('in'); });
     void document.body.offsetHeight;
@@ -522,7 +517,7 @@
   }
   function restart() {
     try { sessionStorage.removeItem(SAVE); } catch (e) {}
-    document.querySelectorAll('#about .stat, #experience .card, #projects .card').forEach(el => { el.classList.remove('read', 'lit'); delete el.dataset.said; delete el.dataset.used; });
+    document.querySelectorAll('#experience .card, #projects .card').forEach(el => { el.classList.remove('read', 'lit'); delete el.dataset.said; delete el.dataset.used; });
     won = false; labels = []; P.ride = null; P.dive = null; P.form = 'pk'; P.vy = 0; P.on = null;
     document.body.classList.remove('playing'); pad.hidden = true;
     rebuild();
@@ -593,7 +588,8 @@
       hint.style.left = `${side ? ws.x + S / 2 + S * BIG / 2 + 14 : Math.min(W - 70, ws.x + S / 2)}px`;
       hint.style.top = `${side ? ws.y + S - S * BIG / 2 : ws.y + S - S * BIG - 14}px`;
     }
-    help.classList.toggle('on', !!level && (mode === 'play' || mode === 'idle'));
+    if (mode === 'play') exited = false;
+    help.classList.toggle('on', !!level && !exited && (mode === 'play' || mode === 'idle'));
     const talk = mode === 'play' && now < missionUntil;
     mission.classList.toggle('on', talk);
     if (talk) { mission.style.left = `${Math.max(170, Math.min(W - 170, P.x + S / 2))}px`; mission.style.top = `${P.y - 16}px`; }
@@ -630,6 +626,8 @@
     ['pointerup', 'pointercancel', 'lostpointercapture'].forEach(type => button.addEventListener(type, off));
   });
   pad.querySelector('.x').addEventListener('click', () => stop());
+  // Salir del todo: se pausa y el panel se esconde hasta que se vuelva a tocar el muñequito.
+  help.querySelector('.exit').addEventListener('click', () => { stop(); exited = true; });
   document.querySelectorAll('.restart').forEach(button => button.addEventListener('click', event => { event.stopPropagation(); restart(); }));
   addEventListener('resize', () => { resize(); if (level) { const snap = snapshot(); rebuild(); apply(snap); } });
 

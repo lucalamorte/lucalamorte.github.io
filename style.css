@@ -455,6 +455,8 @@ html { scrollbar-width: thin; scrollbar-color: rgba(255, 255, 255, .16) transpar
 .play-help kbd { display: inline-grid; place-items: center; min-width: 22px; height: 22px; padding: 0 4px; border: 1px solid var(--border-strong); border-bottom-width: 2px; border-radius: 5px; color: var(--text-2); font: inherit; }
 .play-help .restart { height: 28px; padding: 0 10px; border: 1px solid var(--accent-line); border-radius: 8px; background: transparent; color: var(--accent); font: inherit; cursor: pointer; }
 .play-help .restart:hover { background: var(--accent-tint); }
+.play-help .exit { height: 28px; padding: 0 10px; border: 1px solid var(--border-strong); border-radius: 8px; background: transparent; color: var(--text-2); font: inherit; cursor: pointer; }
+.play-help .exit:hover { color: var(--text); border-color: var(--muted); }
 .pad .re { position: fixed; top: 76px; right: 64px; width: 40px; height: 40px; font-size: 16px; }
 .pad { position: fixed; left: 0; right: 0; bottom: 0; z-index: 25; display: flex; align-items: flex-end; gap: 14px; padding: 0 18px calc(18px + env(safe-area-inset-bottom)); pointer-events: none; }
 .pad[hidden] { display: none; }
@@ -555,3 +557,22 @@ footer { border-top: 0; }
 @media (max-width: 760px) { .projects.four { grid-template-columns: 1fr; } }
 /* En dos columnas, los dibujos de los productos no crecen de más. */
 .projects.four .card .visual { max-width: 440px; }
+/* ---------- que la página respire ---------- */
+/* Cada sección es una franja de lado a lado, con un tono apenas distinto y mucho aire. */
+main > section:not(.hero) { position: relative; padding: 120px 0 110px; }
+main > section:not(.hero):nth-of-type(even)::before { content: ""; position: absolute; inset: 0 calc(50% - 50vw); z-index: -1; background: linear-gradient(180deg, rgba(148, 163, 184, .035), rgba(148, 163, 184, .015)); }
+.eyebrow { margin: 0 0 10px !important; font-family: var(--mono); font-size: .78rem; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); }
+h2 { margin-bottom: 18px; }
+.group { margin-bottom: 36px; }
+/* Las tarjetas son superficies apenas más claras, sin bordes: se ve dónde empieza y termina cada una. */
+.card { padding: 28px 28px 24px; border-radius: 18px; background: rgba(148, 163, 184, .045); border-top: 0 !important; transition: background .25s, transform .25s; }
+.card::before { display: none; }
+.card:hover { background: rgba(148, 163, 184, .085); transform: translateY(-3px); }
+.playing .card { border-top: 0 !important; }
+.flagship, .projects.four, .more-grid { gap: 28px; }
+.more-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.more-grid .card h3 { font-size: 1.3rem; }
+/* Los números de cada sección, grandes, arriba de sus tarjetas. */
+section .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 0; margin: 0 0 40px; max-width: 760px; }
+section .stats .stat { padding-top: 0; border-top: 0; }
+@media (max-width: 760px) { main > section:not(.hero) { padding: 80px 0 70px; } .more-grid { grid-template-columns: 1fr; } section .stats { grid-template-columns: 1fr; gap: 28px; } .card { padding: 22px 18px; } }
