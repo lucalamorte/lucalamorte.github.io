@@ -497,26 +497,19 @@ main { max-width: 1240px; }
 .hero .intro p { max-width: 520px; }
 .hero p.tools { margin-top: 18px; font-family: var(--mono); font-size: .8rem; color: var(--muted); text-align: left; }
 /* Los números, grandes y a lo ancho, con la línea de arriba como en las tarjetas. */
-.stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; padding-top: 24px; }
-.stat { padding-top: 18px; border-top: 1px solid var(--border); transition: border-color .3s; }
-.stat b { display: block; color: var(--text); font-size: clamp(2.4rem, 4.5vw, 3.6rem); font-weight: 700; letter-spacing: -.04em; line-height: 1; transition: color .3s; }
-.stat span { display: block; margin-top: 10px; max-width: 320px; font-size: .95rem; line-height: 1.55; color: var(--muted); }
-.stat.lit, .stat.read { border-top-color: var(--accent-line); }
-.stat.lit b { color: var(--accent); }
 /* Cada producto con su animación arriba. */
 .card .visual { margin: 0 0 18px; }
 .card .viz { display: block; width: 100%; height: auto; }
 .more-links { margin: 28px auto 0 !important; font-size: .9rem; }
 .page { padding-top: 24px; }
-@media (max-width: 760px) { .stats { grid-template-columns: 1fr; gap: 8px; } .hero { min-height: auto; } }
+@media (max-width: 760px) { .hero { min-height: auto; } }
 @media (max-width: 760px) { .hero { grid-template-columns: minmax(0, 1fr); } .portrait canvas { max-width: 300px; } .hero h1 { font-size: clamp(2.4rem, 11vw, 3.2rem); } }
 /* Sin líneas separadoras al leer: solo aparecen mientras se juega, porque ahí son el piso del muñequito. */
 h2::after { display: none; }
 .nav { border-bottom-color: transparent; }
 footer { border-top: 0; }
-.card, .stat { border-top-color: transparent; }
-.playing .card, .playing .stat { border-top-color: var(--border); }
-.playing .stat.lit, .playing .stat.read { border-top-color: var(--accent-line); }
+.card { border-top-color: transparent; }
+.playing .card { border-top-color: var(--border); }
 .case { border-top: 0; }
 .list, .list li { border-top: 0; border-bottom: 0; }
 .pr-item, .pr-list { border-bottom: 0 !important; border-top: 0 !important; }
@@ -530,7 +523,6 @@ footer { border-top: 0; }
 .nums li { display: flex; flex-direction: column; font-size: .82rem; color: var(--muted); }
 .nums b { color: var(--accent); font-size: 1.7rem; font-weight: 700; letter-spacing: -.03em; line-height: 1.15; }
 .card.big .visual { order: 0; margin: 0 0 14px; }
-.stat small { display: block; margin-top: 10px; font-family: var(--mono); font-size: .72rem; color: var(--accent); opacity: .85; }
 @media (max-width: 980px) { .flagship { grid-template-columns: 1fr; } }
 /* Experiencia: una tarjeta por puesto, con el rol y las fechas arriba. */
 .when-role { margin: 0 0 6px !important; font-size: .85rem !important; color: var(--muted) !important; }
@@ -572,10 +564,7 @@ h2 { margin-bottom: 18px; }
 .flagship, .projects.four, .more-grid { gap: 28px; }
 .more-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .more-grid .card h3 { font-size: 1.3rem; }
-/* Los números de cada sección, grandes, arriba de sus tarjetas. */
-section .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 0; margin: 0 0 40px; max-width: 760px; }
-section .stats .stat { padding-top: 0; border-top: 0; }
-@media (max-width: 760px) { main > section:not(.hero) { padding: 80px 0 70px; } .more-grid { grid-template-columns: 1fr; } section .stats { grid-template-columns: 1fr; gap: 28px; } .card { padding: 22px 18px; } }
+@media (max-width: 760px) { main > section:not(.hero) { padding: 80px 0 70px; } .more-grid { grid-template-columns: 1fr; } .card { padding: 22px 18px; } }
 /* La silueta no termina en el borde de la foto: los hombros se disuelven hacia abajo y a los costados. */
 .portrait canvas {
   -webkit-mask-image: linear-gradient(180deg, #000 80%, transparent 100%), linear-gradient(90deg, transparent 0, #000 12%, #000 88%, transparent 100%);
@@ -591,14 +580,8 @@ section .stats .stat { padding-top: 0; border-top: 0; }
 /* La línea de años y regiones de la experiencia, a tamaño de lectura. */
 .group.big { font-family: var(--sans); font-size: 1.15rem; color: var(--text-2); letter-spacing: 0; }
 @media (max-width: 760px) { .group.big { font-size: 1rem; } }
-/* Encabezado de sección: título a la izquierda, métricas a la derecha, para que la sección entre en una pantalla. */
-.sec-head { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 40px; align-items: end; margin-bottom: 40px; }
-.sec-head .group { margin-bottom: 0; }
-.sec-head .stats { margin: 0; max-width: none; }
-.sec-head .stat b { font-size: clamp(2.2rem, 4vw, 3.2rem); }
 /* Productos con el mismo orden que la experiencia: el dibujo debajo del texto y el link al fondo. */
 .projects.four .card { display: flex; flex-direction: column; }
 .projects.four .card .top { margin-bottom: 14px; }
 .projects.four .card .visual { margin: 6px 0 14px; }
 .projects.four .card .more { margin-top: auto; }
-@media (max-width: 860px) { .sec-head { grid-template-columns: 1fr; gap: 24px; } }

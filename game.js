@@ -525,6 +525,13 @@
     let target = null;
     if (rel < H * 0.28) target = P.y - H * 0.28;
     if (rel > H * 0.62) target = P.y - H * 0.62;
+    // Yendo a una tarea del DAG o leyéndola, la cámara centra su tarjeta debajo del menú (o muestra su borde de
+    // arriba si no entra entera), para que se lea completa y no cortada.
+    const task = P.rail && (P.rail.to ? P.rail.to.task : P.rail.at.task);
+    if (task) {
+      const b = task.getBoundingClientRect(), top = b.top + scrollY, nav = 64;
+      target = b.height + 40 < H - nav ? top + b.height / 2 - (H + nav) / 2 : top - nav - 30;
+    }
     if (target === null) return;
     scrollTo(0, Math.max(0, scrollY + (target - scrollY) * Math.min(1, dt * 7)));
     expected = scrollY;
@@ -565,8 +572,8 @@
     let snap = null;
     try { snap = JSON.parse(sessionStorage.getItem(SAVE) || 'null'); } catch (e) {}
     if (!snap) return;
-    const stats = document.querySelectorAll(TASKS);
-    snap.reads.forEach(k => { if (stats[k]) stats[k].classList.add('read'); });
+    const cards = document.querySelectorAll(TASKS);
+    snap.reads.forEach(k => { if (cards[k]) cards[k].classList.add('read'); });
     document.querySelectorAll('.reveal').forEach(el => { el.style.transition = 'none'; el.classList.add('in'); });
     void document.body.offsetHeight;
     rebuild(); apply(snap); mode = 'idle';
