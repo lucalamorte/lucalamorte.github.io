@@ -82,20 +82,28 @@
     const link = (a, b) => { a.links.push(b); b.links.push(a); };
     const mx = Math.max(S / 2 + 4, colL - 26);
     const dag = (els, from, need) => {
-      const tasks = [], byRow = new Map();
+      const section = els[0].closest('section'), tasks = [], byRow = new Map();
+      // Al lado del título de la sección, el bus frena: se lee el título y se sigue con ↓.
+      const ty = box(section.querySelector('h2')).y + 20;
+      if (from.y < ty - 10) { const t = node(mx, ty, { stop: true }); link(from, t); from = t; }
+      const head = from;
       els.forEach(el => { const c = box(el), key = Math.round(c.y); byRow.set(key, [...(byRow.get(key) || []), { el, c }]); });
       let bus = from;
-      [...byRow.values()].forEach(row => {
+      // Lo que la cámara muestra centrado mientras se anda por cada fila: la primera va con el título de la sección.
+      let frame = null;
+      [...byRow.values()].forEach((row, r) => {
         const gy = row[0].c.y - 16;
-        const b = node(mx, gy); link(bus, b); bus = b;
+        frame = [r ? gy - 20 : box(section.firstElementChild).y, Math.max(...row.map(q => q.c.b))];
+        if (!r && head.stop) head.frame = frame;
+        const b = node(mx, gy, { frame }); link(bus, b); bus = b;
         let prev = b;
         row.sort((u, v) => u.c.x - v.c.x).forEach(({ el, c }) => {
-          const t = node(c.x + c.w / 2, gy, { task: el, need, t: 0, done: el.classList.contains('read') });
+          const t = node(c.x + c.w / 2, gy, { task: el, need, t: 0, done: el.classList.contains('read'), frame });
           link(prev, t); prev = t; tasks.push(t);
         });
       });
       const bottom = Math.max(...els.map(el => box(el).b));
-      const gate = node(mx, bottom + 26, { gate: tasks });
+      const gate = node(mx, bottom + 26, { gate: tasks, frame });
       link(bus, gate);
       return gate;
     };
@@ -115,19 +123,17 @@
       ledge(h1.x, h1.y + 4, h1.w, { floor: true });
       floor(h.b - 8);
     }
-    // La zambullida suelta al muñequito un poco arriba de la sección siguiente, para que aterrice en ella.
-    const nextEl = hero.nextElementSibling, landY = nextEl ? box(nextEl.firstElementChild || nextEl).y - 70 : h.b + 10;
+    // La cara: entrar ahí es la zambullida, que termina en la entrada del DAG.
     if (fig) {
       face = fig.b > h1.y
         // Con el retrato al costado, todo lo que quede a la izquierda del título entra por la cara, salte por donde salte.
-        ? { jump: true, x1: -60, x2: fig.r - fig.w * 0.25 + 14, y1: h.y - 200, y2: fig.y + fig.h * 0.8, ex: fig.x + fig.w * 0.42, ey: landY, via: [fig.x + fig.w * 0.5, fig.y + fig.h * 0.38] }
-        : { x1: fig.x + fig.w * 0.3, x2: fig.x + fig.w * 0.7, y1: fig.y + fig.h * 0.08, y2: fig.y + fig.h * 0.74, ex: fig.x + fig.w * 0.42, ey: landY };
+        ? { jump: true, x1: -60, x2: fig.r - fig.w * 0.25 + 14, y1: h.y - 200, y2: fig.y + fig.h * 0.8, via: [fig.x + fig.w * 0.5, fig.y + fig.h * 0.38] }
+        : { x1: fig.x + fig.w * 0.3, x2: fig.x + fig.w * 0.7, y1: fig.y + fig.h * 0.08, y2: fig.y + fig.h * 0.74 };
     }
 
     // El DAG arranca donde termina la zambullida, cruza la experiencia y los productos y desemboca en el bucket.
-    const entry = node(face ? face.ex : colL + 30, face ? face.ey : h.b + 30, { entry: true });
-    const corner = node(mx, entry.y); link(entry, corner);
-    const g1 = dag([...document.querySelectorAll('#experience .card.big')], corner, 2.2);
+    const entry = node(mx, box($('#experience h2')).y + 20, { stop: true });
+    const g1 = dag([...document.querySelectorAll('#experience .card.big')], entry, 2.2);
     const g2 = dag([...document.querySelectorAll('#projects .card')], g1, 1.6);
     const tasks = nodes.filter(n => n.task);
     things.push({ draw: now => drawDag(nodes, now) });
@@ -404,7 +410,7 @@
       if (n.exit) { P.rail = null; P.vy = 120; return; }
       if (n.task && !n.done) return;
       const ahead = n.links.filter(m => m !== from);
-      if (n.links.length === 2 && !n.task && (!n.gate || (from.y < n.y && gateOpen(n)))) r.to = ahead[0];
+      if (n.links.length === 2 && !n.task && !n.stop && (!n.gate || (from.y < n.y && gateOpen(n)))) r.to = ahead[0];
       return;
     }
     const n = r.at;
@@ -436,7 +442,7 @@
       if (window.__portraitPoke) window.__portraitPoke(P.x + S / 2, P.y + S / 2 - scrollY, (P.x - px) * 3, (P.y - py) * 3);
       if ((!d.via && P.y >= d.b[1]) || d.age > 2.5) {
         P.dive = null; P.vy = 0; if (window.__portraitPoke) window.__portraitPoke(null);
-        const e = level.entry; onNode(e); P.rail = { at: e, to: e.links[0], d: 0 };
+        onNode(level.entry); P.rail = { at: level.entry, to: null, d: 0 };
       }
       return;
     }
@@ -494,7 +500,7 @@
     }
     const f = level.face;
     if (f && control && (!P.ground || !f.jump) && P.x + S / 2 > f.x1 && P.x + S / 2 < f.x2 && P.y + S / 2 > f.y1 && P.y + S / 2 < f.y2) {
-      P.dive = divePath(f.via ? [f.via[0] - S / 2, f.via[1] - S / 2] : null, [f.ex - S / 2, f.ey]); P.on = null; P.ground = false;
+      P.dive = divePath(f.via ? [f.via[0] - S / 2, f.via[1] - S / 2] : null, [level.entry.x - S / 2, level.entry.y - S / 2]); P.on = null; P.ground = false;
       return;
     }
     const mc = level.mc;
@@ -522,12 +528,12 @@
     let target = null;
     if (rel < H * 0.28) target = P.y - H * 0.28;
     if (rel > H * 0.62) target = P.y - H * 0.62;
-    // Yendo a una tarea del DAG o leyéndola, la cámara centra su tarjeta debajo del menú (o muestra su borde de
-    // arriba si no entra entera), para que se lea completa y no cortada.
-    const task = P.rail && (P.rail.to ? P.rail.to.task : P.rail.at.task);
-    if (task) {
-      const b = task.getBoundingClientRect(), top = b.top + scrollY, nav = 64;
-      target = b.height + 40 < H - nav ? top + b.height / 2 - (H + nav) / 2 : top - nav - 30;
+    // En el DAG la cámara muestra centrado, debajo del menú, el cuadro del nodo hacia donde va el muñequito
+    // (o su comienzo si no entra entero), para que se lea completo y no cortado.
+    const n = P.rail && (P.rail.to || P.rail.at);
+    if (n && n.frame) {
+      const [y1, y2] = n.frame, nav = 64;
+      target = y2 - y1 + 40 < H - nav ? (y1 + y2) / 2 - (H + nav) / 2 : y1 - nav - 24;
     }
     if (target === null) return;
     scrollTo(0, Math.max(0, scrollY + (target - scrollY) * Math.min(1, dt * 7)));
