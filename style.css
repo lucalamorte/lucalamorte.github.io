@@ -588,3 +588,17 @@ section .stats .stat { padding-top: 0; border-top: 0; }
 .card.big .nums { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px 20px; }
 .card.big .more { margin-top: auto; }
 @media (max-width: 420px) { .card.big .nums { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+/* La línea de años y regiones de la experiencia, a tamaño de lectura. */
+.group.big { font-family: var(--sans); font-size: 1.15rem; color: var(--text-2); letter-spacing: 0; }
+@media (max-width: 760px) { .group.big { font-size: 1rem; } }
+/* Encabezado de sección: título a la izquierda, métricas a la derecha, para que la sección entre en una pantalla. */
+.sec-head { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 40px; align-items: end; margin-bottom: 40px; }
+.sec-head .group { margin-bottom: 0; }
+.sec-head .stats { margin: 0; max-width: none; }
+.sec-head .stat b { font-size: clamp(2.2rem, 4vw, 3.2rem); }
+/* Productos con el mismo orden que la experiencia: el dibujo debajo del texto y el link al fondo. */
+.projects.four .card { display: flex; flex-direction: column; }
+.projects.four .card .top { margin-bottom: 14px; }
+.projects.four .card .visual { margin: 6px 0 14px; }
+.projects.four .card .more { margin-top: auto; }
+@media (max-width: 860px) { .sec-head { grid-template-columns: 1fr; gap: 24px; } }
