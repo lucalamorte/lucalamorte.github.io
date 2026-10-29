@@ -530,3 +530,28 @@ footer { border-top: 0; }
 .card.big .visual { order: 0; margin: 0 0 14px; }
 .stat small { display: block; margin-top: 10px; font-family: var(--mono); font-size: .72rem; color: var(--accent); opacity: .85; }
 @media (max-width: 980px) { .flagship { grid-template-columns: 1fr; } }
+/* Experiencia: una tarjeta por puesto, con el rol y las fechas arriba. */
+.when-role { margin: 0 0 6px !important; font-size: .85rem !important; color: var(--muted) !important; }
+.when-role b { color: var(--text); font-weight: 600; }
+.when-role span { float: right; font-family: var(--mono); font-size: .74rem; }
+.did { margin: 0 0 16px; padding-left: 18px; color: var(--text-2); font-size: .92rem; line-height: 1.55; }
+.did li { margin-bottom: 6px; }
+.did li::marker { color: var(--accent); }
+.stackline { display: flex; flex-wrap: wrap; gap: 4px 14px; margin: 0 0 18px; padding: 0; list-style: none; }
+.stackline li { font-family: var(--mono); font-size: .74rem; color: var(--accent); }
+.earlier { margin: 28px 0 0; font-size: .9rem; color: var(--muted); }
+.earlier b { color: var(--text-2); font-weight: 600; }
+/* Mientras se juega, el contacto deja lugar a la izquierda para la caja de Snowflake. */
+.playing .contact { padding-top: 220px; }
+@media (max-width: 760px) { .playing .contact { padding-top: 330px; } }
+@media (max-width: 760px) { .when-role span { float: none; display: block; } }
+/* Los tres perfiles, debajo del nombre. */
+.hero .roles { margin: 14px 0 0 !important; font-family: var(--mono); font-size: .9rem !important; color: var(--accent) !important; letter-spacing: .02em; text-align: left; }
+/* Productos en dos columnas para que entren cuatro, el de Cortex marcado como en curso. */
+.projects.four { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 40px 40px; }
+.card.soon { cursor: default; }
+.card.soon .more { color: var(--muted); }
+.card.soon h3::after { content: "in progress"; margin-left: 10px; padding: 2px 8px; border: 1px solid var(--accent-line); border-radius: 999px; font-family: var(--mono); font-size: .65rem; font-weight: 500; color: var(--accent); vertical-align: 4px; }
+@media (max-width: 760px) { .projects.four { grid-template-columns: 1fr; } }
+/* En dos columnas, los dibujos de los productos no crecen de más. */
+.projects.four .card .visual { max-width: 440px; }

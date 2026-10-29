@@ -126,23 +126,17 @@
 
     // Los números: cada uno se lee parado sobre su línea y el muñequito comenta. Airflow espera a que estén leídos.
     const statEls = [...document.querySelectorAll('#about .stat')];
-    const REACT = ["65M profiles. that's a lot of rows", '10 plants streaming live. noted', '3 products, after hours. respect'];
     const reads = { done: statEls.filter(el => el.classList.contains('read')).length, total: statEls.length };
-    rowRead(statEls, box($('#about')).y - 20, 1.6, c => { if (REACT[c.k] && !c.el.dataset.said) { c.el.dataset.said = '1'; say(REACT[c.k], 2200); } },
+    rowRead(statEls, box($('#about')).y - 20, 1.6, () => {},
       c => { if (!c.el.classList.contains('read')) { c.el.classList.add('read'); reads.done++; } });
 
     // Lo construido en Kimberly-Clark: las dos tarjetas grandes, cada una con su comentario.
-    const flagEls = [...document.querySelectorAll('#flagship .card')];
-    const WOW = ["$260K a month, gone. nice", "10 plants. that's a lot of machines"];
-    rowRead(flagEls, box($('#flagship')).y + 40, 1.8, c => { if (WOW[c.k] && !c.el.dataset.said) { c.el.dataset.said = '1'; say(WOW[c.k], 2400); } });
+    const flagEls = [...document.querySelectorAll('#experience .card.big')];
+    rowRead(flagEls, box($('#experience')).y + 40, 1.8, () => {});
 
     // Productos: el muñequito usa cada uno mientras lo lee.
     const cardEls = [...document.querySelectorAll('#projects .card')];
-    const USE = [['2 eggs and toast', 'logged · 412 kcal ✓'], ['what is RAG?', 'search + generate ✓ · see you in 3 days'], ['I want to be a data engineer', 'your path: only what you miss']];
-    rowRead(cardEls, box($('#projects')).y + 40, 1.5, c => {
-      const [ask, answer] = USE[c.k] || ['', ''];
-      if (ask && !c.el.dataset.used) { c.el.dataset.used = '1'; say(ask, 1300); setTimeout(() => say(answer, 2600), 1100); }
-    });
+    rowRead(cardEls, box($('#projects')).y + 40, 1.5, () => {});
 
     // Al final de los productos está el bucket de S3: la única salida hacia Experience.
     const pr = box($('#projects'));
@@ -157,19 +151,18 @@
     const gate = ledge(bx + 4, fy + 48, bw - 8, { tick: now => { gate.solid = !gateOpen(now); }, land: () => { if (!ready()) say('read first ↑', 2000); } });
     things.push({ draw: now => drawBucket(bucket, gateOpen(now), now, RUN, reads) });
 
-    // Experience: la tarea de Airflow carga el archivo por el margen hasta Snowflake (extract y load).
-    const exp = box($('#experience')), tl = box($('.tablist'));
-    // El warehouse queda en el hueco libre bajo las pestañas, arriba del piso.
-    const mx = Math.max(colL - 30, 10), wy = exp.b - 72, wx = tl.x;
-    const top = wy - 240;
-    const path = [[bx + bw / 2, fy + 56], [bx + bw / 2, fy + 70], [mx, fy + 70], [mx, top], [wx + 28, top], [wx + 28, top + 30]];
+    // La tarea de Airflow carga el archivo hasta Snowflake (extract y load). La caja de Snowflake queda a la
+    // izquierda del contacto, que tiene lugar libre, con su piso justo arriba de los botones.
+    const ctBtn = box($('#contact .btn'));
+    const wx = colL + 14, wy = ctBtn.b - 60, top = wy - 240;
+    const path = [[bx + bw / 2, fy + 56], [bx + bw / 2, top], [wx + 28, top], [wx + 28, top + 30]];
     const pipe = { path, mouth: [bx + bw / 2, fy + 56] };
     things.push({ draw: now => drawPipe(pipe, now) });
 
     // Snowflake es una caja cerrada: las paredes no dejan salir. Adentro, todo va de pared a pared y en orden:
     // primero se prende el warehouse (sin cómputo no corre nada), después dbt construye raw, staging y mart.
     // No se puede saltear ninguna capa. Al fondo, la salida pasa por Monte Carlo.
-    const sfW = Math.max(210, Math.min(tl.w + 28, W - wx - 16)), boxL = wx - 14, boxR = boxL + sfW, boxB = wy + 28;
+    const sfW = Math.min(240, W - wx - 16), boxL = wx - 14, boxR = boxL + sfW, boxB = wy + 28;
     walls.push({ x: boxL, y1: top - 18, y2: boxB }, { x: boxR, y1: top - 18, y2: boxB });
     const LAYERS = [['warehouse', 1.5], ['raw.orders', 0.8], ['stg_orders', 1.4], ['fct_orders', 1.4]];
     LAYERS.forEach(([name, need], k) => {
@@ -178,7 +171,7 @@
       m.stand = m.gate.stand = dt => {
         if (m.built) return;
         m.t += dt;
-        if (m.t >= m.need) { m.built = true; m.open(); if (k === LAYERS.length - 1) say('dbt build ✓', 1600); }
+        if (m.t >= m.need) { m.built = true; m.open();  }
       };
       m.gate.land = m.land;
     });
@@ -200,9 +193,6 @@
       text('Monte Carlo', cx, boxB + 44, ACCENT, 'center');
     } });
     level_mc = { x: hatch.x, w: hatch.w, y: boxB, state: mc };
-    // Experience se deja por un hueco en el medio, que cae sobre el contacto.
-    const ey = exp.b - 6;
-    floor(ey, [[(colL + colR) / 2 - 45, 90]]);
 
     // Contacto: el buzón es la meta.
     // La fila de botones ocupa todo el ancho: se mide desde el primer botón hasta el último.
@@ -212,7 +202,7 @@
     things.push({ draw: now => drawMailbox(mailbox, now) });
     floor(btn.b, []);
 
-    const STAGES = { about: 'the numbers', flagship: 'the big ones', projects: 'what was built', experience: 'the trials', contact: 'the return' };
+    const STAGES = { about: 'the numbers', experience: 'the work', projects: 'what was built', contact: 'the return' };
     for (const [id, stage] of Object.entries(STAGES)) { const b = box(document.getElementById(id)); checkpoints.push({ y: b.y, x: colL + 30, stage }); }
     const bounds = { l: Math.max(0, colL - 44), r: Math.min(W, colR + 44) };
     return { plats, things, walls, bounds, face, mc: level_mc, pipe, bucket, mailbox, checkpoints, colL, colR, docH: document.documentElement.scrollHeight };
@@ -439,7 +429,7 @@
       return;
     }
     const mc = level.mc;
-    if (mc && !mc.state.checked && P.x + S / 2 > mc.x && P.x + S / 2 < mc.x + mc.w && P.y > mc.y - 4 && P.y < mc.y + 40) { mc.state.checked = true; say('Monte Carlo: no anomalies. phew', 2000); }
+    if (mc && !mc.state.checked && P.x + S / 2 > mc.x && P.x + S / 2 < mc.x + mc.w && P.y > mc.y - 4 && P.y < mc.y + 40) { mc.state.checked = true; }
     const b = level.bucket, cx = P.x + S / 2;
     const inside = cx > b.x && cx < b.x + b.w && P.y + S > b.y - 2 && P.y < b.y + b.d + 20;
     if (!inside) b.since = 0; else if (!b.since && b.ready()) b.since = now;
@@ -510,6 +500,8 @@
   function start() {
     if (mode === 'play') return;
     document.querySelectorAll('.reveal').forEach(el => { el.style.transition = 'none'; el.classList.add('in'); });
+    // La clase va antes de medir: mientras se juega, algunas secciones dejan lugar para piezas del nivel.
+    document.body.classList.add('playing');
     void document.body.offsetHeight;
     document.documentElement.style.scrollBehavior = 'auto';
     if (mode === 'intro') endIntro();
@@ -530,7 +522,7 @@
   }
   function restart() {
     try { sessionStorage.removeItem(SAVE); } catch (e) {}
-    document.querySelectorAll('#about .stat, #flagship .card, #projects .card').forEach(el => { el.classList.remove('read', 'lit'); delete el.dataset.said; delete el.dataset.used; });
+    document.querySelectorAll('#about .stat, #experience .card, #projects .card').forEach(el => { el.classList.remove('read', 'lit'); delete el.dataset.said; delete el.dataset.used; });
     won = false; labels = []; P.ride = null; P.dive = null; P.form = 'pk'; P.vy = 0; P.on = null;
     document.body.classList.remove('playing'); pad.hidden = true;
     rebuild();
