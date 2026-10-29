@@ -527,7 +527,6 @@ footer { border-top: 0; }
 /* Experiencia: una tarjeta por puesto, con el rol y las fechas arriba. */
 .when-role { margin: 0 0 6px !important; font-size: .85rem !important; color: var(--muted) !important; }
 .when-role b { color: var(--text); font-weight: 600; }
-.when-role span { float: right; font-family: var(--mono); font-size: .74rem; }
 .did { margin: 0 0 16px; padding-left: 18px; color: var(--text-2); font-size: .92rem; line-height: 1.55; }
 .did li { margin-bottom: 6px; }
 .did li::marker { color: var(--accent); }
@@ -538,7 +537,6 @@ footer { border-top: 0; }
 /* Mientras se juega, el contacto deja lugar a la izquierda para la caja de Snowflake. */
 .playing .contact { padding-top: 220px; }
 @media (max-width: 760px) { .playing .contact { padding-top: 330px; } }
-@media (max-width: 760px) { .when-role span { float: none; display: block; } }
 /* Los tres perfiles, debajo del nombre. */
 .hero .roles { margin: 14px 0 0 !important; font-family: var(--mono); font-size: .9rem !important; color: var(--accent) !important; letter-spacing: .02em; text-align: left; }
 /* Productos en dos columnas para que entren cuatro, el de Cortex marcado como en curso. */
@@ -585,11 +583,18 @@ h2 { margin-bottom: 18px; }
 .projects.four .card .top { margin-bottom: 14px; }
 .projects.four .card .visual { margin: 6px 0 14px; }
 .projects.four .card .more { margin-top: auto; }
-/* El paso a la sección siguiente: abajo en el medio, chico, con la flecha que baja sola. */
-.next { position: absolute; left: 50%; bottom: 44px; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 4px; font-family: var(--mono); font-size: .78rem; letter-spacing: .08em; text-transform: lowercase; color: var(--text-2); transition: color .2s; }
-.next svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; animation: next-bob 1.8s ease-in-out infinite; }
-.next:hover { color: var(--accent); }
+/* El paso a la sección siguiente: una flecha sola abajo en el medio, que baja y sube despacio. */
+.next { position: absolute; left: 50%; bottom: 40px; transform: translateX(-50%); display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; color: var(--text-2); transition: color .2s, background .2s; }
+.next svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; animation: next-bob 1.8s ease-in-out infinite; }
+.next:hover { color: var(--accent); background: var(--accent-tint); }
 @keyframes next-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(4px); } }
 .playing .next { display: none; }
 @media (prefers-reduced-motion: reduce) { .next svg { animation: none; } }
 @media (max-width: 760px) { .next { bottom: 14px; } }
+/* Las herramientas de cada tarjeta, en la misma línea mono que la portada. */
+.card p.tools, .card.big p.tools { margin: auto 0 14px; font-family: var(--mono); font-size: .76rem; line-height: 1.7; color: var(--muted); }
+.card .tools + .more, .card.big .tools + .more, .projects.four .card .tools + .more { margin-top: 0; }
+/* La fecha del puesto, a la derecha del título y sobre su misma línea. */
+.title-row { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; }
+.title-row .when { flex: none; font-family: var(--mono); font-size: .76rem; color: var(--muted); }
+@media (max-width: 480px) { .title-row { flex-direction: column; gap: 0; } }
