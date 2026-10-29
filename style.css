@@ -585,3 +585,11 @@ h2 { margin-bottom: 18px; }
 .projects.four .card .top { margin-bottom: 14px; }
 .projects.four .card .visual { margin: 6px 0 14px; }
 .projects.four .card .more { margin-top: auto; }
+/* El paso a la sección siguiente: abajo en el medio, chico, con la flecha que baja sola. */
+.next { position: absolute; left: 50%; bottom: 44px; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 4px; font-family: var(--mono); font-size: .78rem; letter-spacing: .08em; text-transform: lowercase; color: var(--text-2); transition: color .2s; }
+.next svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; animation: next-bob 1.8s ease-in-out infinite; }
+.next:hover { color: var(--accent); }
+@keyframes next-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(4px); } }
+.playing .next { display: none; }
+@media (prefers-reduced-motion: reduce) { .next svg { animation: none; } }
+@media (max-width: 760px) { .next { bottom: 14px; } }
