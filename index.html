@@ -62,7 +62,6 @@
     <p>Based in Buenos Aires, working with teams across the Americas. I turn scattered data into one warehouse people trust, then put an agent on top so anyone can just ask it.</p>
     <p class="tools">Snowflake · Cortex · dbt · Python · SQL · Airflow · AWS · Postgres · LLMs · RAG · agents</p>
     </div>
-    <a class="next" href="#experience" aria-label="Next: Experience"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 6l5 5 5-5"/></svg></a>
   </section>
 
 
@@ -90,7 +89,6 @@
         <span class="more">Read the case study →</span>
       </a>
     </div>
-    <a class="next" href="#projects" aria-label="Next: Products"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 6l5 5 5-5"/></svg></a>
   </section>
   <section id="projects" class="reveal">
     <p class="eyebrow">My edge</p>
@@ -129,7 +127,6 @@
         <span class="more">Building it now · Nov 2026</span>
       </a>
     </div>
-    <a class="next" href="#more" aria-label="Next: How I think"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 6l5 5 5-5"/></svg></a>
   </section>
 
 
@@ -142,7 +139,6 @@
       <a class="card" href="work.html"><h3>How I work</h3><p>Six rules that take a product from idea to production, each one with the project where it was learned.</p><span class="more">Read them →</span></a>
       <a class="card" href="work.html#education"><h3>Education &amp; certifications</h3><p>Information Systems Management at UADE, plus Snowflake, Google Cloud, Microsoft and more, with what each one covered.</p><span class="more">See them →</span></a>
     </div>
-    <a class="next" href="#contact" aria-label="Next: Contact"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 6l5 5 5-5"/></svg></a>
   </section>
   <section id="contact" class="contact reveal">
     <h2>Get in touch</h2>
@@ -154,6 +150,7 @@
     </div>
   </section>
 </main>
+<a class="scroll-next" href="#experience" aria-label="Next section"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 6l5 5 5-5"/></svg></a>
 
 <footer>© 2026 Luca Lamorte · Designed and built by hand · <a href="https://www.linkedin.com/in/lclamorte/" rel="noopener">LinkedIn</a></footer>
 
@@ -204,17 +201,29 @@
   }
 
   // Un link a una sección la centra debajo del menú, sin el aire de arriba; si no entra entera, muestra su comienzo.
-  document.querySelectorAll('a[href^="#"]').forEach(link => {
+  function center(section) {
+    const first = section.firstElementChild.getBoundingClientRect(), last = section.lastElementChild.getBoundingClientRect();
+    const nav = 76, room = innerHeight - nav, height = last.bottom - first.top;
+    scrollTo({ top: first.top + scrollY - nav - Math.max(24, (room - height) / 2) });
+    history.replaceState(null, '', '#' + section.id);
+  }
+  document.querySelectorAll('a[href^="#"]:not(.scroll-next)').forEach(link => {
     const section = document.getElementById(link.getAttribute('href').slice(1));
     if (!section || section.tagName !== 'SECTION') return;
-    link.addEventListener('click', event => {
-      const first = section.firstElementChild.getBoundingClientRect(), last = section.lastElementChild.getBoundingClientRect();
-      const nav = 76, room = innerHeight - nav, height = last.bottom - first.top;
-      event.preventDefault();
-      scrollTo({ top: first.top + scrollY - nav - Math.max(24, (room - height) / 2) });
-      history.replaceState(null, '', '#' + section.id);
-    });
+    link.addEventListener('click', event => { event.preventDefault(); center(section); });
   });
+
+  // Una sola flecha, fija abajo en el medio de la pantalla: lleva a la sección que sigue a la que se está viendo.
+  const sections = [...document.querySelectorAll('main > section')], next = document.querySelector('.scroll-next');
+  const upcoming = () => {
+    const y = scrollY + innerHeight / 2, i = sections.findIndex(s => { const b = s.getBoundingClientRect(); return b.top + scrollY <= y && b.bottom + scrollY > y; });
+    return sections[i + 1];
+  };
+  const sync = () => { const s = upcoming(); next.hidden = !s; if (s) next.href = '#' + s.id; };
+  addEventListener('scroll', sync, { passive: true });
+  addEventListener('resize', sync);
+  sync();
+  next.addEventListener('click', event => { const s = upcoming(); if (!s) return; event.preventDefault(); center(s); });
 </script>
 </body>
 </html>

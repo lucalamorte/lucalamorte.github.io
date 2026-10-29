@@ -81,12 +81,10 @@
     const node = (x, y, extra = {}) => { const n = { x, y, links: [], ...extra }; nodes.push(n); return n; };
     const link = (a, b) => { a.links.push(b); b.links.push(a); };
     const mx = Math.max(S / 2 + 4, colL - 26);
+    // El bus de la primera fila de cada sección es su parada: ahí se frena y la cámara muestra el título con esa fila.
     const dag = (els, from, need) => {
       const section = els[0].closest('section'), tasks = [], byRow = new Map();
-      // Al lado del título de la sección, el bus frena: se lee el título y se sigue con ↓.
-      const ty = box(section.querySelector('h2')).y + 20;
-      if (from.y < ty - 10) { const t = node(mx, ty, { stop: true }); link(from, t); from = t; }
-      const head = from;
+      let first = null;
       els.forEach(el => { const c = box(el), key = Math.round(c.y); byRow.set(key, [...(byRow.get(key) || []), { el, c }]); });
       let bus = from;
       // Lo que la cámara muestra centrado mientras se anda por cada fila: la primera va con el título de la sección.
@@ -94,8 +92,7 @@
       [...byRow.values()].forEach((row, r) => {
         const gy = row[0].c.y - 16;
         frame = [r ? gy - 20 : box(section.firstElementChild).y, Math.max(...row.map(q => q.c.b))];
-        if (!r && head.stop) head.frame = frame;
-        const b = node(mx, gy, { frame }); link(bus, b); bus = b;
+        const b = node(mx, gy, { frame, bus: true }); if (bus) link(bus, b); bus = b; first = first || b;
         let prev = b;
         row.sort((u, v) => u.c.x - v.c.x).forEach(({ el, c }) => {
           const t = node(c.x + c.w / 2, gy, { task: el, need, t: 0, done: el.classList.contains('read'), frame });
@@ -105,7 +102,7 @@
       const bottom = Math.max(...els.map(el => box(el).b));
       const gate = node(mx, bottom + 26, { gate: tasks, frame });
       link(bus, gate);
-      return gate;
+      return { first, gate };
     };
     // Portada: el título es el piso, sin línea encima, y no hay ningún hueco. La única salida es la cara de
     // Luca: al entrar el muñequito se zambulle, cruza la cabeza (las rayas se ondulan) y sale por abajo.
@@ -132,9 +129,9 @@
     }
 
     // El DAG arranca donde termina la zambullida, cruza la experiencia y los productos y desemboca en el bucket.
-    const entry = node(mx, box($('#experience h2')).y + 20, { stop: true });
-    const g1 = dag([...document.querySelectorAll('#experience .card.big')], entry, 2.2);
-    const g2 = dag([...document.querySelectorAll('#projects .card')], g1, 1.6);
+    const work = dag([...document.querySelectorAll('#experience .card.big')], null, 2.2);
+    const built = dag([...document.querySelectorAll('#projects .card')], work.gate, 1.6);
+    const entry = work.first, g2 = built.gate;
     const tasks = nodes.filter(n => n.task);
     things.push({ draw: now => drawDag(nodes, now) });
     const reads = { get done() { return tasks.filter(n => n.done).length; }, total: tasks.length };
@@ -401,7 +398,11 @@
   const onNode = n => { P.x = n.x - S / 2; P.y = n.y - S / 2; };
   function railStep(dt, control, now) {
     const r = P.rail;
+    // Primero se centra lo que hay que leer: hasta que la cámara llega, no arranca el viaje ni corre la tarea.
+    // La tecla igual se toma: el muñequito elige la arista y sale cuando la cámara está lista.
+    const settled = n => { const t = frameTarget(n); return t === null || Math.abs(scrollY - t) <= 6; };
     if (r.to) {
+      if (r.d === 0 && !settled(r.to)) return;
       r.d += RAIL * dt;
       const len = Math.hypot(r.to.x - r.at.x, r.to.y - r.at.y), u = Math.min(1, r.d / (len || 1));
       P.x = r.at.x + (r.to.x - r.at.x) * u - S / 2; P.y = r.at.y + (r.to.y - r.at.y) * u - S / 2; P.form = 'dot';
@@ -410,16 +411,20 @@
       if (n.exit) { P.rail = null; P.vy = 120; return; }
       if (n.task && !n.done) return;
       const ahead = n.links.filter(m => m !== from);
-      if (n.links.length === 2 && !n.task && !n.stop && (!n.gate || (from.y < n.y && gateOpen(n)))) r.to = ahead[0];
+      if (n.links.length === 2 && !n.task && !n.bus && (!n.gate || (from.y < n.y && gateOpen(n)))) r.to = ahead[0];
+      else r.fresh = true;
       return;
     }
     const n = r.at;
     if (n.task && !n.done) {
+      if (!settled(n)) return;
       n.t += dt; n.task.classList.add('lit');
       if (n.t >= n.need) { n.done = true; n.task.classList.add('read'); n.task.classList.remove('lit'); }
       return;
     }
     if (!control) return;
+    // Al frenar en un nodo hay que soltar la tecla para seguir: un toque nunca cruza dos tramos.
+    if (r.fresh) { if (keys.left || keys.right || keys.jump || keys.down) return; r.fresh = false; }
     const want = keys.left ? 'left' : keys.right ? 'right' : keys.jump ? 'up' : keys.down ? 'down' : null;
     const m = want && n.links.find(q => dirOf(n, q) === want);
     if (!m) return;
@@ -523,6 +528,11 @@
   }
 
   // ---------- cámara: sigue al muñequito pero deja leer ----------
+  function frameTarget(n) {
+    if (!n || !n.frame) return null;
+    const [y1, y2] = n.frame, nav = 64, max = document.documentElement.scrollHeight - H;
+    return Math.max(0, Math.min(max, y2 - y1 + 40 < H - nav ? (y1 + y2) / 2 - (H + nav) / 2 : y1 - nav - 24));
+  }
   function follow(dt) {
     const rel = P.y - scrollY;
     let target = null;
@@ -530,11 +540,8 @@
     if (rel > H * 0.62) target = P.y - H * 0.62;
     // En el DAG la cámara muestra centrado, debajo del menú, el cuadro del nodo hacia donde va el muñequito
     // (o su comienzo si no entra entero), para que se lea completo y no cortado.
-    const n = P.rail && (P.rail.to || P.rail.at);
-    if (n && n.frame) {
-      const [y1, y2] = n.frame, nav = 64;
-      target = y2 - y1 + 40 < H - nav ? (y1 + y2) / 2 - (H + nav) / 2 : y1 - nav - 24;
-    }
+    const framed = P.rail ? frameTarget(P.rail.to || P.rail.at) : null;
+    if (framed !== null) target = framed;
     if (target === null) return;
     scrollTo(0, Math.max(0, scrollY + (target - scrollY) * Math.min(1, dt * 7)));
     expected = scrollY;
@@ -556,7 +563,8 @@
       x: P.x, y: P.y, won,
       reads: [...document.querySelectorAll(TASKS)].map((el, k) => el.classList.contains('read') ? k : -1).filter(k => k >= 0),
       plats: level.plats.map((p, i) => (p.t || p.built || p.solid === false || (p.gate && p.gate.open)) ? { i, t: p.t, b: p.built, s: p.solid, o: !!(p.gate && p.gate.open) } : null).filter(Boolean),
-      rail: P.rail ? level.nodes.indexOf(P.rail.at) : -1,
+      // En los rieles se guarda la tarea donde estaba, o la sección: si el nivel se arma distinto, vuelve ahí.
+      rail: P.rail ? (P.rail.at.task ? { task: [...document.querySelectorAll(TASKS)].indexOf(P.rail.at.task) } : { section: [...document.querySelectorAll('main > section')].find(s => { const b = box(s); return P.y >= b.y && P.y < b.b; })?.id }) : null,
     };
   }
   function apply(snap) {
@@ -567,7 +575,10 @@
       if (st.o && p.open) p.open();
     }
     P.x = snap.x; P.y = snap.y; P.vy = 0; P.on = null; won = snap.won;
-    P.rail = snap.rail >= 0 && level.nodes[snap.rail] ? { at: level.nodes[snap.rail], to: null, d: 0 } : null;
+    const cards = [...document.querySelectorAll(TASKS)], sec = snap.rail && snap.rail.section && box(document.getElementById(snap.rail.section));
+    const back = !snap.rail ? null : snap.rail.task >= 0 ? level.nodes.find(n => n.task === cards[snap.rail.task])
+      : level.nodes.find(n => n.frame && !n.task && !n.gate && sec && n.y >= sec.y && n.y < sec.b) || level.entry;
+    P.rail = back ? { at: back, to: null, d: 0 } : null;
     if (P.rail) onNode(P.rail.at);
   }
   addEventListener('pagehide', () => { const snap = mode === 'wait' || mode === 'intro' ? null : snapshot(); try { if (snap) sessionStorage.setItem(SAVE, JSON.stringify(snap)); } catch (e) {} });
@@ -723,12 +734,20 @@
   // Salir del todo: el muñequito vuelve a esperar junto al botón, como al cargar la página.
   help.querySelector('.exit').addEventListener('click', event => { event.stopPropagation(); reset(); });
   document.querySelectorAll('.restart').forEach(button => button.addEventListener('click', event => { event.stopPropagation(); restart(); }));
-  addEventListener('resize', () => { resize(); if (level) { const snap = snapshot(); rebuild(); apply(snap); } });
+  // Con la pestaña oculta la página puede achicarse a cero: medir ahí rompe el nivel. Se mide al volver, si cambió.
+  let measured = '';
+  const relayout = () => {
+    if (document.hidden || !innerWidth || !innerHeight || measured === `${innerWidth}x${innerHeight}`) return;
+    measured = `${innerWidth}x${innerHeight}`;
+    resize(); if (level) { const snap = snapshot(); rebuild(); apply(snap); }
+  };
+  addEventListener('resize', relayout);
+  document.addEventListener('visibilitychange', relayout);
 
   // Para probarlo desde afuera.
-  window.__pk = { level: () => level, activate, state: () => ({ dive: !!P.dive, mode, x: Math.round(P.x), y: Math.round(P.y), form: P.form, ride: !!P.ride, won, on: P.on && (P.on.kind || (P.on.floor ? 'floor' : 'ledge')), scrollY }), start, stop, keys: k => Object.assign(keys, k), place: (x, y) => { P.x = x; P.y = y; P.vy = 0; }, sim: ms => { let t = performance.now(); for (let k = 0; k < ms / 16; k++) { t += 16; step(0.016, t, mode === 'play'); } return window.__pk.state(); } };
+  window.__pk = { level: () => level, activate, state: () => ({ dive: !!P.dive, mode, x: Math.round(P.x), y: Math.round(P.y), form: P.form, ride: !!P.ride, won, on: P.on && (P.on.kind || (P.on.floor ? 'floor' : 'ledge')), scrollY }), start, stop, keys: k => Object.assign(keys, k), place: (x, y) => { P.x = x; P.y = y; P.vy = 0; }, sim: ms => { let t = performance.now(); for (let k = 0; k < ms / 16; k++) { t += 16; step(0.016, t, mode === 'play'); if (mode === 'play') follow(0.016); } return window.__pk.state(); } };
 
-  resize();
+  relayout();
   if (document.readyState === 'complete') restore(); else addEventListener('load', restore);
   last = performance.now(); requestAnimationFrame(frame);
 })();

@@ -582,14 +582,14 @@ h2 { margin-bottom: 18px; }
 .projects.four .card .top { margin-bottom: 14px; }
 .projects.four .card .visual { margin: 6px 0 14px; }
 .projects.four .card .more { margin-top: auto; }
-/* El paso a la sección siguiente: una flecha sola abajo en el medio, que baja y sube despacio. */
-.next { position: absolute; left: 50%; bottom: 40px; transform: translateX(-50%); display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; color: var(--text-2); transition: color .2s, background .2s; }
-.next svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; animation: next-bob 1.8s ease-in-out infinite; }
-.next:hover { color: var(--accent); background: var(--accent-tint); }
-@keyframes next-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(4px); } }
-.playing .next { display: none; }
-@media (prefers-reduced-motion: reduce) { .next svg { animation: none; } }
-@media (max-width: 760px) { .next { bottom: 14px; } }
+/* El paso a la sección siguiente: una sola flecha fija abajo en el medio de la pantalla, siempre en el mismo lugar. */
+.scroll-next { position: fixed; z-index: 20; left: 50%; bottom: 18px; transform: translateX(-50%); display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; color: var(--text-2); transition: color .2s, background .2s; }
+.scroll-next svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; animation: scroll-next-bob 1.8s ease-in-out infinite; }
+.scroll-next:hover { color: var(--accent); background: var(--accent-tint); }
+.scroll-next[hidden] { display: none; }
+@keyframes scroll-next-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(4px); } }
+.playing .scroll-next { display: none; }
+@media (prefers-reduced-motion: reduce) { .scroll-next svg { animation: none; } }
 /* Las herramientas de cada tarjeta, en la misma línea mono que la portada. */
 .card p.tools, .card.big p.tools { margin: auto 0 14px; font-family: var(--mono); font-size: .76rem; line-height: 1.7; color: var(--muted); }
 .card .tools + .more, .card.big .tools + .more, .projects.four .card .tools + .more { margin-top: 0; }
