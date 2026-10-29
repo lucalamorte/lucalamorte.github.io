@@ -534,8 +534,8 @@ footer { border-top: 0; }
 .earlier { margin: 28px 0 0; font-size: .9rem; color: var(--muted); }
 .earlier b { color: var(--text-2); font-weight: 600; }
 /* Mientras se juega, el contacto deja lugar a la izquierda para la caja de Snowflake. */
-.playing .contact { padding-top: 220px; }
-@media (max-width: 760px) { .playing .contact { padding-top: 330px; } }
+.playing .contact, .finished .contact { padding-top: 220px; }
+@media (max-width: 760px) { .playing .contact, .finished .contact { padding-top: 330px; padding-bottom: 150px; } }
 /* Los tres perfiles, debajo del nombre. */
 .hero .roles { margin: 14px 0 0 !important; font-family: var(--mono); font-size: .9rem !important; color: var(--accent) !important; letter-spacing: .02em; text-align: left; }
 /* Productos en dos columnas para que entren cuatro, el de Cortex marcado como en curso. */

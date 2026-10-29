@@ -10,7 +10,7 @@
   if (!hero) return;
   const touch = matchMedia('(pointer: coarse)').matches;
   const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const ACCENT = '#5eead4', MUTED = '#94a3b8', LINE = 'rgba(94,234,212,.55)', FAINT = 'rgba(148,163,184,.35)', INK = '#0b1120', BG = 'rgba(11,17,32,.92)', RED = '#f87171', EGG = '#f8fafc', YOLK = '#fbbf24';
+  const ACCENT = '#5eead4', MUTED = '#94a3b8', LINE = 'rgba(94,234,212,.55)', FAINT = 'rgba(148,163,184,.35)', INK = '#0b1120';
   const GRAVITY = 1900, JUMP = 720, SPEED = 290, S = 24, MONO = '11px "JetBrains Mono", monospace';
 
   // ---------- piezas en la página ----------
@@ -59,19 +59,6 @@
       let x = -60;
       for (const [gx, gw] of [...gaps, [W + 60, 0]]) { if (gx > x) ledge(x, y, gx - x, { floor: true, ...extra }); x = gx + gw; }
       gaps.forEach(([gx, gw]) => things.push({ draw: now => drawGap(gx + gw / 2, y, now) }));
-    };
-    // Lectura obligada: paredes a los costados de una lista y, debajo de cada fila, un piso. Parado ahí se lee
-    // lo de arriba; cuando la barrita se llena se abre una compuerta en una punta (alternando lados) y se baja
-    // caminando hasta ella. La flecha ↓ es un atajo. Con auto, el piso se abre solo al terminar.
-    const GATE = 56;
-    const gated = (L, R, k, yOf, extra) => {
-      const right = k % 2 === 0;
-      const p = ledge(right ? L : L + GATE, yOf(), R - L - GATE, { kind: 'read', t: 0, ...extra });
-      const gate = ledge(right ? R - GATE : L, yOf(), GATE, { kind: 'gate', main: p });
-      p.gate = gate; p.side = right ? '→' : '←'; gate.bare = p.bare;
-      p.tick = () => { const ny = yOf(); for (const q of [p, gate]) { if (P.on === q) P.y += ny - q.y; q.y = ny; } };
-      p.open = () => { gate.solid = false; gate.open = true; };
-      return p;
     };
     // El DAG: las tarjetas son tareas y el muñequito viaja por las aristas como un dato. Las aristas van por
     // el margen izquierdo (el bus) y por el hueco de arriba de cada fila de tarjetas, nunca sobre el texto.
@@ -155,27 +142,26 @@
     // izquierda del contacto, que tiene lugar libre, con su piso justo arriba de los botones.
     const ctBtn = box($('#contact .btn'));
     const wx = colL + 14, wy = ctBtn.b - 60, top = wy - 240;
-    const path = [[bx + bw / 2, fy + 56], [bx + bw / 2, top], [wx + 28, top], [wx + 28, top + 30]];
+    const sfW = Math.min(240, W - wx - 16), boxL = wx - 14, boxR = boxL + sfW, boxB = wy + 28;
+    const hatch = { x: boxR - 74, w: 58 }, hx = hatch.x + hatch.w / 2;
+    const path = [[bx + bw / 2, fy + 56], [bx + bw / 2, top], [hx, top], [hx, top + 30]];
     const pipe = { path, mouth: [bx + bw / 2, fy + 56] };
     things.push({ draw: now => drawPipe(pipe, now) });
 
-    // Snowflake es una caja cerrada: las paredes no dejan salir. Adentro, todo va de pared a pared y en orden:
-    // primero se prende el warehouse (sin cómputo no corre nada), después dbt construye raw, staging y mart.
-    // No se puede saltear ninguna capa. Al fondo, la salida pasa por Monte Carlo.
-    const sfW = Math.min(240, W - wx - 16), boxL = wx - 14, boxR = boxL + sfW, boxB = wy + 28;
+    // Snowflake es una caja cerrada y baja sola, en orden: primero se prende el warehouse (sin cómputo no corre
+    // nada), después dbt construye raw, staging y mart. Cada capa es un piso que se abre recién cuando quedó
+    // construida, así que no se saltea ninguna. Al fondo, la salida pasa por Monte Carlo.
     walls.push({ x: boxL, y1: top - 18, y2: boxB }, { x: boxR, y1: top - 18, y2: boxB });
     const LAYERS = [['warehouse', 1.5], ['raw.orders', 0.8], ['stg_orders', 1.4], ['fct_orders', 1.4]];
     LAYERS.forEach(([name, need], k) => {
-      const m = gated(boxL + 2, boxR - 2, k, () => top + 50 + k * 50, { kind: 'model', name, need, built: false });
+      const m = ledge(boxL + 2, top + 50 + k * 50, boxR - boxL - 4, { kind: 'model', name, need, t: 0, built: false });
       if (k === 0) m.label = () => m.built ? 'warehouse M · running' : `warehouse ${['XS', 'S', 'M'][Math.min(2, Math.floor(m.t / m.need * 3))]}`;
-      m.stand = m.gate.stand = dt => {
+      m.stand = dt => {
         if (m.built) return;
         m.t += dt;
-        if (m.t >= m.need) { m.built = true; m.open();  }
+        if (m.t >= m.need) { m.built = true; m.solid = false; }
       };
-      m.gate.land = m.land;
     });
-    const hatch = { x: boxR - 74, w: 58 };
     ledge(boxL, boxB, hatch.x - boxL, { floor: true });
     ledge(hatch.x + hatch.w, boxB, boxR - hatch.x - hatch.w, { floor: true });
     const mc = { checked: false };
@@ -194,18 +180,20 @@
     } });
     level_mc = { x: hatch.x, w: hatch.w, y: boxB, state: mc };
 
-    // Contacto: el buzón es la meta.
-    // La fila de botones ocupa todo el ancho: se mide desde el primer botón hasta el último.
-    const ct = box($('#contact')), btn = box($('#contact .btn')), lastBtn = box($('#contact .cta .btn:last-child'));
-    const right = lastBtn.r + 40 + 40 < W ? lastBtn.r + 40 : Math.max(8, btn.x - 60);
-    const mailbox = { x: right, y: btn.b - 44, w: 32, h: 44, flag: 0 };
-    things.push({ draw: now => drawMailbox(mailbox, now) });
-    floor(btn.b, []);
+    // Contacto: la meta es la tabla. El dato que recorrió todo el pipeline cae como su fila nueva, y encima de la
+    // tabla el muñequito queda como el agente que la consulta. Va al costado de los botones; si no hay lugar a
+    // ninguno de los dos lados (en el celu), debajo de ellos y centrada.
+    const btn = box($('#contact .btn')), lastBtn = box($('#contact .cta .btn:last-child')), tw = 150, th = 72;
+    const tx = lastBtn.r + 40 + tw < W - 16 ? lastBtn.r + 40 : btn.x - 40 - tw > 8 ? btn.x - 40 - tw : null;
+    const table = tx === null ? { x: (W - tw) / 2, y: btn.b + 40, w: tw, h: th, fill: 0 } : { x: tx, y: btn.b - th, w: tw, h: th, fill: 0 };
+    things.push({ draw: now => drawTable(table, now) });
+    ledge(table.x, table.y, tw, { hidden: true });
+    floor(table.y + th, []);
 
-    const STAGES = { experience: 'the work', projects: 'what was built', contact: 'the return' };
-    for (const [id, stage] of Object.entries(STAGES)) { const b = box(document.getElementById(id)); checkpoints.push({ y: b.y, x: colL + 30, stage }); }
+    // Si se cae fuera del nivel, reaparece al comienzo de la última sección que pasó.
+    for (const id of ['experience', 'projects', 'contact']) checkpoints.push({ y: box(document.getElementById(id)).y, x: colL + 30 });
     const bounds = { l: Math.max(0, colL - 44), r: Math.min(W, colR + 44) };
-    return { plats, things, walls, bounds, face, nodes, entry, mc: level_mc, pipe, bucket, mailbox, checkpoints, colL, colR, docH: document.documentElement.scrollHeight };
+    return { plats, things, walls, bounds, face, nodes, entry, mc: level_mc, pipe, bucket, table, checkpoints, colL, colR, docH: document.documentElement.scrollHeight };
   }
 
   // ---------- dibujo ----------
@@ -282,16 +270,24 @@
     ctx.strokeStyle = color; ctx.lineWidth = 1.5;
     for (let k = 0; k < 3; k++) { const a = k * Math.PI / 3; ctx.beginPath(); ctx.moveTo(x - Math.cos(a) * r, y - Math.sin(a) * r); ctx.lineTo(x + Math.cos(a) * r, y + Math.sin(a) * r); ctx.stroke(); }
   }
-  function drawMailbox(m, now) {
-    const up = won ? 1 : 0;
-    m.flag += (up - m.flag) * 0.12;
-    ctx.strokeStyle = MUTED; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(m.x + m.w / 2, m.y + 24); ctx.lineTo(m.x + m.w / 2, m.y + m.h); ctx.stroke();
-    ctx.strokeStyle = ACCENT; ctx.lineWidth = 2; ctx.beginPath();
-    ctx.moveTo(m.x, m.y + 26); ctx.lineTo(m.x, m.y + 12); ctx.arc(m.x + m.w / 2, m.y + 12, m.w / 2, Math.PI, 0); ctx.lineTo(m.x + m.w, m.y + 26); ctx.closePath(); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(m.x + 8, m.y + 14); ctx.lineTo(m.x + m.w - 8, m.y + 14); ctx.stroke();
-    ctx.save(); ctx.translate(m.x + m.w + 3, m.y + 22); ctx.rotate((1 - m.flag) * Math.PI / 2);
-    ctx.fillStyle = RED; ctx.fillRect(-1, -16, 2, 16); ctx.fillRect(-1, -16, 11, 7); ctx.restore();
-    if (!won) text('contact', m.x + m.w / 2, m.y - 10, MUTED, 'center');
+  // La tabla de la meta: encabezado, dos filas que ya estaban y la última, vacía hasta que llega el dato.
+  function drawTable(t, now) {
+    t.fill += ((won ? 1 : 0) - t.fill) * 0.12;
+    const row = t.h / 4;
+    ctx.strokeStyle = 'rgba(94,234,212,.5)'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.roundRect(t.x, t.y, t.w, t.h, 6); ctx.stroke();
+    ctx.strokeStyle = 'rgba(148,163,184,.25)'; ctx.lineWidth = 1;
+    for (let k = 1; k < 4; k++) { ctx.beginPath(); ctx.moveTo(t.x, t.y + row * k); ctx.lineTo(t.x + t.w, t.y + row * k); ctx.stroke(); }
+    text('contacts', t.x, t.y - 8, MUTED);
+    text('id   from     status', t.x + 8, t.y + row - 5, MUTED);
+    ctx.fillStyle = 'rgba(148,163,184,.18)';
+    for (const k of [1, 2]) { ctx.fillRect(t.x + 8, t.y + row * k + 7, 14, 4); ctx.fillRect(t.x + 34, t.y + row * k + 7, 44, 4); ctx.fillRect(t.x + 96, t.y + row * k + 7, 30, 4); }
+    const ly = t.y + row * 3;
+    if (t.fill > 0.02) {
+      ctx.globalAlpha = t.fill; ctx.fillStyle = 'rgba(94,234,212,.12)'; ctx.fillRect(t.x + 1, ly + 1, t.w - 2, row - 2);
+      text('3    you      ✓ loaded', t.x + 8, ly + row - 5, ACCENT); ctx.globalAlpha = 1;
+    } else {
+      ctx.setLineDash([3, 5]); ctx.strokeStyle = MUTED; ctx.beginPath(); ctx.roundRect(t.x + 6, ly + 4, t.w - 12, row - 8, 3); ctx.stroke(); ctx.setLineDash([]);
+    }
   }
   function drawPlat(p, now) {
     if (p.hidden) return;
@@ -302,12 +298,6 @@
       if (p.t) { ctx.fillStyle = ACCENT; ctx.beginPath(); ctx.roundRect(p.x + 6, p.y, (p.w - 12) * Math.min(1, p.t / p.need), 6, 3); ctx.fill(); }
       text(p.label ? p.label() : p.name, p.x + 12, p.y + 20, MUTED);
       if (p.label && !p.built) snowflake(p.x + p.w - 18, p.y + 16, 5, p.t ? ACCENT : MUTED);
-      return;
-    }
-    if (p.kind === 'gate') {
-      // Abierta, corta la línea de la fila; cerrada, la línea de la fila alcanza (o una marca si no hay línea).
-      if (p.open) { ctx.fillStyle = '#0b1120'; ctx.fillRect(p.x + 4, p.y - 2, p.w - 8, 5); if (P.on === p.main || P.on === p) drawGap(p.x + p.w / 2, p.y, now); return; }
-      if (!p.bare) { ctx.strokeStyle = MUTED; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(p.x + 3, p.y); ctx.lineTo(p.x + p.w - 3, p.y); ctx.stroke(); }
       return;
     }
     if (p.floor) { ctx.strokeStyle = FAINT; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(p.x + p.w, p.y); ctx.stroke(); return; }
@@ -331,6 +321,7 @@
     ctx.fillStyle = INK;
     const eh = blink ? 1.5 : 7 * sy;
     ctx.fillRect(px + w * 0.27 + look - 2, py + h * 0.32, 4, eh); ctx.fillRect(px + w * 0.63 + look - 2, py + h * 0.32, 4, eh);
+    if (won) { ctx.strokeStyle = ACCENT; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(px + w / 2, py); ctx.lineTo(px + w / 2, py - 8); ctx.stroke(); ctx.fillStyle = ACCENT; ctx.beginPath(); ctx.arc(px + w / 2, py - 10, 3, 0, Math.PI * 2); ctx.fill(); }
   }
 
   function draw(now) {
@@ -352,6 +343,8 @@
       }
       ctx.globalAlpha = fade = 1;
     } else if (level && P.on && !P.on.floor && !P.on.hidden) drawPlat(P.on, now);
+    // Al terminar, la tabla con la fila nueva queda a la vista, con el agente encima.
+    if (won && level && mode !== 'play') drawTable(level.table, now);
     // La estela del muñequito cuando atraviesa el retrato.
     P.trail.forEach((t, k) => { ctx.globalAlpha = (k / P.trail.length) * 0.35; ctx.fillStyle = ACCENT; ctx.beginPath(); ctx.roundRect(t[0] + 4, t[1] + 4, S - 8, S - 8, 5); ctx.fill(); });
     ctx.globalAlpha = 1;
@@ -517,11 +510,11 @@
     P.form = inBucket ? 'file' : 'pk';
     if (inBucket && P.y + S > b.y + b.d + 4) { P.ride = { d: 0 }; P.form = 'dot'; }
 
-    const m = level.mailbox;
+    const m = level.table;
     if (!won && P.x + S > m.x - 6 && P.x < m.x + m.w + 6 && P.y + S > m.y - 10 && P.y < m.y + m.h) {
-      won = true; P.squash = 0.6; say('found him. say hi', 4000);
+      won = true; keys = {}; document.body.classList.add('finished'); P.squash = 0.6; P.x = m.x + m.w / 2 - S / 2; P.y = m.y - S; P.vy = 0; say('agent ready · say hi', 4000);
       const hi = $('#contact .btn'); hi.classList.remove('wiggle'); void hi.offsetWidth; hi.classList.add('wiggle');
-      setTimeout(() => { stop(); P.x = m.x + m.w / 2 - S / 2; P.y = m.y - S; P.vy = 0; }, 1600);
+      setTimeout(stop, 1600);
     }
     for (const c of level.checkpoints) if (P.y > c.y + 40) level.respawn = c;
     if (P.y > level.docH + 60) { const c = level.respawn || level.checkpoints[0]; P.x = c.x; P.y = c.y + 30; P.vy = 0; }
@@ -562,7 +555,7 @@
     return {
       x: P.x, y: P.y, won,
       reads: [...document.querySelectorAll(TASKS)].map((el, k) => el.classList.contains('read') ? k : -1).filter(k => k >= 0),
-      plats: level.plats.map((p, i) => (p.t || p.built || p.solid === false || (p.gate && p.gate.open)) ? { i, t: p.t, b: p.built, s: p.solid, o: !!(p.gate && p.gate.open) } : null).filter(Boolean),
+      plats: level.plats.map((p, i) => (p.t || p.built || p.solid === false) ? { i, t: p.t, b: p.built, s: p.solid } : null).filter(Boolean),
       // En los rieles se guarda la tarea donde estaba, o la sección: si el nivel se arma distinto, vuelve ahí.
       rail: P.rail ? (P.rail.at.task ? { task: [...document.querySelectorAll(TASKS)].indexOf(P.rail.at.task) } : { section: [...document.querySelectorAll('main > section')].find(s => { const b = box(s); return P.y >= b.y && P.y < b.b; })?.id }) : null,
     };
@@ -572,9 +565,10 @@
       const p = level.plats[st.i];
       if (!p) continue;
       p.t = st.t; p.built = st.b; p.solid = st.s;
-      if (st.o && p.open) p.open();
     }
     P.x = snap.x; P.y = snap.y; P.vy = 0; P.on = null; won = snap.won;
+    document.body.classList.toggle('finished', !!won);
+    if (won) { P.x = level.table.x + level.table.w / 2 - S / 2; P.y = level.table.y - S; }
     const cards = [...document.querySelectorAll(TASKS)], sec = snap.rail && snap.rail.section && box(document.getElementById(snap.rail.section));
     const back = !snap.rail ? null : snap.rail.task >= 0 ? level.nodes.find(n => n.task === cards[snap.rail.task])
       : level.nodes.find(n => n.frame && !n.task && !n.gate && sec && n.y >= sec.y && n.y < sec.b) || level.entry;
@@ -619,7 +613,7 @@
   function reset() {
     try { sessionStorage.removeItem(SAVE); } catch (e) {}
     document.querySelectorAll('#experience .card, #projects .card').forEach(el => { el.classList.remove('read', 'lit'); delete el.dataset.said; delete el.dataset.used; });
-    won = false; labels = []; P.ride = null; P.rail = null; P.dive = null; P.form = 'pk'; P.vy = 0; P.on = null;
+    won = false; document.body.classList.remove('finished'); labels = []; P.ride = null; P.rail = null; P.dive = null; P.form = 'pk'; P.vy = 0; P.on = null;
     keys = {}; mode = 'wait';
     document.body.classList.remove('playing'); pad.hidden = true;
     document.documentElement.style.scrollBehavior = '';
