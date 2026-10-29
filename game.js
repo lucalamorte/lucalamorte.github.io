@@ -356,15 +356,29 @@
     }
     const [x, y] = path[path.length - 1]; return [x, y, true];
   }
+  // La zambullida es una sola curva suave (de la cara hacia abajo), medida por largo para avanzar parejo.
+  const DIVE_MAX = 640;
+  function divePath(a, via, b) {
+    const c = via ? [2 * via[0] - (a[0] + b[0]) / 2, 2 * via[1] - (a[1] + b[1]) / 2] : [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
+    const pts = []; let s = 0;
+    for (let i = 0; i <= 48; i++) {
+      const t = i / 48, x = (1 - t) * (1 - t) * a[0] + 2 * (1 - t) * t * c[0] + t * t * b[0], y = (1 - t) * (1 - t) * a[1] + 2 * (1 - t) * t * c[1] + t * t * b[1];
+      if (i) s += Math.hypot(x - pts[i - 1][0], y - pts[i - 1][1]);
+      pts.push([x, y, s]);
+    }
+    return { pts, s: 0, v: SPEED };
+  }
   function step(dt, now, control) {
     if (P.dive) {
-      const d = P.dive, px = P.x, py = P.y;
-      d.t = Math.min(1, d.t + dt / 0.9);
-      const e = d.t * d.t * (3 - 2 * d.t);
-      const [from, to, u] = d.via ? (e < 0.4 ? [d.a, d.via, e / 0.4] : [d.via, d.b, (e - 0.4) / 0.6]) : [d.a, d.b, e];
-      P.x = from[0] + (to[0] - from[0]) * u; P.y = from[1] + (to[1] - from[1]) * u;
+      // Recorre la curva sin frenar nunca: arranca a paso de caminata, acelera como una caída y sale
+      // cayendo a la misma velocidad, así no hay un tope en la entrada ni en la salida.
+      const d = P.dive, px = P.x, py = P.y, pts = d.pts;
+      d.v = Math.min(DIVE_MAX, d.v + GRAVITY * dt); d.s += d.v * dt;
+      let k = 1; while (k < pts.length - 1 && pts[k][2] < d.s) k++;
+      const [ax, ay, as] = pts[k - 1], [bx, by, bs] = pts[k], u = Math.min(1, (d.s - as) / (bs - as || 1));
+      P.x = ax + (bx - ax) * u; P.y = ay + (by - ay) * u;
       if (window.__portraitPoke) window.__portraitPoke(P.x + S / 2, P.y + S / 2 - scrollY, (P.x - px) * 3, (P.y - py) * 3);
-      if (d.t === 1) { P.dive = null; P.vy = 200; if (window.__portraitPoke) window.__portraitPoke(null); }
+      if (d.s >= pts[pts.length - 1][2]) { P.dive = null; P.vy = Math.min(560, d.v * (by - ay) / Math.max(1, bs - as)); if (window.__portraitPoke) window.__portraitPoke(null); }
       return;
     }
     if (P.ride) {
@@ -420,7 +434,7 @@
     }
     const f = level.face;
     if (f && control && P.x + S / 2 > f.x1 && P.x + S / 2 < f.x2 && P.y + S / 2 > f.y1 && P.y + S / 2 < f.y2) {
-      P.dive = { t: 0, a: [P.x, P.y], via: f.via ? [f.via[0] - S / 2, f.via[1] - S / 2] : null, b: [f.ex - S / 2, f.ey] }; P.on = null; P.ground = false;
+      P.dive = divePath([P.x, P.y], f.via ? [f.via[0] - S / 2, f.via[1] - S / 2] : null, [f.ex - S / 2, f.ey]); P.on = null; P.ground = false;
       return;
     }
     const mc = level.mc;
