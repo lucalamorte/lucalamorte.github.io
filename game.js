@@ -109,7 +109,10 @@
     if (fig && fig.b > h1.y) {
       // Con el retrato al costado, el título llega hasta la cara: caminando a la izquierda se entra de frente.
       // Los hombros cierran por debajo, así que no hay otra forma de bajar.
-      ledge(fig.r - fig.w * 0.25, h1.y + 4, Math.min(W, colR + 44) - (fig.r - fig.w * 0.25), { floor: true });
+      const edge = fig.r - fig.w * 0.25, title = ledge(edge, h1.y + 4, Math.min(W, colR + 44) - edge, { floor: true });
+      // Caminando se llega al borde de la silueta y ahí se frena: para entrar a la cara hay que saltar.
+      walls.push({ x: edge, y1: h1.y + 4 - 30, y2: h1.y + 4 });
+      things.push({ draw: now => { if (P.on === title && P.x <= edge + 6) drawJump(edge + 12, h1.y - 44, now); } });
     } else {
       // En el celu el retrato queda arriba del título: se salta desde el título hacia la cara.
       ledge(h1.x, h1.y + 4, h1.w, { floor: true });
@@ -120,7 +123,7 @@
     if (fig) {
       face = fig.b > h1.y
         // Con el retrato al costado, todo lo que quede a la izquierda del título entra por la cara, salte por donde salte.
-        ? { x1: -60, x2: fig.r - fig.w * 0.25 + 14, y1: h.y - 200, y2: fig.y + fig.h * 0.8, ex: fig.x + fig.w * 0.42, ey: landY, via: [fig.x + fig.w * 0.5, fig.y + fig.h * 0.38] }
+        ? { jump: true, x1: -60, x2: fig.r - fig.w * 0.25 + 14, y1: h.y - 200, y2: fig.y + fig.h * 0.8, ex: fig.x + fig.w * 0.42, ey: landY, via: [fig.x + fig.w * 0.5, fig.y + fig.h * 0.38] }
         : { x1: fig.x + fig.w * 0.3, x2: fig.x + fig.w * 0.7, y1: fig.y + fig.h * 0.08, y2: fig.y + fig.h * 0.74, ex: fig.x + fig.w * 0.42, ey: landY };
     }
 
@@ -210,6 +213,7 @@
     ctx.fillStyle = color; ctx.fillText(t, x, y);
   }
   function dashedBox(x, y, w, h, r) { ctx.setLineDash([3, 7]); ctx.strokeStyle = 'rgba(94,234,212,.3)'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.roundRect(x, y, w, h, r); ctx.stroke(); ctx.setLineDash([]); }
+  function drawJump(x, y, now) { const k = Math.sin(now / 250) * 3; text('↑', x, y - k, ACCENT, 'center', '14px "JetBrains Mono", monospace'); }
   function drawGap(x, y, now) { const k = Math.sin(now / 250) * 3; text('↓', x, y + 4 + k, ACCENT, 'center', '14px "JetBrains Mono", monospace'); }
   function drawBucket(b, open, now, run, reads) {
     ctx.strokeStyle = ACCENT; ctx.lineWidth = 2; ctx.beginPath();
@@ -356,29 +360,23 @@
     }
     const [x, y] = path[path.length - 1]; return [x, y, true];
   }
-  // La zambullida es una sola curva suave (de la cara hacia abajo), medida por largo para avanzar parejo.
+  // La zambullida arranca con la velocidad que traía el muñequito (caminando o en pleno salto).
   const DIVE_MAX = 640;
-  function divePath(a, via, b) {
-    const c = via ? [2 * via[0] - (a[0] + b[0]) / 2, 2 * via[1] - (a[1] + b[1]) / 2] : [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
-    const pts = []; let s = 0;
-    for (let i = 0; i <= 48; i++) {
-      const t = i / 48, x = (1 - t) * (1 - t) * a[0] + 2 * (1 - t) * t * c[0] + t * t * b[0], y = (1 - t) * (1 - t) * a[1] + 2 * (1 - t) * t * c[1] + t * t * b[1];
-      if (i) s += Math.hypot(x - pts[i - 1][0], y - pts[i - 1][1]);
-      pts.push([x, y, s]);
-    }
-    return { pts, s: 0, v: SPEED };
-  }
+  const divePath = (via, b) => { const vx = P.vx || P.face * SPEED, vy = P.vy; return { via, b, vx, vy, speed: Math.min(DIVE_MAX, Math.hypot(vx, vy)), age: 0 }; };
   function step(dt, now, control) {
     if (P.dive) {
-      // Recorre la curva sin frenar nunca: arranca a paso de caminata, acelera como una caída y sale
-      // cayendo a la misma velocidad, así no hay un tope en la entrada ni en la salida.
-      const d = P.dive, px = P.x, py = P.y, pts = d.pts;
-      d.v = Math.min(DIVE_MAX, d.v + GRAVITY * dt); d.s += d.v * dt;
-      let k = 1; while (k < pts.length - 1 && pts[k][2] < d.s) k++;
-      const [ax, ay, as] = pts[k - 1], [bx, by, bs] = pts[k], u = Math.min(1, (d.s - as) / (bs - as || 1));
-      P.x = ax + (bx - ax) * u; P.y = ay + (by - ay) * u;
+      // Conserva el impulso que traía: la velocidad gira de a poco hacia la cara y después hacia la salida,
+      // y acelera como una caída. Si venía subiendo en un salto, sigue subiendo un poco antes de curvarse:
+      // nunca se frena ni se da vuelta de golpe.
+      const d = P.dive, px = P.x, py = P.y;
+      d.age += dt;
+      const target = d.via || d.b, tx = target[0] - P.x, ty = target[1] - P.y, dist = Math.hypot(tx, ty);
+      const speed = d.speed = Math.min(DIVE_MAX, d.speed + GRAVITY * 0.6 * dt), turn = Math.min(1, dt * 7);
+      d.vx += (tx / (dist || 1) * speed - d.vx) * turn; d.vy += (ty / (dist || 1) * speed - d.vy) * turn;
+      P.x += d.vx * dt; P.y += d.vy * dt;
+      if (d.via && dist < 40) d.via = null;
       if (window.__portraitPoke) window.__portraitPoke(P.x + S / 2, P.y + S / 2 - scrollY, (P.x - px) * 3, (P.y - py) * 3);
-      if (d.s >= pts[pts.length - 1][2]) { P.dive = null; P.vy = Math.min(560, d.v * (by - ay) / Math.max(1, bs - as)); if (window.__portraitPoke) window.__portraitPoke(null); }
+      if ((!d.via && P.y >= d.b[1]) || d.age > 2.5) { P.dive = null; P.vy = Math.max(0, Math.min(560, d.vy)); if (window.__portraitPoke) window.__portraitPoke(null); }
       return;
     }
     if (P.ride) {
@@ -433,8 +431,8 @@
       P.inFigure = inside;
     }
     const f = level.face;
-    if (f && control && P.x + S / 2 > f.x1 && P.x + S / 2 < f.x2 && P.y + S / 2 > f.y1 && P.y + S / 2 < f.y2) {
-      P.dive = divePath([P.x, P.y], f.via ? [f.via[0] - S / 2, f.via[1] - S / 2] : null, [f.ex - S / 2, f.ey]); P.on = null; P.ground = false;
+    if (f && control && (!P.ground || !f.jump) && P.x + S / 2 > f.x1 && P.x + S / 2 < f.x2 && P.y + S / 2 > f.y1 && P.y + S / 2 < f.y2) {
+      P.dive = divePath(f.via ? [f.via[0] - S / 2, f.via[1] - S / 2] : null, [f.ex - S / 2, f.ey]); P.on = null; P.ground = false;
       return;
     }
     const mc = level.mc;
