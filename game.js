@@ -729,7 +729,8 @@
   // ---------- controles ----------
   const KEY = { ArrowLeft: 'left', a: 'left', ArrowRight: 'right', d: 'right', ArrowUp: 'jump', w: 'jump', ' ': 'jump', ArrowDown: 'down', s: 'down' };
   addEventListener('keydown', event => {
-    if (event.ctrlKey || event.metaKey || event.altKey) return;
+    // Con un visor abierto (las capturas en grande), las teclas son del visor.
+    if (event.ctrlKey || event.metaKey || event.altKey || document.querySelector('dialog[open]')) return;
     const k = KEY[event.key.length === 1 ? event.key.toLowerCase() : event.key];
     if (mode === 'intro') { if (k) event.preventDefault(); return; }
     if (mode === 'play') {
