@@ -597,3 +597,26 @@ h2 { margin-bottom: 18px; }
 .title-row { display: flex; align-items: baseline; justify-content: space-between; gap: 16px; }
 .title-row .when { flex: none; font-family: var(--mono); font-size: .76rem; color: var(--muted); }
 @media (max-width: 480px) { .title-row { flex-direction: column; gap: 0; } }
+/* Tarjetas con carrusel: el link del caso cubre toda la tarjeta y el carrusel queda por encima. */
+.card.linked { position: relative; }
+.card.linked .more::after { content: ""; position: absolute; inset: 0; border-radius: inherit; }
+/* Todos los dibujos de producto en la misma caja, para que las filas coincidan con o sin carrusel. */
+.projects.four .card .visual { max-width: none; }
+.projects.four .card .visual:not(.slides), .slides .track { aspect-ratio: 16 / 10; display: grid; place-items: center; }
+/* El carrusel: se desliza con el dedo, con las flechas o con los puntitos. Primero el diagrama, después capturas. */
+.slides { position: relative; z-index: 1; }
+.slides .track { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; scroll-behavior: smooth; scrollbar-width: none; border-radius: 12px; }
+.slides .track::-webkit-scrollbar { display: none; }
+.slides .slide { flex: 0 0 100%; display: grid; place-items: center; scroll-snap-align: center; }
+.slides .slide svg { width: 100%; height: auto; }
+.slides .slide img { display: block; width: 100%; height: 100%; object-fit: cover; border-radius: 12px; outline: 1px solid var(--border); outline-offset: -1px; }
+.slides button.prev, .slides button.fwd { position: absolute; top: calc(50% - 22px); display: grid; place-items: center; width: 34px; height: 34px; border: 1px solid var(--border-strong); border-radius: 50%; background: rgba(11, 17, 32, .8); color: var(--text); cursor: pointer; opacity: 0; transition: opacity .2s, border-color .2s; }
+.slides button.prev { left: 8px; } .slides button.fwd { right: 8px; }
+.slides button svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.slides:hover button.prev, .slides:hover button.fwd, .slides button:focus-visible { opacity: 1; }
+.slides button.prev:hover, .slides button.fwd:hover { border-color: var(--accent); color: var(--accent); }
+.slides button[disabled] { visibility: hidden; }
+.slides .dots { display: flex; justify-content: center; gap: 6px; margin-top: 10px; }
+.slides .dots button { width: 16px; height: 3px; padding: 0; border: 0; border-radius: 2px; background: var(--border-strong); cursor: pointer; transition: width .2s, background .2s; }
+.slides .dots button.on { width: 26px; background: var(--accent); }
+@media (hover: none) { .slides button.prev, .slides button.fwd { opacity: 1; } }
