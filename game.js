@@ -48,6 +48,9 @@
   // Un cartelito que flota sobre el muñequito o sobre una pieza.
   // Los diálogos siempre salen justo arriba del muñequito y lo siguen mientras se mueve.
   const say = (text, ms = 2000) => { labels = labels.filter(l => l.text !== text); labels.push({ text, until: performance.now() + ms }); };
+  // Lo que el muñequito va contando del recorrido: cada frase, una sola vez por partida.
+  const said = new Set();
+  const once = (text, ms = 2600) => { if (said.has(text)) return; said.add(text); say(text, ms); };
 
   // ---------- el nivel ----------
   function build() {
@@ -164,12 +167,15 @@
     // nada), después dbt construye stage, integration (donde vive el fact) y consumption. Cada capa es un piso que se abre recién cuando quedó
     // construida, así que no se saltea ninguna. Al fondo, la salida pasa por Monte Carlo.
     walls.push({ x: boxL, y1: top - 18, y2: boxB }, { x: boxR, y1: top - 18, y2: boxB });
-    const LAYERS = [['warehouse', 1.5], ['stage · stg_orders', 1.1], ['integration · fct_orders', 1.4], ['consumption · rpt_orders', 1.2]];
+    const LAYERS = [['warehouse', 1.5], ['stage · stg_orders', 0.7], ['integration · fct_orders', 0.7], ['consumption · rpt_orders', 0.7]];
     LAYERS.forEach(([name, need], k) => {
       const m = ledge(boxL + 2, top + 50 + k * 50, boxR - boxL - 4, { kind: 'model', name, need, t: 0, built: false });
       if (k === 0) m.label = () => m.built ? 'warehouse M · running' : `warehouse ${['XS', 'S', 'M'][Math.min(2, Math.floor(m.t / m.need * 3))]}`;
       m.stand = dt => {
         if (m.built) return;
+        if (k === 0) once('warehouse up');
+        // dbt ayuda a moverse más rápido, literal: sus capas salen enseguida y de acá en más camina más rápido.
+        if (k === 1) { once('dbt run: everything gets faster', 3000); P.fast = true; }
         m.t += dt;
         if (m.t >= m.need) { m.built = true; m.solid = false; }
       };
@@ -358,6 +364,10 @@
     ctx.save(); ctx.translate(0, -top);
     const seen = (y, h = 0) => y + h > top - 120 && y < top + H + 120;
     if (mode === 'play' && level) {
+      // Con un desplegable abierto, lo de abajo está medido con él cerrado: no se dibuja encima de su contenido.
+      const unfolded = P.rail && P.rail.at.fold && P.rail.at.task.open && box(P.rail.at.task.querySelector('summary'));
+      ctx.save();
+      if (unfolded) { ctx.beginPath(); ctx.rect(0, top - 40, W, unfolded.b + 40 - top); ctx.clip(); }
       for (const t of level.things) t.draw(now);
       ctx.setLineDash([2, 8]); ctx.strokeStyle = 'rgba(148,163,184,.25)'; ctx.lineWidth = 1; ctx.beginPath();
       for (const w of level.walls) { const y1 = Math.max(w.y1, top - 20), y2 = Math.min(w.y2, top + H + 20); if (y2 > y1) { ctx.moveTo(w.x, y1); ctx.lineTo(w.x, y2); } }
@@ -370,6 +380,7 @@
         drawPlat(p, now);
       }
       ctx.globalAlpha = fade = 1;
+      ctx.restore();
     } else if (level && P.on && !P.on.floor && !P.on.hidden) drawPlat(P.on, now);
     // La estela del muñequito cuando atraviesa el retrato.
     P.trail.forEach((t, k) => { ctx.globalAlpha = (k / P.trail.length) * 0.35; ctx.fillStyle = ACCENT; ctx.beginPath(); ctx.roundRect(t[0] + 4, t[1] + 4, S - 8, S - 8, 5); ctx.fill(); });
@@ -431,6 +442,7 @@
       if (n.exit) { P.rail = null; P.vy = 120; return; }
       if (n.task && !n.done) return;
       const ahead = n.links.filter(m => m !== from);
+      if (n.gate && from.y < n.y && gateOpen(n)) once('all_success, moving on');
       if (n.links.length === 2 && !n.task && !n.bus && (!n.gate || (from.y < n.y && gateOpen(n)))) r.to = ahead[0];
       else r.fresh = true;
       return;
@@ -473,7 +485,7 @@
       if (window.__portraitPoke) window.__portraitPoke(P.x + S / 2, P.y + S / 2 - scrollY, (P.x - px) * 3, (P.y - py) * 3);
       if ((!d.via && P.y >= d.b[1]) || d.age > 2.5) {
         P.dive = null; P.vy = 0; if (window.__portraitPoke) window.__portraitPoke(null);
-        onNode(level.entry); P.rail = { at: level.entry, to: null, d: 0 };
+        onNode(level.entry); P.rail = { at: level.entry, to: null, d: 0 }; once("let's ride the DAG");
       }
       return;
     }
@@ -488,7 +500,7 @@
     for (const p of level.plats) if (p.tick) p.tick(now, dt);
     const dir = control ? ((keys.right ? 1 : 0) - (keys.left ? 1 : 0)) : 0;
     if (dir) P.face = dir;
-    P.vx = dir * SPEED;
+    P.vx = dir * SPEED * (P.fast ? 1.7 : 1);
     const prevX = P.x;
     P.x += P.vx * dt;
     for (const w of level.walls) {
@@ -535,13 +547,13 @@
       return;
     }
     const mc = level.mc;
-    if (mc && !mc.state.checked && P.x + S / 2 > mc.x && P.x + S / 2 < mc.x + mc.w && P.y > mc.y - 4 && P.y < mc.y + 40) { mc.state.checked = true; say(level.table.x + level.table.w / 2 > P.x ? 'my destination →' : '← my destination', 5000); }
+    if (mc && !mc.state.checked && P.x + S / 2 > mc.x && P.x + S / 2 < mc.x + mc.w && P.y > mc.y - 4 && P.y < mc.y + 40) { mc.state.checked = true; once('Monte Carlo: all clear', 2400); say(level.table.x + level.table.w / 2 > P.x ? 'my destination →' : '← my destination', 5000); }
     const b = level.bucket, cx = P.x + S / 2;
     const inside = cx > b.x && cx < b.x + b.w && P.y + S > b.y - 2 && P.y < b.y + b.d + 20;
-    if (!inside) b.since = 0; else if (!b.since && b.ready()) b.since = now;
+    if (!inside) b.since = 0; else if (!b.since && b.ready()) { b.since = now; once('in S3. Airflow, your turn', 3000); }
     const inBucket = cx > b.x && cx < b.x + b.w && P.y + S > b.y - 2 && P.y < b.y + b.d + 20;
     P.form = inBucket ? 'file' : 'pk';
-    if (inBucket && P.y + S > b.y + b.d + 4) { P.ride = { d: 0 }; P.form = 'dot'; }
+    if (inBucket && P.y + S > b.y + b.d + 4) { P.ride = { d: 0 }; P.form = 'dot'; once('Airflow: extract and load'); }
 
     const m = level.table;
     if (!won && P.x + S > m.x - 6 && P.x < m.x + m.w + 6 && P.y + S > m.y - 10 && P.y < m.y + m.h) {
@@ -651,7 +663,7 @@
   function reset() {
     try { sessionStorage.removeItem(SAVE); } catch (e) {}
     document.querySelectorAll(TASKS).forEach(el => el.classList.remove('read', 'lit'));
-    won = false; endAt = 0; document.body.classList.remove('ran'); if (note) note.hidden = true; labels = []; P.ride = null; P.rail = null; P.dive = null; P.form = 'pk'; P.vy = 0; P.on = null;
+    won = false; endAt = 0; said.clear(); P.fast = false; document.body.classList.remove('ran'); if (note) note.hidden = true; labels = []; P.ride = null; P.rail = null; P.dive = null; P.form = 'pk'; P.vy = 0; P.on = null;
     keys = {}; mode = 'wait';
     document.body.classList.remove('playing'); pad.hidden = true;
     document.documentElement.style.scrollBehavior = '';
