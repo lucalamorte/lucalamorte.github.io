@@ -2,6 +2,7 @@
 // y se mecen; algunos en el color de acento. Cerca del cursor se apartan y brillan. Detrás de cada bloque de
 // texto se desvanecen con un borde suave, así la lectura queda limpia. Cada tanto cruza un cometa, y en los
 // márgenes hay constelaciones que son agentes: un centro con sus herramientas, y llamadas que van y vuelven.
+// Desde los bordes entran haces de datos sueltos que se juntan en un punto: el primero, en el retrato.
 (() => {
   const small = matchMedia('(max-width: 760px)').matches;
   const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -10,7 +11,7 @@
   canvas.setAttribute('aria-hidden', 'true');
   document.body.prepend(canvas);
   const ctx = canvas.getContext('2d');
-  let width = 0, height = 0, flakes = [], agents = [];
+  let width = 0, height = 0, flakes = [], agents = [], streams = [];
 
   // Semilla fija: la nevada arranca igual en cada visita.
   let seed = 11;
@@ -76,6 +77,49 @@
     }
   }
 
+  // Los haces: varias curvas que salen separadas del borde y terminan juntas, con datos que viajan por ellas. Van en
+  // el lado opuesto a una constelación, para que no se pisen, y uno por medio: pocos y tenues.
+  function buildStreams() {
+    streams = [];
+    if (small) return;
+    let s = 23; const r = () => (s = (s * 16807) % 2147483647) / 2147483647;
+    const margin = Math.max(90, (width - 1200) / 2), spots = [];
+    const portrait = document.getElementById('portrait'), fig = portrait && portrait.getBoundingClientRect();
+    if (fig && fig.width && fig.left > 60) spots.push({ edge: 0, x: fig.left + fig.width * .34, y: fig.top + scrollY + fig.height * .46, node: false });
+    agents.forEach((g, k) => {
+      if (k && k % 2 === 0) spots.push({ edge: width, x: width - margin * .9, y: g.y, node: true });
+    });
+    streams = spots.map(({ edge, x, y, node }) => {
+      const reach = x - edge, spread = 150 + Math.abs(reach) * .3, count = 12;
+      const lines = Array.from({ length: count }, (_, i) => {
+        const y0 = y + (i / (count - 1) - .5) * spread * 2 + (r() - .5) * 24;
+        return { y0, cy: y0 + (y - y0) * r() * .25, speed: 1 / (5 + r() * 6), phase: r() };
+      });
+      const paint = ctx.createLinearGradient(edge, 0, x, 0);
+      paint.addColorStop(0, 'rgba(94,234,212,0)'); paint.addColorStop(1, 'rgba(94,234,212,.2)');
+      return { edge, x, y, node, reach, lines, paint, top: y - spread - 20, bottom: y + spread + 20 };
+    });
+  }
+  function drawStreams(t) {
+    ctx.lineWidth = 1;
+    for (const st of streams) {
+      if (st.bottom - scrollY < 0 || st.top - scrollY > height) continue;
+      const x1 = st.edge + st.reach * .55, x2 = st.edge + st.reach * .5;
+      ctx.save(); ctx.translate(0, -scrollY);
+      ctx.strokeStyle = st.paint; ctx.beginPath();
+      for (const l of st.lines) { ctx.moveTo(st.edge, l.y0); ctx.bezierCurveTo(x1, l.cy, x2, st.y, st.x, st.y); }
+      ctx.stroke();
+      for (const l of st.lines) {
+        const u = (t / 1000 * l.speed + l.phase) % 1, v = 1 - u;
+        const px = v * v * v * st.edge + 3 * v * v * u * x1 + 3 * v * u * u * x2 + u * u * u * st.x;
+        const py = v * v * v * l.y0 + 3 * v * v * u * l.cy + 3 * v * u * u * st.y + u * u * u * st.y;
+        ctx.fillStyle = `rgba(94,234,212,${.15 + u * .65})`; ctx.beginPath(); ctx.arc(px, py, 1.5, 0, Math.PI * 2); ctx.fill();
+      }
+      if (st.node) { ctx.strokeStyle = 'rgba(94,234,212,.5)'; ctx.beginPath(); ctx.arc(st.x, st.y, 4, 0, Math.PI * 2); ctx.stroke(); }
+      ctx.restore();
+    }
+  }
+
   // La máscara: la página entera a un cuarto de tamaño, con un rectángulo difuso por cada bloque de texto.
   const SCALE = 0.25, PAD = 10, SOFT = 44;
   const mask = document.createElement('canvas'), mctx = mask.getContext('2d');
@@ -93,7 +137,7 @@
     }
   }
   let pending = 0;
-  const repaint = () => { cancelAnimationFrame(pending); pending = requestAnimationFrame(() => { paintMask(); buildAgents(); if (still) draw(0, 0); }); };
+  const repaint = () => { cancelAnimationFrame(pending); pending = requestAnimationFrame(() => { paintMask(); buildAgents(); buildStreams(); if (still) draw(0, 0); }); };
 
   const cursor = { x: 0, y: 0, on: false };
   addEventListener('pointermove', event => { cursor.x = event.clientX; cursor.y = event.clientY; cursor.on = event.pointerType === 'mouse'; }, { passive: true });
@@ -130,6 +174,7 @@
     ctx.globalCompositeOperation = 'source-over';
     ctx.clearRect(0, 0, width, height);
     if (dt) drawComet(t, dt);
+    drawStreams(t);
     drawAgents(t);
     ctx.lineCap = 'round';
     for (const f of flakes) {
@@ -150,7 +195,7 @@
       if (f.flake) { ctx.strokeStyle = color; ctx.lineWidth = 1.1; snowflake(x, y, f.r * (1 + near * 0.4), f.phase + t / 1000 * f.spin); }
       else { ctx.fillStyle = color; ctx.beginPath(); ctx.arc(x, y, f.r, 0, Math.PI * 2); ctx.fill(); }
     }
-    if (mask.height) {
+    if (mask.width && mask.height) {
       ctx.globalCompositeOperation = 'destination-out';
       ctx.drawImage(mask, 0, scrollY * SCALE, width * SCALE, height * SCALE, 0, 0, width, height);
     }
@@ -158,7 +203,7 @@
 
   let last = 0;
   function frame(t) { const dt = Math.min(0.05, (t - last) / 1000 || 0); last = t; draw(t, dt); requestAnimationFrame(frame); }
-  build(); paintMask(); buildAgents();
+  build(); paintMask(); buildAgents(); buildStreams();
   addEventListener('resize', () => { build(); repaint(); });
   addEventListener('load', repaint);
   if (document.fonts) document.fonts.ready.then(repaint);
