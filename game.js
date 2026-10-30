@@ -123,12 +123,13 @@
     // El DAG arranca donde termina la zambullida, cruza la experiencia y los productos y desemboca en el bucket.
     const work = dag([...document.querySelectorAll('#experience .card.big')], null, 2.2);
     const built = dag([...document.querySelectorAll('#projects .card')], work.gate, 1.6);
-    // "how I think": cada desplegable es una tarea sobre el bus. Al llegar se abre solo, se lee y se cierra.
+    // "how I think": cada desplegable es una tarea sobre el bus. Al llegar se abre y queda abierto el tiempo que
+    // se quiera; se cierra recién cuando el muñequito sigue.
     const folds = [...document.querySelectorAll(FOLDS)], foldTasks = [];
     let prev = built.gate;
-    folds.forEach((el, k) => {
+    folds.forEach(el => {
       const s = box(el.querySelector('summary'));
-      const t = node(mx, s.y + s.h / 2, { task: el, fold: true, need: k ? 6 : 8, t: 0, done: el.classList.contains('read') });
+      const t = node(mx, s.y + s.h / 2, { task: el, fold: true, need: 1, t: 0, done: el.classList.contains('read') });
       link(prev, t); prev = t; foldTasks.push(t);
     });
     const g2 = node(mx, box(folds[folds.length - 1]).b + 26, { gate: foldTasks });
@@ -446,7 +447,7 @@
       if (u < 1) return;
       const from = r.at, n = r.at = r.to; r.to = null; r.d = 0; onNode(n); P.form = 'pk';
       if (n.exit) { P.rail = null; P.vy = 120; return; }
-      if (n.task && !n.done) return;
+      if (n.task && !n.done) { r.fresh = !!n.fold; return; }
       const ahead = n.links.filter(m => m !== from);
       if (n.gate && from.y < n.y && gateOpen(n)) once('all_success, moving on');
       if (n.links.length === 2 && !n.task && !n.bus && (!n.gate || (from.y < n.y && gateOpen(n)))) r.to = ahead[0];
@@ -454,11 +455,11 @@
       return;
     }
     const n = r.at;
+    if (n.fold && !n.task.open) { n.task.open = true; n.done = true; n.task.classList.add('read'); once('read it, then ↓ to move on', 5000); }
     if (n.task && !n.done) {
-      if (n.fold) n.task.open = true;
       if (!settled(n)) return;
       n.t += dt; n.task.classList.add('lit');
-      if (n.t >= n.need) { n.done = true; n.task.classList.add('read'); n.task.classList.remove('lit'); if (n.fold) n.task.open = false; }
+      if (n.t >= n.need) { n.done = true; n.task.classList.add('read'); n.task.classList.remove('lit'); }
       return;
     }
     if (!control) return;
@@ -469,6 +470,7 @@
     if (!m) return;
     if (n.gate && m.y > n.y && !gateOpen(n)) { n.nudge = now; return; }
     if (n.task) n.task.classList.remove('lit');
+    if (n.fold) n.task.open = false;
     r.to = m; r.d = 0; P.face = m.x < n.x ? -1 : m.x > n.x ? 1 : P.face;
   }
   function step(dt, now, control) {
@@ -816,6 +818,12 @@
     resize(); if (level) { const snap = snapshot(); rebuild(); apply(snap); }
   }
   addEventListener('resize', relayout);
+  // Mientras se juega, los desplegables son tareas del DAG: los abre y los cierra el muñequito, no el mouse.
+  document.addEventListener('click', event => {
+    if (!document.body.classList.contains('playing') || !event.target.closest('.fold summary, a[href$="#how-i-work"], a[href$="#education"]')) return;
+    event.preventDefault(); event.stopPropagation();
+    say('it opens when I get there', 2400);
+  }, true);
   document.addEventListener('toggle', () => { if (level && !(P.rail && P.rail.at.fold)) { const snap = snapshot(); rebuild(); apply(snap); } }, true);
   document.addEventListener('visibilitychange', relayout);
 

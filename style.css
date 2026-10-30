@@ -663,6 +663,8 @@ main > section#more { padding: 100px 0 90px; }
 .fold summary { display: flex; align-items: baseline; flex-wrap: wrap; gap: 6px 18px; padding: 22px 28px; border-radius: 18px; background: rgba(148, 163, 184, .045); cursor: pointer; list-style: none; transition: background .25s; }
 .fold summary::-webkit-details-marker { display: none; }
 .fold summary:hover, .fold[open] summary { background: rgba(148, 163, 184, .085); }
+.playing .fold summary { cursor: default; }
+.playing .fold:not([open]) summary:hover { background: rgba(148, 163, 184, .045); }
 .fold-title { font-size: 1.3rem; font-weight: 600; letter-spacing: -.02em; color: var(--text); }
 .fold-hint { flex: 1; font-size: .92rem; color: var(--muted); }
 .fold summary::after { content: "▾"; margin-left: auto; font-size: 1.15rem; line-height: 1; color: var(--accent); transition: transform .25s; }
