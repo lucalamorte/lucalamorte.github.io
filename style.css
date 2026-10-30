@@ -655,19 +655,19 @@ h2 { margin-bottom: 18px; }
 .list.certs li .meta { opacity: 1 !important; transform: none !important; }
 .list.certs .who .go { opacity: .75; transform: none; }
 .list.certs li:has(.cred:hover) .go, .list.certs li:has(.cred:focus-visible) .go { opacity: 1; }
-/* How I think, plegado: una sola línea que se abre para mostrar las dos tarjetas. */
-main > section#more { padding: 56px 0 64px; }
-.fold summary { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 18px; padding: 22px 28px; border-radius: 18px; background: rgba(148, 163, 184, .045); cursor: pointer; list-style: none; transition: background .25s; }
+/* How I think: dos desplegables que abren su contenido completo en la misma página. */
+main > section#more { padding: 100px 0 90px; }
+.fold + .fold { margin-top: 14px; }
+.fold summary { display: flex; align-items: baseline; flex-wrap: wrap; gap: 6px 18px; padding: 22px 28px; border-radius: 18px; background: rgba(148, 163, 184, .045); cursor: pointer; list-style: none; transition: background .25s; }
 .fold summary::-webkit-details-marker { display: none; }
 .fold summary:hover, .fold[open] summary { background: rgba(148, 163, 184, .085); }
-.fold summary .eyebrow { margin: 0 !important; flex-basis: 100%; }
-.fold-title { font-size: 1.5rem; font-weight: 600; letter-spacing: -.02em; color: var(--text); }
-.fold-title span { color: var(--accent); margin-right: 6px; }
-.fold-hint { margin-left: auto; font-family: var(--mono); font-size: .78rem; color: var(--text-2); }
-.fold-hint::after { content: "▾"; display: inline-block; margin-left: 10px; color: var(--accent); transition: transform .25s; }
-.fold[open] .fold-hint::after { transform: rotate(180deg); }
-.fold .more-grid { margin-top: 20px; }
-@media (max-width: 760px) { .fold-hint { margin-left: 0; } }
+.fold-title { font-size: 1.3rem; font-weight: 600; letter-spacing: -.02em; color: var(--text); }
+.fold-hint { flex: 1; font-size: .92rem; color: var(--muted); }
+.fold summary::after { content: "▾"; margin-left: auto; font-size: 1.15rem; line-height: 1; color: var(--accent); transition: transform .25s; }
+.fold[open] summary::after { transform: rotate(180deg); }
+.fold[open] > :not(summary) { animation: fold-in .35s ease; }
+.fold > .lead, .fold > .principles, .fold > .list-label:first-of-type { margin-top: 26px; }
+@keyframes fold-in { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
 /* El cursor de los roles mientras se "generan": titila y se apaga al terminar. */
 .hero .roles .caret { display: inline-block; margin-left: 2px; color: var(--accent); animation: caret-blink 1s steps(1) infinite; transition: opacity .6s; }
 .hero .roles.done .caret { opacity: 0; animation: none; }
