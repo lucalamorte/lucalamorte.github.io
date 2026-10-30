@@ -473,6 +473,48 @@
     if (n.fold) n.task.open = false;
     r.to = m; r.d = 0; P.face = m.x < n.x ? -1 : m.x > n.x ? 1 : P.face;
   }
+  // Si pasa un rato sin que el jugador haga nada, el muñequito le pide lo que falta. Nunca interrumpe lo que corre
+  // solo, ni a quien scrollea para leer, y en un desplegable abierto espera más.
+  const IDLE = 12000, READING = 30000, ARROW = { left: '←', right: '→', up: '↑', down: '↓' };
+  const toward = x => (x > P.x ? '→' : '←');
+  // Por dónde seguir en el DAG: hacia la tarea pendiente más cercana o, si no queda ninguna, hacia la salida.
+  function nextOnRail(from) {
+    const seen = new Set([from]), queue = [[from, null]];
+    let out = null;
+    while (queue.length) {
+      const [n, first] = queue.shift();
+      if (first && n.task && !n.done) return { first, task: true };
+      if (first && n.exit) out = out || { first, task: false };
+      for (const m of n.links) {
+        if (seen.has(m) || (n.gate && m.y > n.y && !gateOpen(n))) continue;
+        seen.add(m); queue.push([m, first || m]);
+      }
+    }
+    return out;
+  }
+  function request() {
+    if (P.dive || P.ride || endAt) return null;
+    if (P.rail) {
+      const r = P.rail, n = r.at;
+      if (r.to || (n.task && !n.done)) return null;
+      if (n.fold) return "↓ when you're done reading";
+      const go = nextOnRail(n);
+      return go && `${ARROW[dirOf(n, go.first)]} ${go.task ? 'next task, please' : 'to the bucket'}`;
+    }
+    if (!P.ground || P.form === 'file' || (P.on && P.on.kind === 'model' && !P.on.built)) return null;
+    const f = level.face, mc = level.mc, t = level.table;
+    if (f && P.y < level.entry.y) return !f.jump || P.x <= f.x2 - 8 ? '↑ jump into the face' : '← to the face, please';
+    return mc.state.checked ? `${toward(t.x)} my destination` : `${toward(mc.x + mc.w / 2)} out through Monte Carlo`;
+  }
+  let idleSince = 0;
+  function nudge(now) {
+    const busy = camFree || now < missionUntil || Object.values(keys).some(Boolean) || labels.some(l => now < l.until) || document.querySelector('dialog[open]');
+    if (busy) { idleSince = now; return; }
+    if (now - idleSince < (P.rail && P.rail.at.fold ? READING : IDLE)) return;
+    const text = request();
+    if (text) say(text, 3200);
+    idleSince = now;
+  }
   function step(dt, now, control) {
     if (endAt) {
       if (!endSaid && now - endAt > 2100) { endSaid = true; say('agent ready · say hi', 1600); }
@@ -748,7 +790,7 @@
   function frame(now) {
     const dt = Math.min(0.033, (now - last) / 1000 || 0); last = now;
     if (mode === 'intro' && intro) runIntro(now);
-    else if (level && mode !== 'wait' && mode !== 'done') { step(dt, now, mode === 'play'); if (mode === 'play') follow(dt); }
+    else if (level && mode !== 'wait' && mode !== 'done') { step(dt, now, mode === 'play'); if (mode === 'play') { follow(dt); nudge(now); } }
     if (P.trail.length && mode !== 'intro') P.trail.shift();
     draw(now);
     // El botón invisible sobre el muñequito: para tocarlo en el celu o llegar con Tab.
