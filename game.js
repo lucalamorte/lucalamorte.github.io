@@ -47,10 +47,10 @@
   const waitSpot = () => { const b = box($('.hero .tools')); return { x: b.x + 10, y: b.b + 34 }; };
   // Un cartelito que flota sobre el muñequito o sobre una pieza.
   // Los diálogos siempre salen justo arriba del muñequito y lo siguen mientras se mueve.
-  const say = (text, ms = 2000) => { labels = labels.filter(l => l.text !== text); labels.push({ text, until: performance.now() + ms }); };
+  const say = (text, ms = 2000) => { labels = labels.filter(l => l.text !== text); labels.push({ text, from: performance.now(), until: performance.now() + ms }); };
   // Lo que el muñequito va contando del recorrido: cada frase, una sola vez por partida.
   const said = new Set();
-  const once = (text, ms = 2600) => { if (said.has(text)) return; said.add(text); say(text, ms); };
+  const once = (text, ms = 3600) => { if (said.has(text)) return; said.add(text); say(text, ms); };
 
   // ---------- el nivel ----------
   function build() {
@@ -175,7 +175,7 @@
         if (m.built) return;
         if (k === 0) once('warehouse up');
         // dbt ayuda a moverse más rápido, literal: sus capas salen enseguida y de acá en más camina más rápido.
-        if (k === 1) { once('dbt run: everything gets faster', 3000); P.fast = true; }
+        if (k === 1) { once('dbt run: everything gets faster'); P.fast = true; }
         m.t += dt;
         if (m.t >= m.need) { m.built = true; m.solid = false; }
       };
@@ -400,13 +400,19 @@
       drawPk(P.x, P.y, now);
     }
     labels = labels.filter(l => now < l.until);
-    // Los diálogos, apilados sobre el muñequito y sin salirse de la pantalla.
-    ctx.font = MONO;
+    // Los diálogos: globos apilados sobre el muñequito, con su entrada, sin salirse de la pantalla ni tapar el menú.
+    ctx.font = '500 15px "JetBrains Mono", monospace'; ctx.textBaseline = 'middle';
     labels.forEach((l, k) => {
-      const a = Math.min(1, (l.until - now) / 300), half = ctx.measureText(l.text).width / 2 + 8;
-      const ly = P.y - 14 - (labels.length - 1 - k) * 16 - (1 - a) * 6;
-      ctx.globalAlpha = a; text(l.text, Math.max(half, Math.min(W - half, P.x + S / 2)), ly, ACCENT, 'center'); ctx.globalAlpha = 1;
+      const a = Math.min(1, (l.until - now) / 300), pop = Math.min(1, (now - l.from) / 200), half = ctx.measureText(l.text).width / 2 + 16;
+      const cx = Math.max(half + 8, Math.min(W - half - 8, P.x + S / 2)), up = (labels.length - 1 - k) * 44;
+      const y = Math.max(top + 92 + up, P.y - 40 - up) + (1 - pop) * 10;
+      ctx.save(); ctx.globalAlpha = a * pop; ctx.translate(cx, y); ctx.scale(0.92 + pop * 0.08, 0.92 + pop * 0.08);
+      ctx.fillStyle = 'rgba(11,17,32,.96)'; ctx.strokeStyle = ACCENT; ctx.lineWidth = 1.5; ctx.shadowColor = 'rgba(94,234,212,.35)'; ctx.shadowBlur = 16;
+      ctx.beginPath(); ctx.roundRect(-half, -18, half * 2, 36, 12); ctx.fill(); ctx.shadowBlur = 0; ctx.stroke();
+      ctx.fillStyle = '#f1f5f9'; ctx.textAlign = 'center'; ctx.fillText(l.text, 0, 1);
+      ctx.restore();
     });
+    ctx.textBaseline = 'alphabetic';
     ctx.restore();
   }
 
@@ -547,10 +553,10 @@
       return;
     }
     const mc = level.mc;
-    if (mc && !mc.state.checked && P.x + S / 2 > mc.x && P.x + S / 2 < mc.x + mc.w && P.y > mc.y - 4 && P.y < mc.y + 40) { mc.state.checked = true; once('Monte Carlo: all clear', 2400); say(level.table.x + level.table.w / 2 > P.x ? 'my destination →' : '← my destination', 5000); }
+    if (mc && !mc.state.checked && P.x + S / 2 > mc.x && P.x + S / 2 < mc.x + mc.w && P.y > mc.y - 4 && P.y < mc.y + 40) { mc.state.checked = true; once('Monte Carlo: all clear', 3000); say(level.table.x + level.table.w / 2 > P.x ? 'my destination →' : '← my destination', 5000); }
     const b = level.bucket, cx = P.x + S / 2;
     const inside = cx > b.x && cx < b.x + b.w && P.y + S > b.y - 2 && P.y < b.y + b.d + 20;
-    if (!inside) b.since = 0; else if (!b.since && b.ready()) { b.since = now; once('in S3. Airflow, your turn', 3000); }
+    if (!inside) b.since = 0; else if (!b.since && b.ready()) { b.since = now; once('in S3. Airflow, your turn'); }
     const inBucket = cx > b.x && cx < b.x + b.w && P.y + S > b.y - 2 && P.y < b.y + b.d + 20;
     P.form = inBucket ? 'file' : 'pk';
     if (inBucket && P.y + S > b.y + b.d + 4) { P.ride = { d: 0 }; P.form = 'dot'; once('Airflow: extract and load'); }
@@ -647,9 +653,7 @@
     const snap = level && snapshot();
     rebuild();
     if (snap) apply(snap);
-    // Si el muñequito quedó lejos de lo que estás mirando, cae desde arriba de la pantalla.
-    // (Sobre los rieles no: la cámara vuelve sola a buscarlo.)
-    if (!P.rail && (P.y < scrollY - 20 || P.y > scrollY + H)) { P.x = level.colL + 30; P.y = scrollY + 70; P.vy = 0; P.on = null; }
+    // Si el muñequito quedó lejos de lo que estás mirando, no se mueve él: la cámara va a buscarlo.
     mode = 'play'; keys = {}; camFree = false; expected = scrollY;
     document.body.classList.add('playing'); pad.hidden = !touch; hint.classList.remove('on');
   }
