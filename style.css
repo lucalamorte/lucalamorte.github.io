@@ -526,7 +526,8 @@ footer { border-top: 0; }
 .earlier { margin: 28px 0 0; font-size: .9rem; color: var(--muted); }
 .earlier b { color: var(--text-2); font-weight: 600; }
 /* Mientras se juega, el contacto deja lugar a la izquierda para la caja de Snowflake. */
-/* Solo en pantallas angostas la caja de Snowflake no entra al costado del contacto. */
+/* Mientras se juega, antes del contacto entran el bucket, la pipeline y la caja de Snowflake. */
+.playing .contact { padding-top: 220px; }
 @media (max-width: 1200px) { .playing .contact { padding-top: 330px; } }
 @media (max-width: 760px) { .playing .contact { padding-bottom: 150px; } }
 /* Los tres perfiles, debajo del nombre. */

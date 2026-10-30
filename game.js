@@ -1,7 +1,7 @@
 // El portfolio como nivel. El muñequito espera debajo del texto de la portada; al tocarlo da una vuelta por el
 // retrato y cae sobre el título. Desde ahí se salta a la cara de Luca: la zambullida lo deja en un DAG que recorre
-// la experiencia y los productos (cada tarjeta es una tarea que corre mientras se lee, y una compuerta
-// all_success cierra cada sección). El DAG desemboca en el bucket de S3, Airflow lo carga a Snowflake,
+// la experiencia, los productos y "how I think" (cada tarjeta es una tarea que corre mientras se lee, los
+// desplegables se abren solos, y una compuerta all_success cierra cada sección). El DAG desemboca en el bucket de S3, Airflow lo carga a Snowflake,
 // el warehouse se prende, dbt construye stage, integration y consumption, y Monte Carlo lo revisa a la salida.
 // Al final el dato entra como fila en una tabla, la tabla se vuelve reporte y del reporte sale el agente; ahí el
 // juego se apaga solo y la página queda marcada con lo leído. Se mueve con las flechas o con los controles del
@@ -120,13 +120,23 @@
     // El DAG arranca donde termina la zambullida, cruza la experiencia y los productos y desemboca en el bucket.
     const work = dag([...document.querySelectorAll('#experience .card.big')], null, 2.2);
     const built = dag([...document.querySelectorAll('#projects .card')], work.gate, 1.6);
-    const entry = work.first, g2 = built.gate;
+    // "how I think": cada desplegable es una tarea sobre el bus. Al llegar se abre solo, se lee y se cierra.
+    const folds = [...document.querySelectorAll(FOLDS)], foldTasks = [];
+    let prev = built.gate;
+    folds.forEach((el, k) => {
+      const s = box(el.querySelector('summary'));
+      const t = node(mx, s.y + s.h / 2, { task: el, fold: true, need: k ? 6 : 8, t: 0, done: el.classList.contains('read') });
+      link(prev, t); prev = t; foldTasks.push(t);
+    });
+    const g2 = node(mx, box(folds[folds.length - 1]).b + 26, { gate: foldTasks });
+    link(prev, g2);
+    const entry = work.first;
     const tasks = nodes.filter(n => n.task);
     things.push({ draw: now => drawDag(nodes, now) });
     const reads = { get done() { return tasks.filter(n => n.done).length; }, total: tasks.length };
 
-    // Al final de los productos está el bucket de S3: el DAG desemboca ahí.
-    const pr = box($('#projects'));
+    // Al final de "how I think" está el bucket de S3: el DAG desemboca ahí.
+    const pr = box($('#more'));
     const fy = pr.b - 6, bw = 84, bx = Math.max(colL + 30, 24);
     floor(fy, [[bx, bw]]);
     // Airflow corre 3 segundos después de que el archivo cae al bucket (si los números ya se leyeron).
@@ -146,8 +156,7 @@
     const wx = colL + 14, wy = ctBtn.b - 60, top = wy - 240;
     const sfW = Math.min(240, W - wx - 16), boxL = wx - 14, boxR = boxL + sfW, boxB = wy + 28;
     const hatch = { x: boxR - 74, w: 58 }, hx = hatch.x + hatch.w / 2;
-    // La pipeline baja por el margen, como el DAG: nunca pasa por encima del texto.
-    const py = fy + 72, path = [[bx + bw / 2, fy + 56], [bx + bw / 2, py], [mx, py], [mx, top], [hx, top], [hx, top + 30]];
+    const path = [[bx + bw / 2, fy + 56], [bx + bw / 2, top], [hx, top], [hx, top + 30]];
     const pipe = { path, mouth: [bx + bw / 2, fy + 56] };
     things.push({ draw: now => drawPipe(pipe, now) });
 
@@ -269,7 +278,7 @@
     ctx.beginPath(); p.path.forEach(([x, y], k) => (k ? ctx.lineTo(x, y) : ctx.moveTo(x, y)));
     ctx.strokeStyle = 'rgba(94,234,212,.14)'; ctx.lineWidth = 20; ctx.stroke();
     ctx.strokeStyle = ACCENT; ctx.lineWidth = 1.5; ctx.setLineDash([6, 10]); ctx.lineDashOffset = -now / 30; ctx.stroke(); ctx.setLineDash([]);
-    const [x2, y2] = p.path[4];
+    const [x2, y2] = p.path[2];
     text('Airflow · load', x2 + 16, y2 - 14, ACCENT);
   }
   function snowflake(x, y, r, color) {
@@ -294,7 +303,13 @@
     if (fill > 0) {
       ctx.globalAlpha = fill * (1 - morph); ctx.fillStyle = 'rgba(94,234,212,.12)'; ctx.fillRect(t.x + 1, ly + 1, t.w - 2, row - 2);
       text('3    you      ✓ loaded', t.x + 8, ly + row - 5, ACCENT);
-    } else { ctx.setLineDash([3, 5]); ctx.strokeStyle = MUTED; ctx.beginPath(); ctx.roundRect(t.x + 6, ly + 4, t.w - 12, row - 8, 3); ctx.stroke(); ctx.setLineDash([]); }
+    } else {
+      // Después de Monte Carlo la fila vacía titila y una flecha lleva hasta ella: ese es el destino.
+      const ready = level.mc.state.checked;
+      ctx.globalAlpha = ready ? 0.6 + Math.sin(now / 220) * 0.4 : 1;
+      ctx.setLineDash([3, 5]); ctx.strokeStyle = ready ? ACCENT : MUTED; ctx.beginPath(); ctx.roundRect(t.x + 6, ly + 4, t.w - 12, row - 8, 3); ctx.stroke(); ctx.setLineDash([]); ctx.globalAlpha = 1;
+      if (ready) { const dir = t.x + t.w / 2 > P.x ? 1 : -1, k = Math.sin(now / 200) * 4; text(dir > 0 ? '→' : '←', P.x + S / 2 + dir * (S + 6 + k), P.y + 18, ACCENT, 'center', '18px "JetBrains Mono", monospace'); }
+    }
     ctx.globalAlpha = 1;
     if (morph > 0) {
       const bars = [0.45, 0.7, 0.55, 0.95], bw = (t.w - 40) / bars.length;
@@ -422,9 +437,10 @@
     }
     const n = r.at;
     if (n.task && !n.done) {
+      if (n.fold) n.task.open = true;
       if (!settled(n)) return;
       n.t += dt; n.task.classList.add('lit');
-      if (n.t >= n.need) { n.done = true; n.task.classList.add('read'); n.task.classList.remove('lit'); }
+      if (n.t >= n.need) { n.done = true; n.task.classList.add('read'); n.task.classList.remove('lit'); if (n.fold) n.task.open = false; }
       return;
     }
     if (!control) return;
@@ -519,7 +535,7 @@
       return;
     }
     const mc = level.mc;
-    if (mc && !mc.state.checked && P.x + S / 2 > mc.x && P.x + S / 2 < mc.x + mc.w && P.y > mc.y - 4 && P.y < mc.y + 40) { mc.state.checked = true; }
+    if (mc && !mc.state.checked && P.x + S / 2 > mc.x && P.x + S / 2 < mc.x + mc.w && P.y > mc.y - 4 && P.y < mc.y + 40) { mc.state.checked = true; say(level.table.x + level.table.w / 2 > P.x ? 'my destination →' : '← my destination', 5000); }
     const b = level.bucket, cx = P.x + S / 2;
     const inside = cx > b.x && cx < b.x + b.w && P.y + S > b.y - 2 && P.y < b.y + b.d + 20;
     if (!inside) b.since = 0; else if (!b.since && b.ready()) b.since = now;
@@ -537,8 +553,9 @@
 
   // ---------- cámara: sigue al muñequito pero deja leer ----------
   function frameTarget(n) {
-    if (!n || !n.frame) return null;
-    const [y1, y2] = n.frame, nav = 64, max = document.documentElement.scrollHeight - H;
+    const open = n && n.fold && n.task.open && box(n.task);
+    if (!n || !(open || n.frame)) return null;
+    const [y1, y2] = open ? [open.y, open.b] : n.frame, nav = 64, max = document.documentElement.scrollHeight - H;
     return Math.max(0, Math.min(max, y2 - y1 + 40 < H - nav ? (y1 + y2) / 2 - (H + nav) / 2 : y1 - nav - 24));
   }
   function follow(dt) {
@@ -566,7 +583,7 @@
   }
   function rebuild() { level = build(); }
   // Si se entra a un proyecto y se vuelve, el muñequito y lo ya leído siguen donde estaban.
-  const SAVE = 'pk-progress', TASKS = '#experience .card.big, #projects .card';
+  const SAVE = 'pk-progress', FOLDS = '#more .fold', TASKS = `#experience .card.big, #projects .card, ${FOLDS}`;
   function snapshot() {
     if (!level) return null;
     return {
@@ -610,6 +627,7 @@
     document.querySelectorAll('.reveal').forEach(el => { el.style.transition = 'none'; el.classList.add('in'); });
     // La clase va antes de medir: mientras se juega, algunas secciones dejan lugar para piezas del nivel.
     document.body.classList.add('playing');
+    if (!P.rail) document.querySelectorAll(FOLDS).forEach(el => { el.open = false; });
     void document.body.offsetHeight;
     document.documentElement.style.scrollBehavior = 'auto';
     if (mode === 'intro') endIntro();
@@ -652,7 +670,7 @@
       note.className = 'agent-note'; note.setAttribute('role', 'status');
       $('#contact .cta').after(note);
     }
-    note.innerHTML = `<span class="agent-dot" aria-hidden="true"></span><p><b>agent</b>Your record is loaded: ${read} cards read, from Kimberly-Clark to the GenAI products. Luca is one message away.</p><button type="button" class="again">↺ play again</button>`;
+    note.innerHTML = `<span class="agent-dot" aria-hidden="true"></span><p><b>agent</b>Your record is loaded: ${read} sections read, from Kimberly-Clark to how I think. Luca is one message away.</p><button type="button" class="again">↺ play again</button>`;
     note.hidden = false;
     note.querySelector('.again').addEventListener('click', restart);
     const hi = $('#contact .btn'); hi.classList.remove('wiggle'); void hi.offsetWidth; hi.classList.add('wiggle');
@@ -782,7 +800,7 @@
     resize(); if (level) { const snap = snapshot(); rebuild(); apply(snap); }
   }
   addEventListener('resize', relayout);
-  document.addEventListener('toggle', () => { if (level) { const snap = snapshot(); rebuild(); apply(snap); } }, true);
+  document.addEventListener('toggle', () => { if (level && !(P.rail && P.rail.at.fold)) { const snap = snapshot(); rebuild(); apply(snap); } }, true);
   document.addEventListener('visibilitychange', relayout);
 
   // Para probarlo desde afuera.
