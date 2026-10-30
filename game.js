@@ -146,7 +146,8 @@
     const wx = colL + 14, wy = ctBtn.b - 60, top = wy - 240;
     const sfW = Math.min(240, W - wx - 16), boxL = wx - 14, boxR = boxL + sfW, boxB = wy + 28;
     const hatch = { x: boxR - 74, w: 58 }, hx = hatch.x + hatch.w / 2;
-    const path = [[bx + bw / 2, fy + 56], [bx + bw / 2, top], [hx, top], [hx, top + 30]];
+    // La pipeline baja por el margen, como el DAG: nunca pasa por encima del texto.
+    const py = fy + 72, path = [[bx + bw / 2, fy + 56], [bx + bw / 2, py], [mx, py], [mx, top], [hx, top], [hx, top + 30]];
     const pipe = { path, mouth: [bx + bw / 2, fy + 56] };
     things.push({ draw: now => drawPipe(pipe, now) });
 
@@ -265,7 +266,7 @@
     ctx.beginPath(); p.path.forEach(([x, y], k) => (k ? ctx.lineTo(x, y) : ctx.moveTo(x, y)));
     ctx.strokeStyle = 'rgba(94,234,212,.14)'; ctx.lineWidth = 20; ctx.stroke();
     ctx.strokeStyle = ACCENT; ctx.lineWidth = 1.5; ctx.setLineDash([6, 10]); ctx.lineDashOffset = -now / 30; ctx.stroke(); ctx.setLineDash([]);
-    const [x2, y2] = p.path[2];
+    const [x2, y2] = p.path[4];
     text('Airflow · load', x2 + 16, y2 - 14, ACCENT);
   }
   function snowflake(x, y, r, color) {
@@ -355,7 +356,8 @@
     // La estela del muñequito cuando atraviesa el retrato.
     P.trail.forEach((t, k) => { ctx.globalAlpha = (k / P.trail.length) * 0.35; ctx.fillStyle = ACCENT; ctx.beginPath(); ctx.roundRect(t[0] + 4, t[1] + 4, S - 8, S - 8, 5); ctx.fill(); });
     ctx.globalAlpha = 1;
-    if (mode === 'wait') {
+    // Esperando (o ya terminado el recorrido), el muñequito está sobre el título, listo para otra vuelta.
+    if (mode === 'wait' || mode === 'done') {
       const ws = waitSpot(), hop = still ? 0 : (now % 1600 < 520 ? Math.sin((now % 1600) / 520 * Math.PI) * 12 : 0);
       P.face = -1;
       ctx.save(); ctx.translate(ws.x + S / 2, ws.y + S - hop); ctx.scale(BIG, BIG); ctx.translate(-(ws.x + S / 2), -(ws.y + S));
@@ -601,6 +603,7 @@
   }
   function start() {
     if (mode === 'play') return;
+    relayout();
     document.querySelectorAll('.reveal').forEach(el => { el.style.transition = 'none'; el.classList.add('in'); });
     // La clase va antes de medir: mientras se juega, algunas secciones dejan lugar para piezas del nivel.
     document.body.classList.add('playing');
@@ -653,7 +656,9 @@
   }
   function restart() {
     reset();
-    document.documentElement.style.scrollBehavior = 'auto'; scrollTo(0, 0);
+    // Vuelve arriba de una, con la página ya recalculada: si no, el scroll no llega y la entrada se saltea.
+    void document.body.offsetHeight;
+    scrollTo({ top: 0, behavior: 'instant' });
     beginIntro();
   }
   function endIntro() {
@@ -664,7 +669,7 @@
     if (touch) { pad.classList.remove('pulse'); void pad.offsetWidth; pad.classList.add('pulse'); }
   }
   // Abrir el mail (o apretar una flecha mientras espera) hace la entrada; después solo retoma el juego.
-  const activate = () => { if (mode === 'wait') beginIntro(); else if (mode !== 'intro' && mode !== 'done') start(); };
+  const activate = () => { if (mode === 'done') reset(); if (mode === 'wait') beginIntro(); else if (mode !== 'intro') start(); };
 
   // La entrada: sale disparado del sobre, cruza el retrato de punta a punta moviendo las rayas y cae sobre
   // el título. El camino es una curva suave que pasa por unos puntos fijos (Catmull-Rom).
@@ -689,6 +694,7 @@
     if (k === 1) endIntro();
   }
   function beginIntro() {
+    relayout();
     const spot = home(), ws = waitSpot();
     hint.classList.remove('on');
     // Sin movimiento, o si ya no está a la vista, aterriza directo.
@@ -707,13 +713,13 @@
     if (P.trail.length && mode !== 'intro') P.trail.shift();
     draw(now);
     // El botón invisible sobre el muñequito: para tocarlo en el celu o llegar con Tab.
-    const ws = waitSpot(), showHit = mode === 'idle' || mode === 'wait', big = S * BIG + 24;
+    const ws = waitSpot(), waiting = mode === 'wait' || mode === 'done', showHit = mode === 'idle' || waiting, big = S * BIG + 24;
     hit.style.display = showHit ? '' : 'none';
-    if (mode === 'wait') Object.assign(hit.style, { left: `${ws.x + S / 2 - big / 2}px`, top: `${ws.y + S + 6 - big}px`, width: `${big}px`, height: `${big}px` });
+    if (waiting) Object.assign(hit.style, { left: `${ws.x + S / 2 - big / 2}px`, top: `${ws.y + S + 6 - big}px`, width: `${big}px`, height: `${big}px` });
     else if (showHit) Object.assign(hit.style, { left: `${P.x - 10}px`, top: `${P.y - 10}px`, width: '44px', height: '44px' });
     // El globito mientras espera, y la misión sobre el muñequito al aterrizar.
-    hint.classList.toggle('on', mode === 'wait' && ws.y > scrollY && ws.y < scrollY + H);
-    if (mode === 'wait') {
+    hint.classList.toggle('on', waiting && ws.y > scrollY && ws.y < scrollY + H);
+    if (waiting) {
       // Al costado si entra; en pantallas angostas, arriba del muñequito.
       const side = ws.x + S * BIG + 230 < W;
       hint.classList.toggle('side', side);
@@ -742,7 +748,7 @@
     }
     // Las flechas solo arrancan el juego si no estás usando unas pestañas o escribiendo.
     const el = document.activeElement;
-    if ((k === 'left' || k === 'right') && !(el && el.closest('[role="tablist"], input, textarea, select, [contenteditable]'))) { const waiting = mode === 'wait'; activate(); if (!waiting) keys[k] = true; event.preventDefault(); }
+    if ((k === 'left' || k === 'right') && !(el && el.closest('[role="tablist"], input, textarea, select, [contenteditable]'))) { const fresh = mode === 'wait' || mode === 'done'; activate(); if (!fresh) keys[k] = true; event.preventDefault(); }
   });
   addEventListener('keyup', event => { const k = KEY[event.key.length === 1 ? event.key.toLowerCase() : event.key]; if (k) keys[k] = false; });
   hit.addEventListener('click', activate);
@@ -764,12 +770,14 @@
   help.querySelector('.exit').addEventListener('click', event => { event.stopPropagation(); reset(); });
   document.querySelectorAll('.restart').forEach(button => button.addEventListener('click', event => { event.stopPropagation(); restart(); }));
   // Con la pestaña oculta la página puede achicarse a cero: medir ahí rompe el nivel. Se mide al volver, si cambió.
+  // También se vuelve a medir antes de arrancar o de la entrada: si la página cargó oculta, el alto guardado
+  // podía ser 0 y el muñequito aparecía en cualquier lado.
   let measured = '';
-  const relayout = () => {
+  function relayout() {
     if (document.hidden || !innerWidth || !innerHeight || measured === `${innerWidth}x${innerHeight}`) return;
     measured = `${innerWidth}x${innerHeight}`;
     resize(); if (level) { const snap = snapshot(); rebuild(); apply(snap); }
-  };
+  }
   addEventListener('resize', relayout);
   document.addEventListener('toggle', () => { if (level) { const snap = snapshot(); rebuild(); apply(snap); } }, true);
   document.addEventListener('visibilitychange', relayout);
