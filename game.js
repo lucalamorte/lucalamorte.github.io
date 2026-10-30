@@ -1,7 +1,7 @@
 // El portfolio como nivel. El muñequito espera parado sobre el título; al tocarlo da una vuelta por el retrato
 // y vuelve a caer ahí. Desde el título se salta a la cara de Luca: la zambullida lo deja en un DAG que recorre
-// la experiencia, los productos y "how I think" (cada tarjeta es una tarea que corre mientras se lee, y una
-// compuerta all_success cierra cada sección). El DAG desemboca en el bucket de S3, Airflow lo carga a Snowflake,
+// la experiencia y los productos (cada tarjeta es una tarea que corre mientras se lee, y una compuerta
+// all_success cierra cada sección). El DAG desemboca en el bucket de S3, Airflow lo carga a Snowflake,
 // el warehouse se prende, dbt construye stage, integration y consumption, y Monte Carlo lo revisa a la salida.
 // Al final el dato entra como fila en una tabla, la tabla se vuelve reporte y del reporte sale el agente; ahí el
 // juego se apaga solo y la página queda marcada con lo leído. Se mueve con las flechas o con los controles del
@@ -120,14 +120,13 @@
     // El DAG arranca donde termina la zambullida, cruza la experiencia y los productos y desemboca en el bucket.
     const work = dag([...document.querySelectorAll('#experience .card.big')], null, 2.2);
     const built = dag([...document.querySelectorAll('#projects .card')], work.gate, 1.6);
-    const think = dag([...document.querySelectorAll('#more .card')], built.gate, 1.4);
-    const entry = work.first, g2 = think.gate;
+    const entry = work.first, g2 = built.gate;
     const tasks = nodes.filter(n => n.task);
     things.push({ draw: now => drawDag(nodes, now) });
     const reads = { get done() { return tasks.filter(n => n.done).length; }, total: tasks.length };
 
-    // Al final de "how I think" está el bucket de S3: el DAG desemboca ahí.
-    const pr = box($('#more'));
+    // Al final de los productos está el bucket de S3: el DAG desemboca ahí.
+    const pr = box($('#projects'));
     const fy = pr.b - 6, bw = 84, bx = Math.max(colL + 30, 24);
     floor(fy, [[bx, bw]]);
     // Airflow corre 3 segundos después de que el archivo cae al bucket (si los números ya se leyeron).
@@ -562,15 +561,15 @@
   }
   function rebuild() { level = build(); }
   // Si se entra a un proyecto y se vuelve, el muñequito y lo ya leído siguen donde estaban.
-  const SAVE = 'pk-progress', TASKS = '#experience .card.big, #projects .card, #more .card';
+  const SAVE = 'pk-progress', TASKS = '#experience .card.big, #projects .card';
   function snapshot() {
     if (!level) return null;
     return {
-      x: P.x, y: P.y, won, done: mode === 'done',
+      x: P.x, y: P.y, won, done: mode === 'done', playing: mode === 'play',
       reads: [...document.querySelectorAll(TASKS)].map((el, k) => el.classList.contains('read') ? k : -1).filter(k => k >= 0),
       plats: level.plats.map((p, i) => (p.t || p.built || p.solid === false) ? { i, t: p.t, b: p.built, s: p.solid } : null).filter(Boolean),
       // En los rieles se guarda la tarea donde estaba, o la sección: si el nivel se arma distinto, vuelve ahí.
-      rail: P.rail ? (P.rail.at.task ? { task: [...document.querySelectorAll(TASKS)].indexOf(P.rail.at.task) } : { section: [...document.querySelectorAll('main > section')].find(s => { const b = box(s); return P.y >= b.y && P.y < b.b; })?.id }) : null,
+      rail: P.rail ? (P.rail.at.task ? { task: [...document.querySelectorAll(TASKS)].indexOf(P.rail.at.task) } : { at: level.nodes.indexOf(P.rail.at), of: level.nodes.length, section: [...document.querySelectorAll('main > section')].find(s => { const b = box(s); return P.y >= b.y && P.y < b.b; })?.id }) : null,
     };
   }
   function apply(snap) {
@@ -581,7 +580,9 @@
     }
     P.x = snap.x; P.y = snap.y; P.vy = 0; P.on = null; won = snap.won;
     const cards = [...document.querySelectorAll(TASKS)], sec = snap.rail && snap.rail.section && box(document.getElementById(snap.rail.section));
+    // Si el nivel quedó igual de forma, al mismo nodo; si no, a la misma tarea o al comienzo de la misma sección.
     const back = !snap.rail ? null : snap.rail.task >= 0 ? level.nodes.find(n => n.task === cards[snap.rail.task])
+      : snap.rail.of === level.nodes.length ? level.nodes[snap.rail.at]
       : level.nodes.find(n => n.frame && !n.task && !n.gate && sec && n.y >= sec.y && n.y < sec.b) || level.entry;
     P.rail = back ? { at: back, to: null, d: 0 } : null;
     if (P.rail) onNode(P.rail.at);
@@ -596,7 +597,7 @@
     document.querySelectorAll('.reveal').forEach(el => { el.style.transition = 'none'; el.classList.add('in'); });
     void document.body.offsetHeight;
     rebuild(); apply(snap); mode = 'idle';
-    if (snap.done) finish();
+    if (snap.done) finish(); else if (snap.playing) start();
   }
   function start() {
     if (mode === 'play') return;
@@ -645,7 +646,7 @@
       note.className = 'agent-note'; note.setAttribute('role', 'status');
       $('#contact .cta').after(note);
     }
-    note.innerHTML = `<span class="agent-dot" aria-hidden="true"></span><p><b>agent</b>Your record is loaded: ${read} cards read, from Kimberly-Clark to how I think. Luca is one message away.</p><button type="button" class="again">↺ play again</button>`;
+    note.innerHTML = `<span class="agent-dot" aria-hidden="true"></span><p><b>agent</b>Your record is loaded: ${read} cards read, from Kimberly-Clark to the GenAI products. Luca is one message away.</p><button type="button" class="again">↺ play again</button>`;
     note.hidden = false;
     note.querySelector('.again').addEventListener('click', restart);
     const hi = $('#contact .btn'); hi.classList.remove('wiggle'); void hi.offsetWidth; hi.classList.add('wiggle');
@@ -770,6 +771,7 @@
     resize(); if (level) { const snap = snapshot(); rebuild(); apply(snap); }
   };
   addEventListener('resize', relayout);
+  document.addEventListener('toggle', () => { if (level) { const snap = snapshot(); rebuild(); apply(snap); } }, true);
   document.addEventListener('visibilitychange', relayout);
 
   // Para probarlo desde afuera.

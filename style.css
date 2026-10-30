@@ -597,11 +597,9 @@ h2 { margin-bottom: 18px; }
 .projects.four .card .visual:not(.slides), .slides .track { aspect-ratio: 16 / 10; display: grid; place-items: center; }
 /* El carrusel: se desliza con el dedo, con las flechas o con los puntitos. Primero el diagrama, después capturas. */
 .slides { position: relative; z-index: 1; }
-.slides .track { display: flex; overflow-x: auto; gap: 12px; scroll-snap-type: x mandatory; scroll-behavior: smooth; scrollbar-width: none; border-radius: 12px; }
+.slides .track { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; scroll-behavior: smooth; scrollbar-width: none; border-radius: 12px; }
 .slides .track::-webkit-scrollbar { display: none; }
-/* La imagen siguiente asoma por el borde derecho: se ve que hay más sin tocar nada. */
-.slides .slide { flex: 0 0 86%; display: grid; place-items: center; scroll-snap-align: start; }
-.slides .slide:last-child { scroll-snap-align: end; }
+.slides .slide { flex: 0 0 100%; display: grid; place-items: center; scroll-snap-align: start; }
 .slides .slide svg { width: 100%; height: auto; }
 .slides .slide img { display: block; width: 100%; height: 100%; object-fit: cover; border-radius: 12px; outline: 1px solid var(--border); outline-offset: -1px; }
 .slides button.prev, .slides button.fwd { position: absolute; top: calc(50% - 22px); display: grid; place-items: center; width: 34px; height: 34px; border: 1px solid var(--border-strong); border-radius: 50%; background: rgba(11, 17, 32, .8); color: var(--text); cursor: pointer; transition: border-color .2s, color .2s; }
@@ -612,11 +610,8 @@ h2 { margin-bottom: 18px; }
 .slides .dots { display: flex; justify-content: center; gap: 6px; margin-top: 10px; }
 .slides .dots button { width: 16px; height: 3px; padding: 0; border: 0; border-radius: 2px; background: var(--border-strong); cursor: pointer; transition: width .2s, background .2s; }
 .slides .dots button.on { width: 26px; background: var(--accent); }
-/* Que el carrusel se note: flechas siempre visibles, contador en la esquina y un amague al aparecer. */
+/* Que el carrusel se note: flechas siempre visibles y contador en la esquina. */
 .slides .count { position: absolute; top: 8px; right: 8px; padding: 2px 8px; border-radius: 999px; background: rgba(11, 17, 32, .8); border: 1px solid var(--border-strong); font-family: var(--mono); font-size: .68rem; color: var(--text-2); pointer-events: none; }
-.slides.nudge .track .slide { animation: slides-nudge 1.2s ease-in-out; }
-@keyframes slides-nudge { 0%, 100% { transform: none; } 40% { transform: translateX(-14%); } }
-.slides.nudge button.fwd { border-color: var(--accent); color: var(--accent); }
 /* Lo que deja el juego al terminar: la nota del agente en el contacto y cada tarjeta leída marcada. */
 .agent-note { display: flex; align-items: center; gap: 14px; max-width: 560px; margin: 32px auto 0; padding: 14px 16px; border: 1px solid var(--accent-line); border-radius: 16px; background: rgba(94, 234, 212, .06); text-align: left; animation: note-in .5s ease; }
 .agent-note[hidden] { display: none; }
@@ -660,3 +655,20 @@ h2 { margin-bottom: 18px; }
 .list.certs li .meta { opacity: 1 !important; transform: none !important; }
 .list.certs .who .go { opacity: .75; transform: none; }
 .list.certs li:has(.cred:hover) .go, .list.certs li:has(.cred:focus-visible) .go { opacity: 1; }
+/* How I think, plegado: una sola línea que se abre para mostrar las dos tarjetas. */
+main > section#more { padding: 56px 0 64px; }
+.fold summary { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 18px; padding: 22px 28px; border-radius: 18px; background: rgba(148, 163, 184, .045); cursor: pointer; list-style: none; transition: background .25s; }
+.fold summary::-webkit-details-marker { display: none; }
+.fold summary:hover, .fold[open] summary { background: rgba(148, 163, 184, .085); }
+.fold summary .eyebrow { margin: 0 !important; flex-basis: 100%; }
+.fold-title { font-size: 1.5rem; font-weight: 600; letter-spacing: -.02em; color: var(--text); }
+.fold-title span { color: var(--accent); margin-right: 6px; }
+.fold-hint { margin-left: auto; font-family: var(--mono); font-size: .78rem; color: var(--text-2); }
+.fold-hint::after { content: "▾"; display: inline-block; margin-left: 10px; color: var(--accent); transition: transform .25s; }
+.fold[open] .fold-hint::after { transform: rotate(180deg); }
+.fold .more-grid { margin-top: 20px; }
+@media (max-width: 760px) { .fold-hint { margin-left: 0; } }
+/* El cursor de los roles mientras se "generan": titila y se apaga al terminar. */
+.hero .roles .caret { display: inline-block; margin-left: 2px; color: var(--accent); animation: caret-blink 1s steps(1) infinite; transition: opacity .6s; }
+.hero .roles.done .caret { opacity: 0; animation: none; }
+@keyframes caret-blink { 50% { opacity: 0; } }

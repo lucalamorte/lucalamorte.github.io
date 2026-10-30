@@ -159,12 +159,13 @@
 
 
   <section id="more" class="reveal">
-    <p class="eyebrow">Beyond the projects</p>
-    <h2><span>/</span> how I think</h2>
-    <div class="more-grid">
-      <a class="card" href="work.html"><h3>How I work</h3><p>Six rules that take a product from idea to production, each one with the project where it was learned.</p><span class="more">Read them →</span></a>
-      <a class="card" href="work.html#education"><h3>Education &amp; certifications</h3><p>Information Systems Management at UADE, plus Snowflake, Google Cloud, Microsoft and more, with what each one covered.</p><span class="more">See them →</span></a>
-    </div>
+    <details class="fold">
+      <summary><span class="eyebrow">Beyond the projects</span><span class="fold-title"><span>/</span> how I think</span><span class="fold-hint">How I work · Education &amp; certifications</span></summary>
+      <div class="more-grid">
+        <a class="card" href="work.html"><h3>How I work</h3><p>Six rules that take a product from idea to production, each one with the project where it was learned.</p><span class="more">Read them →</span></a>
+        <a class="card" href="work.html#education"><h3>Education &amp; certifications</h3><p>Information Systems Management at UADE, plus Snowflake, Google Cloud, Microsoft and more, with what each one covered.</p><span class="more">See them →</span></a>
+      </div>
+    </details>
   </section>
   <section id="contact" class="contact reveal">
     <h2>Get in touch</h2>
@@ -224,6 +225,23 @@
     setTimeout(() => { label.textContent = 'Copy'; }, 1800);
   });
   document.documentElement.classList.add('motion');
+  // Los roles de la portada se escriben como responde un modelo: de a pedazos de palabra, con el cursor ▍ que
+  // titila un rato al terminar y se apaga. La altura queda fija para que nada se mueva mientras se escribe.
+  const roles = document.querySelector('.hero .roles');
+  if (roles && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    const full = roles.textContent, tokens = full.match(/\S{1,4}|\s+/g);
+    roles.setAttribute('aria-label', full);
+    roles.style.minHeight = roles.offsetHeight + 'px';
+    roles.innerHTML = '<span class="streamed" aria-hidden="true"></span><span class="caret" aria-hidden="true">▍</span>';
+    const out = roles.querySelector('.streamed');
+    let k = 0;
+    const next = () => {
+      if (k === tokens.length) { setTimeout(() => roles.classList.add('done'), 1600); return; }
+      out.textContent += tokens[k++];
+      setTimeout(next, 45 + Math.random() * 70);
+    };
+    setTimeout(next, 500);
+  }
   // Cada bloque aparece al llegar a él.
   if ('IntersectionObserver' in window) {
     document.documentElement.classList.add('js');
@@ -315,15 +333,6 @@
       slide.addEventListener('click', () => { if (Math.abs(track.scrollLeft - from) < 8) open(); });
       slide.addEventListener('keydown', event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); open(); } });
     });
-    // La primera vez que aparece, el carrusel amaga ir a la siguiente imagen y vuelve: se ve que hay más.
-    if ('IntersectionObserver' in window && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      const hint = new IntersectionObserver(([entry]) => {
-        if (!entry.isIntersecting) return;
-        hint.disconnect();
-        setTimeout(() => { if (current() === 0) { box.classList.add('nudge'); setTimeout(() => box.classList.remove('nudge'), 1200); } }, 600);
-      }, { threshold: 0.6 });
-      hint.observe(box);
-    }
   });
 </script>
 </body>
