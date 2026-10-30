@@ -1,5 +1,5 @@
-// El portfolio como nivel. El muñequito espera parado sobre el título; al tocarlo da una vuelta por el retrato
-// y vuelve a caer ahí. Desde el título se salta a la cara de Luca: la zambullida lo deja en un DAG que recorre
+// El portfolio como nivel. El muñequito espera debajo del texto de la portada; al tocarlo da una vuelta por el
+// retrato y cae sobre el título. Desde ahí se salta a la cara de Luca: la zambullida lo deja en un DAG que recorre
 // la experiencia y los productos (cada tarjeta es una tarea que corre mientras se lee, y una compuerta
 // all_success cierra cada sección). El DAG desemboca en el bucket de S3, Airflow lo carga a Snowflake,
 // el warehouse se prende, dbt construye stage, integration y consumption, y Monte Carlo lo revisa a la salida.
@@ -41,10 +41,10 @@
 
   const box = el => { const r = el.getBoundingClientRect(); return { x: r.left, y: r.top + scrollY, w: r.width, h: r.height, r: r.right, b: r.bottom + scrollY }; };
   const home = () => { const b = box($('.hero h1')); return { x: b.x + 6, y: b.y + 4 - S }; };
-  // Donde espera antes de empezar: parado sobre el título, más grande y saltando, en el mismo lugar donde
-  // después arranca el juego.
+  // Donde espera antes de empezar: debajo del texto de la portada, más grande y saltando. Primero se lee y
+  // después invita; al tocarlo salta al título, donde arranca el juego.
   const BIG = 1.5;
-  const waitSpot = home;
+  const waitSpot = () => { const b = box($('.hero .tools')); return { x: b.x + 10, y: b.b + 34 }; };
   // Un cartelito que flota sobre el muñequito o sobre una pieza.
   // Los diálogos siempre salen justo arriba del muñequito y lo siguen mientras se mueve.
   const say = (text, ms = 2000) => { labels = labels.filter(l => l.text !== text); labels.push({ text, until: performance.now() + ms }); };
@@ -100,7 +100,7 @@
     if (fig && fig.b > h1.y) {
       // Con el retrato al costado, el título llega hasta la cara: caminando a la izquierda se entra de frente.
       // Los hombros cierran por debajo, así que no hay otra forma de bajar.
-      const edge = fig.r - fig.w * 0.25, title = ledge(edge, h1.y + 4, Math.min(W, colR + 44) - edge, { floor: true });
+      const edge = fig.r - fig.w * 0.25, title = ledge(edge, h1.y + 4, Math.min(W, colR + 44) - edge, { floor: true, hidden: true });
       // Caminando se llega al borde de la silueta y ahí se frena: para entrar a la cara hay que saltar.
       walls.push({ x: edge, y1: h1.y + 4 - 30, y2: h1.y + 4 });
       things.push({ draw: now => { if (P.on === title && P.x <= edge + 6) drawJump(edge + 12, h1.y - 44, now); } });
@@ -227,12 +227,15 @@
         ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(n.x, n.y, 8, 0, Math.PI * 2);
         ctx.fillStyle = n.done ? ACCENT : INK; ctx.strokeStyle = n.done ? ACCENT : MUTED; ctx.fill(); ctx.stroke();
         if (n.done) { ctx.strokeStyle = INK; ctx.beginPath(); ctx.moveTo(n.x - 3.5, n.y); ctx.lineTo(n.x - 1, n.y + 3); ctx.lineTo(n.x + 4, n.y - 3); ctx.stroke(); }
+        else if (here && here.gate && here.gate.includes(n)) { ctx.strokeStyle = ACCENT; ctx.lineWidth = 2; ctx.globalAlpha = 0.45 + Math.sin(now / 220) * 0.45; ctx.beginPath(); ctx.arc(n.x, n.y, 15, 0, Math.PI * 2); ctx.stroke(); ctx.globalAlpha = 1; }
         else if (n.t) { ctx.strokeStyle = ACCENT; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(n.x, n.y, 19, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * Math.min(1, n.t / n.need)); ctx.stroke(); }
       } else if (n.gate) {
         const open = gateOpen(n), done = n.gate.filter(t => t.done).length, k = n.nudge && now - n.nudge < 400 ? Math.sin((now - n.nudge) / 30) * 3 : 0;
         ctx.fillStyle = open ? ACCENT : INK; ctx.strokeStyle = open ? ACCENT : MUTED; ctx.lineWidth = 2;
         ctx.beginPath(); ctx.moveTo(n.x, n.y - 8); ctx.lineTo(n.x + 8, n.y); ctx.lineTo(n.x, n.y + 8); ctx.lineTo(n.x - 8, n.y); ctx.closePath(); ctx.fill(); ctx.stroke();
         text(`all_success ${done}/${n.gate.length}`, n.x + 16 + k, n.y + 4, open ? ACCENT : MUTED);
+        // Frenado en la compuerta cerrada: dice en claro qué falta (y abajo, las tareas pendientes titilan).
+        if (!open && here === n) { const left = n.gate.length - done; text(`${left} ${left === 1 ? 'card' : 'cards'} to read first ↑`, n.x + 16 + k, n.y + 22, ACCENT); }
       } else if (n.links.length > 2) { ctx.fillStyle = 'rgba(94,234,212,.6)'; ctx.beginPath(); ctx.arc(n.x, n.y, 3.5, 0, Math.PI * 2); ctx.fill(); }
     }
     // Por dónde se puede seguir desde el nodo donde está parado.
