@@ -158,7 +158,7 @@
     // Del bucket no se sale por los costados: la única salida es la compuerta de abajo.
     walls.push({ x: bx, y1: fy, y2: fy + 52 }, { x: bx + bw, y1: fy, y2: fy + 52 });
     const gateOpen = now => ready() && bucket.since && now - bucket.since >= RUN;
-    const gate = ledge(bx + 4, fy + 48, bw - 8, { tick: now => { gate.solid = !gateOpen(now); }, land: () => { if (!ready()) say('not so fast, read first ↑', 2000); } });
+    const gate = ledge(bx + 4, fy + 48, bw - 8, { tick: now => { gate.solid = !gateOpen(now); }, land: () => { if (!ready()) say('hmm, did we skip something? ↑', 2000); } });
     things.push({ draw: now => drawBucket(bucket, gateOpen(now), now, RUN, reads) });
     const ly = Math.max(fy - 44, g2.y + 18), low = node(mx, ly), exit = node(bx + bw / 2, ly, { exit: true });
     link(g2, low); link(low, exit);
@@ -185,7 +185,7 @@
       m.stand = dt => {
         if (m.built) return;
         // dbt ayuda a moverse más rápido, literal: sus capas salen enseguida y de acá en más camina más rápido.
-        if (k === 1) { once('dbt run! i feel faster already'); P.fast = true; }
+        if (k === 1) { once('wait, am i getting faster? is that dbt?'); P.fast = true; }
         m.t += dt;
         if (m.t >= m.need) { m.built = true; m.solid = false; }
       };
@@ -492,7 +492,7 @@
     }
     const n = r.at;
     if (n.fold && !n.task.open) n.task.open = true;
-    if (n.fold && !n.done) { n.done = true; n.task.classList.add('read'); once("take your time. ↓ when you're ready", HOLD); }
+    if (n.fold && !n.done) { n.done = true; n.task.classList.add('read'); once("ooh, what's in here? ↓ when you're ready", HOLD); }
     if (n.task && !n.done) {
       if (!settled(n)) return;
       n.t += dt; n.task.classList.add('lit');
@@ -538,7 +538,7 @@
   // En una compuerta cerrada, la pista: cuántas tareas faltan y para qué lado están.
   function gateHint(n) {
     const left = n.gate.filter(t => !t.done).length, go = nextOnRail(n);
-    const text = `${go ? `${ARROW[dirOf(n, go.first)]} ` : ''}oops, ${left} ${left > 1 ? 'tasks' : 'task'} left`;
+    const text = `${go ? `${ARROW[dirOf(n, go.first)]} ` : ''}hmm, ${left} ${left > 1 ? 'tasks' : 'task'} left?`;
     if (!labels.some(l => l.text === text)) say(text, HOLD);
   }
   function request() {
@@ -546,14 +546,14 @@
     if (P.rail) {
       const r = P.rail, n = r.at;
       if (r.to || (n.task && !n.done)) return null;
-      if (n.fold) return "still reading? ↓ when you're done";
+      if (n.fold) return "did you read it all? ↓ when you're done";
       const go = nextOnRail(n);
-      return go && `${ARROW[dirOf(n, go.first)]} ${go.task ? 'next task, pretty please' : 'bucket time!'}`;
+      return go && `${ARROW[dirOf(n, go.first)]} ${go.task ? "what's over there?" : 'is that a bucket?'}`;
     }
     if (!P.ground || P.form === 'file' || (P.on && P.on.kind === 'model' && !P.on.built)) return null;
     const f = level.face, mc = level.mc, t = level.table;
-    if (f && P.y < level.entry.y) return !f.jump || P.x <= f.x2 - 8 ? '↑ jump into the face, trust me' : '← that way, toward the face';
-    return mc.state.checked ? `${toward(t.x)} so close! my table` : `${toward(mc.x + mc.w / 2)} Monte Carlo won't bite`;
+    if (f && P.y < level.entry.y) return !f.jump || P.x <= f.x2 - 8 ? '↑ can we jump in there?' : "← what's that face over there?";
+    return mc.state.checked ? `${toward(t.x)} wait... is that my table?` : `${toward(mc.x + mc.w / 2)} is that a way out?`;
   }
   let idleSince = 0;
   function nudge(now) {
@@ -566,7 +566,7 @@
   }
   function step(dt, now, control) {
     if (endAt) {
-      if (!endSaid && now - endAt > 2100) { endSaid = true; say('home, sweet table. say hi', 1600); }
+      if (!endSaid && now - endAt > 2100) { endSaid = true; say('so this is home? say hi', 1600); }
       if (now - endAt > 3400) finish();
       return;
     }
@@ -584,7 +584,7 @@
       if (window.__portraitPoke) window.__portraitPoke(P.x + S / 2, P.y + S / 2 - scrollY, (P.x - px) * 3, (P.y - py) * 3);
       if ((!d.via && P.y >= d.b[1]) || d.age > 2.5) {
         P.dive = null; P.vy = 0; if (window.__portraitPoke) window.__portraitPoke(null);
-        onNode(level.entry); P.rail = { at: level.entry, to: null, d: 0 }; once('wheee, riding the DAG');
+        onNode(level.entry); P.rail = { at: level.entry, to: null, d: 0 }; once('hmm, is this a DAG? could be helpful...');
       }
       return;
     }
@@ -646,10 +646,10 @@
       return;
     }
     const mc = level.mc;
-    if (mc && !mc.state.checked && P.x + S / 2 > mc.x && P.x + S / 2 < mc.x + mc.w && P.y > mc.y - 4 && P.y < mc.y + 40) { mc.state.checked = true; say(level.table.x + level.table.w / 2 > P.x ? "i'm clean! my table's that way →" : "← i'm clean! my table's that way", 5000); }
+    if (mc && !mc.state.checked && P.x + S / 2 > mc.x && P.x + S / 2 < mc.x + mc.w && P.y > mc.y - 4 && P.y < mc.y + 40) { mc.state.checked = true; say(level.table.x + level.table.w / 2 > P.x ? "i passed? is that my table →" : "← i passed? is that my table", 5000); }
     const b = level.bucket, cx = P.x + S / 2;
     const inside = cx > b.x && cx < b.x + b.w && P.y + S > b.y - 2 && P.y < b.y + b.d + 20;
-    if (!inside) b.since = 0; else if (!b.since && b.ready()) { b.since = now; once('cozy in here. Airflow, take me away'); }
+    if (!inside) b.since = 0; else if (!b.since && b.ready()) { b.since = now; once('a bucket? is Airflow coming for me?'); }
     const inBucket = cx > b.x && cx < b.x + b.w && P.y + S > b.y - 2 && P.y < b.y + b.d + 20;
     P.form = inBucket ? 'file' : 'pk';
     if (inBucket && P.y + S > b.y + b.d + 4) { P.ride = { d: 0 }; P.form = 'dot'; }
@@ -913,7 +913,7 @@
   document.addEventListener('click', event => {
     if (!document.body.classList.contains('playing') || !event.target.closest('.fold summary, a[href$="#how-i-work"], a[href$="#education"]')) return;
     event.preventDefault(); event.stopPropagation();
-    say('patience, it opens when i get there', 2400);
+    say('hmm, i think it opens when i get there', 2400);
   }, true);
   document.addEventListener('toggle', () => { if (level && !(P.rail && P.rail.at.fold)) { const snap = snapshot(); rebuild(); apply(snap); } }, true);
   document.addEventListener('visibilitychange', relayout);
