@@ -26,7 +26,7 @@
   // La misión, con las teclas para moverse, en un globo sobre el muñequito.
   const mission = document.createElement('div');
   mission.className = 'pk-say'; mission.setAttribute('role', 'status');
-  mission.innerHTML = `<p>Hi, I'm Little Bit, and I'm a bit lost... could you please help me reach the contacts table? 🥺</p>${touch ? '<p class="go">use the buttons below ↓</p>' : '<p class="go"><kbd>←</kbd><kbd>→</kbd> move <kbd>↑</kbd> jump</p>'}`;
+  mission.innerHTML = `<p>Hi, I'm Little Bit. Help me reach the contacts table? 🥺</p>${touch ? '<p class="go">use the buttons below ↓</p>' : '<p class="go"><kbd>←</kbd><kbd>→</kbd> move <kbd>↑</kbd> jump</p>'}`;
   // El panel fijo con los controles y el botón para reiniciar; aparece cuando el juego ya empezó.
   const help = document.createElement('div');
   help.className = 'play-help';
@@ -48,17 +48,18 @@
   // Un cartelito que flota sobre el muñequito o sobre una pieza.
   // Los diálogos siempre salen justo arriba del muñequito y lo siguen mientras se mueve.
   // De a un diálogo por vez: el que llega mientras otro recién apareció espera su turno, y si llega otro después, gana el último.
-  const READ = 2500;
-  let queued = null;
+  // Cada frase dura al menos LINGER, y clickear al muñequito repite la última.
+  const READ = 3500, LINGER = 7000;
+  let queued = null, lastSaid = null;
   const say = (text, ms = 2000) => {
     const now = performance.now(), shown = labels[0];
     if (shown && now < shown.until && shown.text !== text && now - shown.from < READ) { queued = { text, ms }; return; }
-    labels = [{ text, from: now, until: now + ms }]; queued = null;
+    labels = [{ text, from: now, until: now + Math.max(ms, LINGER) }]; queued = null; lastSaid = text;
   };
   // Lo que el muñequito va contando del recorrido: cada frase, una sola vez por partida.
   const said = new Set();
   // Lo que le pide algo al jugador queda en pantalla hasta que toque una tecla: así nadie se pierde la pista.
-  const HOLD = Infinity, letGo = () => { labels = labels.filter(l => l.until !== HOLD); };
+  const HOLD = Infinity, letGo = () => { const now = performance.now(); labels.forEach(l => { if (l.until === HOLD) l.until = Math.max(now, l.from + READ); }); };
   const once = (text, ms = 3600) => { if (said.has(text)) return; said.add(text); say(text, ms); };
 
   // ---------- el nivel ----------
@@ -550,11 +551,11 @@
     const text = `${go ? `${ARROW[dirOf(n, go.first)]} ` : ''}hmm, ${left} ${left > 1 ? 'tasks' : 'task'} left?`;
     if (!labels.some(l => l.text === text)) say(text, HOLD);
   }
+  // En la portada habla poco: al frenar en el NULL y al pasarlo. Lo del borde queda para quien se quede quieto ahí.
   const faceLine = f => {
     const b = level.block;
-    if (!f.jump || P.x <= f.x2 - 8) return '↑ is that my creator? can we jump in?';
-    if (!b || P.x + S / 2 < b.x) return "← who's that handsome guy over there?";
-    return P.x - b.x - b.w < 70 ? '↑ a NULL? can we hop over it?' : '← hmm, something on the floor?';
+    if (!b || P.x + S / 2 < b.x) return "← who's that handsome guy? my creator?";
+    return P.x - b.x - b.w < 70 ? '↑ a NULL? can we hop over it?' : null;
   };
   function request() {
     if (P.dive || P.ride || endAt) return null;
@@ -567,7 +568,7 @@
     }
     if (!P.ground || P.form === 'file' || (P.on && P.on.kind === 'model' && !P.on.built)) return null;
     const f = level.face, mc = level.mc, t = level.table;
-    if (f && P.y < level.entry.y) return faceLine(f);
+    if (f && P.y < level.entry.y) return !f.jump || P.x <= f.x2 - 8 ? '↑ can we jump in there?' : faceLine(f);
     return mc.state.checked ? `${toward(t.x)} wait... is that my table?` : `${toward(mc.x + mc.w / 2)} is that a way out?`;
   }
   let idleSince = 0;
@@ -581,8 +582,8 @@
   }
   function step(dt, now, control) {
     if (endAt) {
-      if (!endSaid && now - endAt > 2100) { endSaid = true; say('so this is home? say hi', 1600); }
-      if (now - endAt > 3400) finish();
+      if (!endSaid && now - endAt > 900) { endSaid = true; say('so this is home? say hi', 1600); }
+      if (now - endAt > 5000) finish();
       return;
     }
     if (P.dive) {
@@ -657,7 +658,7 @@
     }
     const f = level.face;
     // Apenas se va la misión, el muñequito ya mira la cara: no espera a que el jugador se quede quieto.
-    if (f && control && P.ground && P.y < level.entry.y && now >= missionUntil) once(faceLine(f), HOLD);
+    if (f && control && P.ground && P.y < level.entry.y && now >= missionUntil && faceLine(f)) once(faceLine(f), HOLD);
     if (f && control && (!P.ground || !f.jump) && P.x + S / 2 > f.x1 && P.x + S / 2 < f.x2 && P.y + S / 2 > f.y1 && P.y + S / 2 < f.y2) {
       P.dive = divePath(f.via ? [f.via[0] - S / 2, f.via[1] - S / 2] : null, [level.entry.x - S / 2, level.entry.y - S / 2]); P.on = null; P.ground = false;
       return;
@@ -666,7 +667,7 @@
     if (mc && !mc.state.checked && P.x + S / 2 > mc.x && P.x + S / 2 < mc.x + mc.w && P.y > mc.y - 4 && P.y < mc.y + 40) { mc.state.checked = true; say(level.table.x + level.table.w / 2 > P.x ? "i passed? is that my table →" : "← i passed? is that my table", 5000); }
     const b = level.bucket, cx = P.x + S / 2;
     const inside = cx > b.x && cx < b.x + b.w && P.y + S > b.y - 2 && P.y < b.y + b.d + 20;
-    if (!inside) b.since = 0; else if (!b.since && b.ready()) { b.since = now; once('a bucket? is Airflow coming for me?'); }
+    if (!inside) b.since = 0; else if (!b.since && b.ready()) b.since = now;
     const inBucket = cx > b.x && cx < b.x + b.w && P.y + S > b.y - 2 && P.y < b.y + b.d + 20;
     P.form = inBucket ? 'file' : 'pk';
     if (inBucket && P.y + S > b.y + b.d + 4) { P.ride = { d: 0 }; P.form = 'dot'; }
@@ -777,7 +778,7 @@
   function reset() {
     try { sessionStorage.removeItem(SAVE); } catch (e) {}
     document.querySelectorAll(TASKS).forEach(el => el.classList.remove('read', 'lit'));
-    won = false; endAt = 0; said.clear(); P.fast = false; document.body.classList.remove('ran'); if (note) note.hidden = true; labels = []; queued = null; P.ride = null; P.rail = null; P.dive = null; P.form = 'pk'; P.vy = 0; P.on = null;
+    won = false; endAt = 0; lastSaid = null; said.clear(); P.fast = false; document.body.classList.remove('ran'); if (note) note.hidden = true; labels = []; queued = null; P.ride = null; P.rail = null; P.dive = null; P.form = 'pk'; P.vy = 0; P.on = null;
     keys = {}; mode = 'wait';
     document.body.classList.remove('playing'); pad.hidden = true;
     document.documentElement.style.scrollBehavior = '';
@@ -889,7 +890,7 @@
     if (mode === 'intro') { if (k) event.preventDefault(); return; }
     if (mode === 'play') {
       if (event.key === 'Escape') { stop(); return; }
-      if (k) { if (!event.repeat) letGo(); keys[k] = true; camFree = false; event.preventDefault(); missionUntil = Math.min(missionUntil, performance.now() + 3000); }
+      if (k) { if (!event.repeat) letGo(); keys[k] = true; camFree = false; event.preventDefault(); missionUntil = Math.min(missionUntil, performance.now() + 6000); }
       else if (['PageDown', 'PageUp', 'Home', 'End'].includes(event.key)) camFree = true;
       return;
     }
@@ -899,6 +900,11 @@
   });
   addEventListener('keyup', event => { const k = KEY[event.key.length === 1 ? event.key.toLowerCase() : event.key]; if (k) keys[k] = false; });
   hit.addEventListener('click', activate);
+  // Un click sobre el muñequito mientras se juega repite lo último que dijo; si todavía no dijo nada, la misión.
+  document.addEventListener('click', event => {
+    if (mode !== 'play' || Math.hypot(event.clientX - P.x - S / 2, event.clientY + scrollY - P.y - S / 2) > 34) return;
+    if (lastSaid) { labels = []; queued = null; say(lastSaid); } else missionUntil = performance.now() + 9000;
+  });
   // Scrollear no corta el juego: la página se mira libre y el muñequito espera donde está. La cámara vuelve a
   // seguirlo con la próxima tecla.
   const look = () => { if (mode === 'play') camFree = true; };
@@ -907,7 +913,7 @@
   addEventListener('scroll', () => { if (mode === 'play' && Math.abs(scrollY - expected) > 40) look(); }, { passive: true });
   pad.querySelectorAll('[data-k]').forEach(button => {
     const k = button.dataset.k;
-    const on = event => { event.preventDefault(); letGo(); keys[k] = true; camFree = false; missionUntil = Math.min(missionUntil, performance.now() + 3000); button.setPointerCapture?.(event.pointerId); };
+    const on = event => { event.preventDefault(); letGo(); keys[k] = true; camFree = false; missionUntil = Math.min(missionUntil, performance.now() + 6000); button.setPointerCapture?.(event.pointerId); };
     const off = () => { keys[k] = false; };
     button.addEventListener('pointerdown', on);
     ['pointerup', 'pointercancel', 'lostpointercapture'].forEach(type => button.addEventListener(type, off));

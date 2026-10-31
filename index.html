@@ -387,15 +387,16 @@
   });
 
   // Una sola flecha, fija abajo en el medio de la pantalla: lleva a la parada que sigue. Cada sección es una parada,
-  // y los productos, que no entran en una pantalla, tienen una más por cada fila de tarjetas después de la primera.
+  // los productos, que no entran en una pantalla, tienen una más por cada fila de tarjetas después de la primera,
+  // y cada desplegable abierto es la suya.
   const sections = [...document.querySelectorAll('main > section')], next = document.querySelector('.scroll-next');
   const stops = () => sections.flatMap(section => {
     const cards = [...section.querySelectorAll('.projects .card')], top = card => Math.round(card.getBoundingClientRect().top);
     const rows = [...new Set(cards.map(top))].slice(1).map(y => cards.filter(card => top(card) === y));
-    return [section, ...rows];
+    return [section, ...rows, ...[...section.querySelectorAll('details.fold[open]')].map(fold => [fold])];
   });
   const stopAt = stop => (Array.isArray(stop) ? aim(stop[0], stop[stop.length - 1]) : aim(stop.firstElementChild, stop.lastElementChild));
-  const upcoming = () => stops().find(stop => stopAt(stop) > scrollY + 8);
+  const upcoming = () => stops().find(stop => stopAt(stop) > scrollY + 40);
   const sync = () => { const s = upcoming(); next.hidden = !s; if (s) next.href = '#' + (Array.isArray(s) ? s[0].closest('section') : s).id; };
   addEventListener('scroll', sync, { passive: true });
   addEventListener('resize', sync);
