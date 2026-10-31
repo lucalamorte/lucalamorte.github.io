@@ -472,11 +472,13 @@ html { scrollbar-width: thin; scrollbar-color: rgba(255, 255, 255, .16) transpar
 .pk-hint.side.on { animation: pk-nudge-side 1.8s ease-in-out infinite; }
 @keyframes pk-nudge-side { 50% { transform: translate(5px, -50%); } }
 /* Certificaciones: el nombre con emisor y año a la izquierda, qué cubre y dónde se usó a la derecha. */
-.list.certs li { display: grid; grid-template-columns: minmax(0, .85fr) minmax(0, 1.15fr); grid-template-areas: "what cnote" "who cnote"; align-items: start; gap: 2px 36px; padding: 14px 0; }
-.list.certs .what { grid-area: what; }
-.list.certs .who { grid-area: who; justify-items: start; }
-.list.certs .cert-note { grid-area: cnote; font-size: .9rem; line-height: 1.55; color: var(--muted); text-wrap: pretty; }
-@media (max-width: 760px) { .list.certs li { grid-template-columns: 1fr; grid-template-areas: "what" "who" "cnote"; } .list.certs .cert-note { margin-top: 6px; } }
+.list.certs li { display: flex; justify-content: space-between; align-items: baseline; gap: 4px 24px; padding: 7px 0; }
+.list.certs .who { flex: none; }
+.edu-top { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 48px; }
+.edu-top .list-label { margin-top: 0; }
+.fold > .edu-top { margin-top: 26px; }
+.fold > .edu-top + .list-label { margin-top: 24px; }
+@media (max-width: 760px) { .list.certs li { flex-direction: column; gap: 0; } .edu-top { grid-template-columns: 1fr; gap: 20px; } }
 /* How I work: la lista queda fija y la explicación de cada regla se lee a la derecha, sobre su escena. */
 .pr-item .desc { display: none; }
 .scene-desc { margin: 0 0 14px !important; max-width: 460px; font-size: 1rem; line-height: 1.6; color: var(--text-2); }
@@ -670,7 +672,7 @@ main > section#more { padding: 100px 0 90px; }
 .fold summary::after { content: "▾"; margin-left: auto; font-size: 1.15rem; line-height: 1; color: var(--accent); transition: transform .25s; }
 .fold[open] summary::after { transform: rotate(180deg); }
 .fold[open] > :not(summary) { animation: fold-in .35s ease; }
-.fold > .lead, .fold > .principles, .fold > .list-label:first-of-type { margin-top: 26px; }
+.fold > .lead, .fold > .principles { margin-top: 26px; }
 @keyframes fold-in { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
 /* El título "generándose": las letras aún no escritas no se ven pero ocupan su lugar, y una barra fina titila al final. */
 .hero h1.typing .ch:not(.on) { color: transparent; }
