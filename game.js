@@ -233,10 +233,14 @@
     const table = tx === null ? { x: (W - tw) / 2, y: btn.b + 40, w: tw, h: th, fill: 0 } : { x: tx, y: btn.b - th, w: tw, h: th, fill: 0 };
     things.push({ draw: now => drawTable(table, now) });
     if (tx === far && far - lastBtn.r > 130) {
-      const sw = 130, sx = lastBtn.r + (far - lastBtn.r - sw) / 2, sy = table.y + th - 34;
+      // Un cartel de ruta: la tabla clavada en un palo, con la punta hacia donde hay que ir.
+      const sw = 124, tip = 13, sh = 26, sx = lastBtn.r + (far - lastBtn.r - sw - tip) / 2, ground = table.y + th, sy = ground - 62, mid = sx + sw / 2;
       things.push({ draw: () => {
-        ctx.strokeStyle = 'rgba(94,234,212,.55)'; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.roundRect(sx, sy, sw, 26, 8); ctx.stroke();
-        text('contacts table →', sx + sw / 2, sy + 17, ACCENT, 'center');
+        ctx.strokeStyle = ACCENT; ctx.lineCap = 'round'; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.moveTo(mid, sy + sh); ctx.lineTo(mid, ground); ctx.moveTo(mid - 7, ground); ctx.lineTo(mid + 7, ground); ctx.stroke();
+        ctx.shadowColor = 'rgba(94,234,212,.55)'; ctx.shadowBlur = 10; ctx.fillStyle = INK; ctx.lineWidth = 1.5; ctx.lineJoin = 'round';
+        ctx.beginPath(); ctx.moveTo(sx + 5, sy); ctx.lineTo(sx + sw, sy); ctx.lineTo(sx + sw + tip, sy + sh / 2); ctx.lineTo(sx + sw, sy + sh); ctx.lineTo(sx + 5, sy + sh); ctx.arcTo(sx, sy + sh, sx, sy + sh - 5, 5); ctx.lineTo(sx, sy + 5); ctx.arcTo(sx, sy, sx + 5, sy, 5); ctx.closePath(); ctx.fill(); ctx.stroke();
+        ctx.shadowBlur = 0; ctx.lineJoin = 'miter';
+        text('contacts table', mid + 2, sy + 17, ACCENT, 'center');
       } });
     }
     ledge(table.x, table.y, tw, { hidden: true });
