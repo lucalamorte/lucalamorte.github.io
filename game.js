@@ -36,7 +36,7 @@
   pad.innerHTML = '<button type="button" data-k="left" aria-label="Left">◀</button><button type="button" data-k="right" aria-label="Right">▶</button><button type="button" data-k="down" class="down" aria-label="Go down">▼</button><button type="button" data-k="jump" class="jump" aria-label="Jump">▲</button><button type="button" class="x" aria-label="Stop playing">✕</button><button type="button" class="restart re" aria-label="Restart the game">↺</button>';
   document.body.append(canvas, hit, hint, mission, help, pad);
 
-  let camFree = false, endAt = 0, endSaid = false, fade = 1, mode = 'wait', missionUntil = 0, lockUntil = 0, W = 0, H = 0, level = null, keys = {}, last = 0, labels = [], expected = -1, intro = null, won = false;
+  let camFree = false, endAt = 0, endSaid = false, fade = 1, mode = 'wait', missionUntil = 0, lockUntil = 0, swapUntil = 0, W = 0, H = 0, level = null, keys = {}, last = 0, labels = [], expected = -1, intro = null, won = false;
   const P = { x: 0, y: 0, vx: 0, vy: 0, ground: false, on: null, face: 1, squash: 0, form: 'pk', ride: null, dropUntil: 0, trail: [] };
 
   const box = el => { const r = el.getBoundingClientRect(); return { x: r.left, y: r.top + scrollY, w: r.width, h: r.height, r: r.right, b: r.bottom + scrollY }; };
@@ -197,9 +197,8 @@
         if (m.built) return;
         // Una capa no se termina mientras el muñequito está hablando: cada frase de Snowflake llega a leerse.
         if (k === 0) once('brr, Snowflake runs cold');
-        if (k === 3) once('i ❤️ dbt. raw in, clean out');
         // dbt ayuda a moverse más rápido, literal: sus capas salen enseguida y de acá en más camina más rápido.
-        if (k === 1) { once('whoa, dbt made me faster'); P.fast = true; }
+        if (k === 1) { once('i ❤️ dbt. it made me faster'); P.fast = true; }
         if (now >= lockUntil) m.t += dt;
         if (m.t >= m.need) { m.built = true; m.solid = false; }
       };
@@ -470,7 +469,7 @@
     const r = P.rail;
     // Primero se centra lo que hay que leer: hasta que la cámara llega, no arranca el viaje ni corre la tarea.
     // La tecla igual se toma: el muñequito elige la arista y sale cuando la cámara está lista.
-    const settled = n => { const t = frameTarget(n); return t === null || Math.abs(scrollY - t) <= 6; };
+    const settled = n => { if (now < swapUntil) return true; const t = frameTarget(n); return t === null || Math.abs(scrollY - t) <= 6; };
     if (r.to) {
       if (r.d === 0 && !settled(r.to)) return;
       r.d += RAIL * dt;
@@ -505,8 +504,12 @@
     if (n.gate && m.y > n.y && !gateOpen(n)) { n.nudge = now; gateHint(n); return; }
     if (n.task) n.task.classList.remove('lit');
     // Entre desplegables es un acordeón: uno se pliega mientras el otro se abre, en los dos sentidos, sin que la
-    // página quede nunca con los dos cerrados.
-    if (n.fold && m.fold) [n, m].forEach(f => { f.task.classList.add('swap'); setTimeout(() => f.task.classList.remove('swap'), 500); });
+    // página quede nunca con los dos cerrados. La cámara espera quieta: si persiguiera las alturas a mitad de la
+    // animación, saltaría.
+    if (n.fold && m.fold) {
+      swapUntil = now + 460;
+      [n, m].forEach(f => { f.task.classList.add('swap'); setTimeout(() => f.task.classList.remove('swap'), 500); });
+    }
     if (n.fold) n.task.open = false;
     if (m.fold) m.task.open = true;
     r.to = m; r.d = 0; P.face = m.x < n.x ? -1 : m.x > n.x ? 1 : P.face;
@@ -674,7 +677,7 @@
   }
   function follow(dt) {
     // Si se scrolleó a mano, la cámara no pelea: vuelve recién con la próxima tecla.
-    if (camFree) return;
+    if (camFree || performance.now() < swapUntil) return;
     const rel = P.y - scrollY;
     let target = null;
     if (rel < H * 0.28) target = P.y - H * 0.28;
