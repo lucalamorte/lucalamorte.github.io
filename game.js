@@ -436,7 +436,7 @@
     // Los diálogos: globos apilados sobre el muñequito, con su entrada, sin salirse de la pantalla ni tapar el menú.
     ctx.font = '500 15px "JetBrains Mono", monospace'; ctx.textBaseline = 'middle';
     labels.forEach((l, k) => {
-      const a = Math.min(1, (l.until - now) / 300), pop = Math.min(1, (now - l.from) / 200), half = ctx.measureText(l.text).width / 2 + 16;
+      const a = Math.min(1, (l.until - now) / 300), pop = Math.max(0, Math.min(1, (now - l.from) / 200)), half = ctx.measureText(l.text).width / 2 + 16;
       const cx = Math.max(half + 8, Math.min(W - half - 8, P.x + S / 2)), up = (labels.length - 1 - k) * 44;
       const y = Math.max(top + 92 + up, P.y - 40 - up) + (1 - pop) * 10;
       ctx.save(); ctx.globalAlpha = a * pop; ctx.translate(cx, y); ctx.scale(0.92 + pop * 0.08, 0.92 + pop * 0.08);
