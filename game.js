@@ -449,6 +449,7 @@
       if (n.exit) { P.rail = null; P.vy = 120; return; }
       if (n.task && n.task.dataset.say) once(n.task.dataset.say);
       if (n.task && !n.done) { r.fresh = !!n.fold; return; }
+      if (n.gate && from.y < n.y && !gateOpen(n)) gateHint(n);
       const ahead = n.links.filter(m => m !== from);
       if (n.bus && from.gate && from.y < n.y) once('i ❤️ dbt. raw in, clean out');
       if (n.links.length === 2 && !n.task && !n.bus && (!n.gate || (from.y < n.y && gateOpen(n)))) r.to = ahead[0];
@@ -469,7 +470,7 @@
     const want = keys.left ? 'left' : keys.right ? 'right' : keys.jump ? 'up' : keys.down ? 'down' : null;
     const m = want && n.links.find(q => dirOf(n, q) === want);
     if (!m) return;
-    if (n.gate && m.y > n.y && !gateOpen(n)) { n.nudge = now; return; }
+    if (n.gate && m.y > n.y && !gateOpen(n)) { n.nudge = now; gateHint(n); return; }
     if (n.task) n.task.classList.remove('lit');
     if (n.fold) n.task.open = false;
     r.to = m; r.d = 0; P.face = m.x < n.x ? -1 : m.x > n.x ? 1 : P.face;
@@ -492,6 +493,12 @@
       }
     }
     return out;
+  }
+  // En una compuerta cerrada, la pista: cuántas tareas faltan y para qué lado están.
+  function gateHint(n) {
+    const left = n.gate.filter(t => !t.done).length, go = nextOnRail(n);
+    const text = `${go ? `${ARROW[dirOf(n, go.first)]} ` : ''}${left} ${left > 1 ? 'tasks' : 'task'} still pending`;
+    if (!labels.some(l => l.text === text)) say(text, 3000);
   }
   function request() {
     if (P.dive || P.ride || endAt) return null;
