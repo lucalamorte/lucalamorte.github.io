@@ -26,7 +26,7 @@
   // La misión, con las teclas para moverse, en un globo sobre el muñequito.
   const mission = document.createElement('div');
   mission.className = 'pk-say'; mission.setAttribute('role', 'status');
-  mission.innerHTML = `<p>I'm a bit lost... help me reach the contacts table? :(</p>${touch ? '<p class="go">use the buttons below ↓</p>' : '<p class="go"><kbd>←</kbd><kbd>→</kbd> move <kbd>↑</kbd> jump</p>'}`;
+  mission.innerHTML = `<p>I'm looking for the contacts table. Have you seen it?</p>${touch ? '<p class="go">use the buttons below ↓</p>' : '<p class="go"><kbd>←</kbd><kbd>→</kbd> move <kbd>↑</kbd> jump</p>'}`;
   // El panel fijo con los controles y el botón para reiniciar; aparece cuando el juego ya empezó.
   const help = document.createElement('div');
   help.className = 'play-help';
@@ -49,12 +49,14 @@
   // Los diálogos siempre salen justo arriba del muñequito y lo siguen mientras se mueve.
   // De a un diálogo por vez: el que llega mientras otro recién apareció espera su turno, y si llega otro después, gana el último.
   // Cada frase dura al menos LINGER, y clickear al muñequito repite la última.
-  const READ = 3500, LINGER = 7000;
+  const READ = 3500, LINGER = 7000, FADE = 320, POP = 320;
   let queued = null, lastSaid = null;
   const say = (text, ms = 2000) => {
     const now = performance.now(), shown = labels[0];
-    if (shown && now < shown.until && shown.text !== text && now - shown.from < READ) { queued = { text, ms }; return; }
-    labels = [{ text, from: now, until: now + Math.max(ms, LINGER) }]; queued = null; lastSaid = text;
+    const until = now + Math.max(ms, LINGER);
+    if (shown && now < shown.until && shown.text === text) { shown.until = Math.max(shown.until, until); return; }
+    if (shown && now < shown.until) { queued = { text, ms }; return; }
+    labels = [{ text, from: now, until }]; queued = null; lastSaid = text;
   };
   // Lo que el muñequito va contando del recorrido: cada frase, una sola vez por partida.
   const said = new Set();
@@ -432,14 +434,15 @@
       drawPk(P.x, P.y, now);
     }
     labels = labels.filter(l => now < l.until);
-    if (queued && (!labels[0] || now - labels[0].from >= READ)) { const { text, ms } = queued; say(text, ms); }
+    if (queued && labels[0] && now - labels[0].from >= READ) labels[0].until = Math.min(labels[0].until, now + FADE);
+    if (queued && !labels[0]) { const { text, ms } = queued; say(text, ms); }
     // Los diálogos: globos apilados sobre el muñequito, con su entrada, sin salirse de la pantalla ni tapar el menú.
     ctx.font = '500 15px "JetBrains Mono", monospace'; ctx.textBaseline = 'middle';
     labels.forEach((l, k) => {
-      const a = Math.min(1, (l.until - now) / 300), pop = Math.max(0, Math.min(1, (now - l.from) / 200)), half = ctx.measureText(l.text).width / 2 + 16;
+      const a = Math.min(1, (l.until - now) / FADE), rise = Math.max(0, Math.min(1, (now - l.from) / POP)), pop = 1 - (1 - rise) ** 3, half = ctx.measureText(l.text).width / 2 + 16;
       const cx = Math.max(half + 8, Math.min(W - half - 8, P.x + S / 2)), up = (labels.length - 1 - k) * 44;
-      const y = Math.max(top + 92 + up, P.y - 40 - up) + (1 - pop) * 10;
-      ctx.save(); ctx.globalAlpha = a * pop; ctx.translate(cx, y); ctx.scale(0.92 + pop * 0.08, 0.92 + pop * 0.08);
+      const y = Math.max(top + 92 + up, P.y - 40 - up) + (1 - pop) * 6;
+      ctx.save(); ctx.globalAlpha = a * pop; ctx.translate(cx, y); ctx.scale(0.97 + pop * 0.03, 0.97 + pop * 0.03);
       ctx.fillStyle = 'rgba(11,17,32,.96)'; ctx.strokeStyle = ACCENT; ctx.lineWidth = 1.5; ctx.shadowColor = 'rgba(94,234,212,.35)'; ctx.shadowBlur = 16;
       ctx.beginPath(); ctx.roundRect(-half, -18, half * 2, 36, 12); ctx.fill(); ctx.shadowBlur = 0; ctx.stroke();
       ctx.fillStyle = '#f1f5f9'; ctx.textAlign = 'center'; ctx.fillText(l.text, 0, 1);
