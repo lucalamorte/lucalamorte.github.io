@@ -26,7 +26,7 @@
   // La misión, con las teclas para moverse, en un globo sobre el muñequito.
   const mission = document.createElement('div');
   mission.className = 'pk-say'; mission.setAttribute('role', 'status');
-  mission.innerHTML = `<p>I'm a bit lost... could you please help me reach the contacts table? 🥺</p>${touch ? '<p class="go">use the buttons below ↓</p>' : '<p class="go"><kbd>←</kbd><kbd>→</kbd> move <kbd>↑</kbd> jump</p>'}`;
+  mission.innerHTML = `<p>Hi, I'm Little Bit, and I'm a bit lost... could you please help me reach the contacts table? 🥺</p>${touch ? '<p class="go">use the buttons below ↓</p>' : '<p class="go"><kbd>←</kbd><kbd>→</kbd> move <kbd>↑</kbd> jump</p>'}`;
   // El panel fijo con los controles y el botón para reiniciar; aparece cuando el juego ya empezó.
   const help = document.createElement('div');
   help.className = 'play-help';
@@ -40,7 +40,7 @@
   const P = { x: 0, y: 0, vx: 0, vy: 0, ground: false, on: null, face: 1, squash: 0, form: 'pk', ride: null, dropUntil: 0, trail: [] };
 
   const box = el => { const r = el.getBoundingClientRect(); return { x: r.left, y: r.top + scrollY, w: r.width, h: r.height, r: r.right, b: r.bottom + scrollY }; };
-  const home = () => { const b = box($('.hero h1')); return { x: b.x + 6, y: b.y + 4 - S }; };
+  const home = () => { const b = box($('.hero h1')); return { x: b.r - S - 6, y: b.y + 4 - S }; };
   // Donde espera antes de empezar: debajo del texto de la portada, más grande y saltando. Primero se lee y
   // después invita; al tocarlo salta al título, donde arranca el juego.
   const BIG = 1.5;
@@ -65,7 +65,7 @@
   function build() {
     W = document.documentElement.clientWidth;
     const plats = [], things = [], checkpoints = [], walls = [];
-    let level_mc = null;
+    let level_mc = null, block = null;
     const h = box(hero), colL = Math.max(16, h.x), colR = Math.min(W - 16, h.r);
     const ledge = (x, y, w, extra = {}) => { const p = { x, y, w, solid: true, ...extra }; plats.push(p); return p; };
     // Un piso de lado a lado con huecos: por ahí se baja.
@@ -115,6 +115,15 @@
       const edge = fig.r - fig.w * 0.25, title = ledge(edge, h1.y + 4, Math.min(W, colR + 44) - edge, { floor: true });
       // Caminando se llega al borde de la silueta y ahí se frena: para entrar a la cara hay que saltar.
       walls.push({ x: edge, y1: h1.y + 4 - 30, y2: h1.y + 4 });
+      // A mitad de camino, un NULL en el piso: el primer salto, y tiempo para que cada frase se lea en su momento.
+      const cw = 46, ch = 26, cx = (edge + home().x) / 2 - cw / 2, cy = h1.y + 4 - ch;
+      block = { x: cx, w: cw };
+      walls.push({ x: cx, y1: cy, y2: h1.y + 4 }, { x: cx + cw, y1: cy, y2: h1.y + 4 });
+      ledge(cx, cy, cw, { crate: true, floor: true });
+      things.push({ draw: () => {
+        ctx.strokeStyle = ACCENT; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.roundRect(cx, cy, cw, ch, 5); ctx.stroke();
+        text('NULL', cx + cw / 2, cy + 17, ACCENT, 'center');
+      } });
       things.push({ draw: now => { if (P.on === title && P.x <= edge + 6) drawJump(edge + 12, h1.y - 44, now); } });
     } else {
       // En el celu el retrato queda arriba del título: se salta desde el título hacia la cara.
@@ -229,7 +238,7 @@
 
     // Si se cae fuera del nivel, reaparece al comienzo de la última sección que pasó.
     for (const id of ['experience', 'projects', 'contact']) checkpoints.push({ y: box(document.getElementById(id)).y, x: colL + 30 });
-    return { plats, things, walls, bounds, face, nodes, entry, mc: level_mc, pipe, bucket, table, checkpoints, colL, colR, docH: document.documentElement.scrollHeight };
+    return { plats, things, walls, bounds, face, block, nodes, entry, mc: level_mc, pipe, bucket, table, checkpoints, colL, colR, docH: document.documentElement.scrollHeight };
   }
 
   // ---------- dibujo ----------
@@ -342,7 +351,7 @@
     if (rise > 0) { ctx.globalAlpha = rise; drawPk(t.x + t.w / 2 - S / 2, t.y - S - 6 * (1 - rise), now); ctx.globalAlpha = 1; }
   }
   function drawPlat(p, now) {
-    if (p.hidden) return;
+    if (p.hidden || p.crate) return;
     if (p.kind === 'model') {
       if (p.built) { text(`✓ ${p.label ? p.label() : p.name}`, p.x + 12, p.y + 18, ACCENT); return; }
       ctx.fillStyle = 'rgba(148,163,184,.1)'; ctx.strokeStyle = MUTED; ctx.lineWidth = 1.5;
@@ -403,7 +412,7 @@
       }
       ctx.globalAlpha = fade = 1;
       ctx.restore();
-    } else if (level && P.on && !P.on.floor && !P.on.hidden) drawPlat(P.on, now);
+    } else if (level && P.on && !P.on.floor && !P.on.hidden && !P.on.crate) drawPlat(P.on, now);
     // La estela del muñequito cuando atraviesa el retrato.
     P.trail.forEach((t, k) => { ctx.globalAlpha = (k / P.trail.length) * 0.35; ctx.fillStyle = ACCENT; ctx.beginPath(); ctx.roundRect(t[0] + 4, t[1] + 4, S - 8, S - 8, 5); ctx.fill(); });
     ctx.globalAlpha = 1;
@@ -541,6 +550,12 @@
     const text = `${go ? `${ARROW[dirOf(n, go.first)]} ` : ''}hmm, ${left} ${left > 1 ? 'tasks' : 'task'} left?`;
     if (!labels.some(l => l.text === text)) say(text, HOLD);
   }
+  const faceLine = f => {
+    const b = level.block;
+    if (!f.jump || P.x <= f.x2 - 8) return '↑ is that my creator? can we jump in?';
+    if (!b || P.x + S / 2 < b.x) return "← who's that handsome guy over there?";
+    return P.x - b.x - b.w < 70 ? '↑ a NULL? can we hop over it?' : '← hmm, something on the floor?';
+  };
   function request() {
     if (P.dive || P.ride || endAt) return null;
     if (P.rail) {
@@ -552,7 +567,7 @@
     }
     if (!P.ground || P.form === 'file' || (P.on && P.on.kind === 'model' && !P.on.built)) return null;
     const f = level.face, mc = level.mc, t = level.table;
-    if (f && P.y < level.entry.y) return !f.jump || P.x <= f.x2 - 8 ? '↑ can we jump in there?' : "← what's that face over there?";
+    if (f && P.y < level.entry.y) return faceLine(f);
     return mc.state.checked ? `${toward(t.x)} wait... is that my table?` : `${toward(mc.x + mc.w / 2)} is that a way out?`;
   }
   let idleSince = 0;
@@ -641,6 +656,8 @@
       P.inFigure = inside;
     }
     const f = level.face;
+    // Apenas se va la misión, el muñequito ya mira la cara: no espera a que el jugador se quede quieto.
+    if (f && control && P.ground && P.y < level.entry.y && now >= missionUntil) once(faceLine(f), HOLD);
     if (f && control && (!P.ground || !f.jump) && P.x + S / 2 > f.x1 && P.x + S / 2 < f.x2 && P.y + S / 2 > f.y1 && P.y + S / 2 < f.y2) {
       P.dive = divePath(f.via ? [f.via[0] - S / 2, f.via[1] - S / 2] : null, [level.entry.x - S / 2, level.entry.y - S / 2]); P.on = null; P.ground = false;
       return;
@@ -872,7 +889,7 @@
     if (mode === 'intro') { if (k) event.preventDefault(); return; }
     if (mode === 'play') {
       if (event.key === 'Escape') { stop(); return; }
-      if (k) { if (!event.repeat) letGo(); keys[k] = true; camFree = false; event.preventDefault(); missionUntil = Math.min(missionUntil, performance.now() + 2500); }
+      if (k) { if (!event.repeat) letGo(); keys[k] = true; camFree = false; event.preventDefault(); missionUntil = Math.min(missionUntil, performance.now() + 3000); }
       else if (['PageDown', 'PageUp', 'Home', 'End'].includes(event.key)) camFree = true;
       return;
     }
@@ -890,7 +907,7 @@
   addEventListener('scroll', () => { if (mode === 'play' && Math.abs(scrollY - expected) > 40) look(); }, { passive: true });
   pad.querySelectorAll('[data-k]').forEach(button => {
     const k = button.dataset.k;
-    const on = event => { event.preventDefault(); letGo(); keys[k] = true; camFree = false; missionUntil = Math.min(missionUntil, performance.now() + 2500); button.setPointerCapture?.(event.pointerId); };
+    const on = event => { event.preventDefault(); letGo(); keys[k] = true; camFree = false; missionUntil = Math.min(missionUntil, performance.now() + 3000); button.setPointerCapture?.(event.pointerId); };
     const off = () => { keys[k] = false; };
     button.addEventListener('pointerdown', on);
     ['pointerup', 'pointercancel', 'lostpointercapture'].forEach(type => button.addEventListener(type, off));
