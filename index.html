@@ -336,11 +336,11 @@
     title.classList.add('typing');
     let k = 0;
     const next = () => {
-      const size = 1 + Math.floor(Math.random() * 2);
+      const size = 1 + Math.floor(Math.random() * 3);
       chars.slice(k, k + size).forEach(ch => ch.classList.add('on'));
       k = Math.min(chars.length, k + size);
       chars[k - 1].after(caret);
-      if (k < chars.length) setTimeout(next, 170 + Math.random() * 130);
+      if (k < chars.length) setTimeout(next, 60 + Math.random() * 90);
     };
     chars[0].before(caret);
     if (document.getElementById('portrait')) addEventListener('portrait-formed', next, { once: true });
