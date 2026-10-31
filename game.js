@@ -36,7 +36,7 @@
   pad.innerHTML = '<button type="button" data-k="left" aria-label="Left">◀</button><button type="button" data-k="right" aria-label="Right">▶</button><button type="button" data-k="down" class="down" aria-label="Go down">▼</button><button type="button" data-k="jump" class="jump" aria-label="Jump">▲</button><button type="button" class="x" aria-label="Stop playing">✕</button><button type="button" class="restart re" aria-label="Restart the game">↺</button>';
   document.body.append(canvas, hit, hint, mission, help, pad);
 
-  let camFree = false, endAt = 0, endSaid = false, fade = 1, mode = 'wait', missionUntil = 0, W = 0, H = 0, level = null, keys = {}, last = 0, labels = [], expected = -1, intro = null, won = false;
+  let camFree = false, endAt = 0, endSaid = false, fade = 1, mode = 'wait', missionUntil = 0, lockUntil = 0, W = 0, H = 0, level = null, keys = {}, last = 0, labels = [], expected = -1, intro = null, won = false;
   const P = { x: 0, y: 0, vx: 0, vy: 0, ground: false, on: null, face: 1, squash: 0, form: 'pk', ride: null, dropUntil: 0, trail: [] };
 
   const box = el => { const r = el.getBoundingClientRect(); return { x: r.left, y: r.top + scrollY, w: r.width, h: r.height, r: r.right, b: r.bottom + scrollY }; };
@@ -47,22 +47,21 @@
   const waitSpot = () => { const b = box($('.hero .tools')); return { x: b.x + 10, y: b.b + 34 }; };
   // Un cartelito que flota sobre el muñequito o sobre una pieza.
   // Los diálogos siempre salen justo arriba del muñequito y lo siguen mientras se mueve.
-  // De a un diálogo por vez: el que llega mientras otro está en pantalla hace fila, y ninguno se pierde.
-  // Cada frase dura al menos LINGER, y clickear al muñequito repite la última.
-  const READ = 3500, LINGER = 7000, FADE = 320, POP = 320;
-  let queued = [], lastSaid = null;
+  // De a un diálogo por vez: el nuevo aparece enseguida, en su momento, y el anterior se desvanece debajo.
+  const READ = 1500, LINGER = 7000, FADE = 320, POP = 320;
+  let lastSaid = null;
   const say = (text, ms = 2000) => {
-    const now = performance.now(), shown = labels[0];
-    const until = now + Math.max(ms, LINGER);
+    const now = performance.now(), until = now + Math.max(ms, LINGER), shown = labels[labels.length - 1];
     if (shown && now < shown.until && shown.text === text) { shown.until = Math.max(shown.until, until); return; }
-    if (shown && now < shown.until) { if (!queued.some(q => q.text === text)) queued.push({ text, ms }); return; }
-    labels = [{ text, from: now, until }]; lastSaid = text;
+    labels = labels.filter(l => now < l.until).map(l => ({ ...l, until: Math.min(l.until, now + FADE) }));
+    labels.push({ text, from: now, until }); lastSaid = text;
   };
   // Lo que el muñequito va contando del recorrido: cada frase, una sola vez por partida.
   const said = new Set();
   // Lo que le pide algo al jugador queda en pantalla hasta que toque una tecla: así nadie se pierde la pista.
   const HOLD = Infinity, letGo = () => { const now = performance.now(); labels.forEach(l => { if (l.until === HOLD) l.until = Math.max(now, l.from + READ); }); };
-  const once = (text, ms = 3600) => { if (said.has(text)) return; said.add(text); say(text, ms); };
+  // Cada frase del recorrido frena al muñequito lo justo para leerla: así nunca llega antes que lo que dice.
+  const once = (text, ms = 3600) => { if (said.has(text)) return; said.add(text); say(text, ms); lockUntil = Math.max(lockUntil, performance.now() + 500 + text.length * 35); };
 
   // ---------- el nivel ----------
   function build() {
@@ -194,11 +193,14 @@
     LAYERS.forEach(([name, need], k) => {
       const m = ledge(boxL + 2, top + 50 + k * 50, boxR - boxL - 4, { kind: 'model', name, need, t: 0, built: false });
       if (k === 0) m.label = () => m.built ? 'warehouse M · running' : `warehouse ${['XS', 'S', 'M'][Math.min(2, Math.floor(m.t / m.need * 3))]}`;
-      m.stand = dt => {
+      m.stand = (dt, now) => {
         if (m.built) return;
+        // Una capa no se termina mientras el muñequito está hablando: cada frase de Snowflake llega a leerse.
+        if (k === 0) once('brr, is this Snowflake?');
+        if (k === 3) once('i ❤️ dbt. raw in, clean out');
         // dbt ayuda a moverse más rápido, literal: sus capas salen enseguida y de acá en más camina más rápido.
         if (k === 1) { once('wait, am i getting faster? is that dbt?'); P.fast = true; }
-        m.t += dt;
+        if (now >= lockUntil) m.t += dt;
         if (m.t >= m.need) { m.built = true; m.solid = false; }
       };
     });
@@ -397,9 +399,6 @@
       // Con un desplegable abierto, lo de abajo está medido con él cerrado: no se dibuja encima de su contenido.
       const openFold = P.rail && [P.rail.at, P.rail.to].find(n => n && n.fold && n.task.open);
       const unfolded = openFold && box(openFold.task.querySelector('summary'));
-      // El tramo entre dos desplegables pasa por al lado del abierto: se dibuja aparte, fuera del recorte.
-      const hop = P.rail && P.rail.to && P.rail.to.fold && P.rail.at.fold && P.rail.to;
-      if (hop) { ctx.strokeStyle = 'rgba(94,234,212,.45)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(hop.x, P.rail.at.y); ctx.lineTo(hop.x, hop.y); ctx.stroke(); }
       ctx.save();
       if (unfolded) { ctx.beginPath(); ctx.rect(0, top - 40, W, unfolded.b + 40 - top); ctx.clip(); }
       for (const t of level.things) t.draw(now);
@@ -434,13 +433,11 @@
       drawPk(P.x, P.y, now);
     }
     labels = labels.filter(l => now < l.until);
-    if (queued.length && labels[0] && now - labels[0].from >= READ) labels[0].until = Math.min(labels[0].until, now + FADE);
-    if (queued.length && !labels[0]) { const { text, ms } = queued.shift(); say(text, ms); }
     // Los diálogos: globos apilados sobre el muñequito, con su entrada, sin salirse de la pantalla ni tapar el menú.
     ctx.font = '500 15px "JetBrains Mono", monospace'; ctx.textBaseline = 'middle';
     labels.forEach((l, k) => {
       const a = Math.min(1, (l.until - now) / FADE), rise = Math.max(0, Math.min(1, (now - l.from) / POP)), pop = 1 - (1 - rise) ** 3, half = ctx.measureText(l.text).width / 2 + 16;
-      const cx = Math.max(half + 8, Math.min(W - half - 8, P.x + S / 2)), up = (labels.length - 1 - k) * 44;
+      const cx = Math.max(half + 8, Math.min(W - half - 8, P.x + S / 2)), up = 0;
       const y = Math.max(top + 92 + up, P.y - 40 - up) + (1 - pop) * 6;
       ctx.save(); ctx.globalAlpha = a * pop; ctx.translate(cx, y); ctx.scale(0.97 + pop * 0.03, 0.97 + pop * 0.03);
       ctx.fillStyle = 'rgba(11,17,32,.96)'; ctx.strokeStyle = ACCENT; ctx.lineWidth = 1.5; ctx.shadowColor = 'rgba(94,234,212,.35)'; ctx.shadowBlur = 16;
@@ -469,16 +466,6 @@
   // compuerta abierta sigue de largo; en una tarea se queda hasta que corre.
   const RAIL = 560;
   const onNode = n => { P.x = n.x - S / 2; P.y = n.y - S / 2; };
-  // El relevo al llegar: se abre el nuevo y se cierra el de arriba, y el scroll compensa lo que se achicó la página,
-  // así nada se mueve en pantalla. El nodo vuelve a su lugar, que está medido con todo cerrado.
-  function swapFolds(from, n) {
-    const s = n.task.querySelector('summary'), before = box(s).y;
-    n.task.open = true; from.task.open = false;
-    const now = box(s);
-    n.y = now.y + now.h / 2;
-    scrollTo({ top: scrollY + now.y - before, behavior: 'instant' });
-    expected = scrollY;
-  }
   function railStep(dt, control, now) {
     const r = P.rail;
     // Primero se centra lo que hay que leer: hasta que la cámara llega, no arranca el viaje ni corre la tarea.
@@ -490,15 +477,12 @@
       const len = Math.hypot(r.to.x - r.at.x, r.to.y - r.at.y), u = Math.min(1, r.d / (len || 1));
       P.x = r.at.x + (r.to.x - r.at.x) * u - S / 2; P.y = r.at.y + (r.to.y - r.at.y) * u - S / 2; P.form = 'dot';
       if (u < 1) return;
-      const from = r.at, n = r.at = r.to; r.to = null; r.d = 0;
-      if (n.fold && from.fold && from.task.open && n.y > from.y) swapFolds(from, n);
-      onNode(n); P.form = 'pk';
+      const from = r.at, n = r.at = r.to; r.to = null; r.d = 0; onNode(n); P.form = 'pk';
       if (n.exit) { P.rail = null; P.vy = 120; return; }
       if (n.task && n.task.dataset.say) once(n.task.dataset.say);
       if (n.task && !n.done) { r.fresh = !!n.fold; return; }
       if (n.gate && from.y < n.y && !gateOpen(n)) gateHint(n);
       const ahead = n.links.filter(m => m !== from);
-      if (n.bus && from.gate && from.y < n.y) once('i ❤️ dbt. raw in, clean out');
       if (n.links.length === 2 && !n.task && !n.bus && (!n.gate || (from.y < n.y && gateOpen(n)))) r.to = ahead[0];
       else r.fresh = true;
       return;
@@ -520,13 +504,11 @@
     if (!m) return;
     if (n.gate && m.y > n.y && !gateOpen(n)) { n.nudge = now; gateHint(n); return; }
     if (n.task) n.task.classList.remove('lit');
-    // Hacia el desplegable de abajo se camina por el margen, a lo largo del abierto, que se cierra recién al llegar.
-    // Hacia arriba el relevo es en el mismo cuadro: la página nunca queda con los dos cerrados.
-    if (n.fold && m.fold && m.y > n.y) { const s = box(m.task.querySelector('summary')); m.y = s.y + s.h / 2; }
-    else {
-      if (n.fold) n.task.open = false;
-      if (m.fold) m.task.open = true;
-    }
+    // Entre desplegables es un acordeón: uno se pliega mientras el otro se abre, en los dos sentidos, sin que la
+    // página quede nunca con los dos cerrados.
+    if (n.fold && m.fold) [n, m].forEach(f => { f.task.classList.add('swap'); setTimeout(() => f.task.classList.remove('swap'), 500); });
+    if (n.fold) n.task.open = false;
+    if (m.fold) m.task.open = true;
     r.to = m; r.d = 0; P.face = m.x < n.x ? -1 : m.x > n.x ? 1 : P.face;
   }
   // Si pasa un rato sin que el jugador haga nada, el muñequito le pide lo que falta. Nunca interrumpe lo que corre
@@ -670,7 +652,7 @@
     if (mc && !mc.state.checked && P.x + S / 2 > mc.x && P.x + S / 2 < mc.x + mc.w && P.y > mc.y - 4 && P.y < mc.y + 40) { mc.state.checked = true; say(level.table.x + level.table.w / 2 > P.x ? "i passed? is that my table →" : "← i passed? is that my table", 5000); }
     const b = level.bucket, cx = P.x + S / 2;
     const inside = cx > b.x && cx < b.x + b.w && P.y + S > b.y - 2 && P.y < b.y + b.d + 20;
-    if (!inside) b.since = 0; else if (!b.since && b.ready()) b.since = now;
+    if (!inside) b.since = 0; else if (!b.since && b.ready()) { b.since = now; once('hmm, is this AWS? nice bucket'); }
     const inBucket = cx > b.x && cx < b.x + b.w && P.y + S > b.y - 2 && P.y < b.y + b.d + 20;
     P.form = inBucket ? 'file' : 'pk';
     if (inBucket && P.y + S > b.y + b.d + 4) { P.ride = { d: 0 }; P.form = 'dot'; }
@@ -781,7 +763,7 @@
   function reset() {
     try { sessionStorage.removeItem(SAVE); } catch (e) {}
     document.querySelectorAll(TASKS).forEach(el => el.classList.remove('read', 'lit'));
-    won = false; endAt = 0; lastSaid = null; said.clear(); P.fast = false; document.body.classList.remove('ran'); if (note) note.hidden = true; labels = []; queued = []; P.ride = null; P.rail = null; P.dive = null; P.form = 'pk'; P.vy = 0; P.on = null;
+    won = false; endAt = 0; lastSaid = null; said.clear(); P.fast = false; document.body.classList.remove('ran'); if (note) note.hidden = true; labels = []; P.ride = null; P.rail = null; P.dive = null; P.form = 'pk'; P.vy = 0; P.on = null;
     keys = {}; mode = 'wait';
     document.body.classList.remove('playing'); pad.hidden = true;
     document.documentElement.style.scrollBehavior = '';
@@ -791,7 +773,7 @@
   // en el contacto, con un botón para jugar de nuevo.
   let note = null;
   function finish() {
-    endAt = 0; mode = 'done'; keys = {}; labels = []; queued = [];
+    endAt = 0; mode = 'done'; keys = {}; labels = [];
     document.body.classList.remove('playing'); document.body.classList.add('ran'); pad.hidden = true;
     document.documentElement.style.scrollBehavior = '';
     const read = [...document.querySelectorAll(TASKS)].filter(el => el.classList.contains('read')).length;
@@ -816,7 +798,8 @@
     intro = null; P.trail = []; if (window.__portraitPoke) window.__portraitPoke(null);
     const spot = home(); P.x = spot.x; P.y = spot.y; P.vy = 0; mode = 'idle';
     // Apenas aterriza ya se juega: cuenta la misión y muestra con qué se mueve.
-    start(); P.squash = 1; missionUntil = performance.now() + 9000;
+    // Unos segundos sin moverse para que la misión se lea: al salir ya cede el lugar a lo que dice frente al NULL.
+    start(); P.squash = 1; missionUntil = performance.now() + 9000; lockUntil = performance.now() + 2500;
     if (touch) { pad.classList.remove('pulse'); void pad.offsetWidth; pad.classList.add('pulse'); }
   }
   // Abrir el mail (o apretar una flecha mientras espera) hace la entrada; después solo retoma el juego.
@@ -860,7 +843,7 @@
   function frame(now) {
     const dt = Math.min(0.033, (now - last) / 1000 || 0); last = now;
     if (mode === 'intro' && intro) runIntro(now);
-    else if (level && mode !== 'wait' && mode !== 'done') { step(dt, now, mode === 'play'); if (mode === 'play') { follow(dt); nudge(now); } }
+    else if (level && mode !== 'wait' && mode !== 'done') { step(dt, now, mode === 'play' && now >= lockUntil); if (mode === 'play') { follow(dt); nudge(now); } }
     if (P.trail.length && mode !== 'intro') P.trail.shift();
     draw(now);
     // El botón invisible sobre el muñequito: para tocarlo en el celu o llegar con Tab.
@@ -893,7 +876,7 @@
     if (mode === 'intro') { if (k) event.preventDefault(); return; }
     if (mode === 'play') {
       if (event.key === 'Escape') { stop(); return; }
-      if (k) { if (!event.repeat) letGo(); keys[k] = true; camFree = false; event.preventDefault(); missionUntil = Math.min(missionUntil, performance.now() + 6000); }
+      if (k) { if (!event.repeat) letGo(); keys[k] = true; camFree = false; event.preventDefault(); missionUntil = Math.min(missionUntil, Math.max(performance.now(), lockUntil) + 800); }
       else if (['PageDown', 'PageUp', 'Home', 'End'].includes(event.key)) camFree = true;
       return;
     }
@@ -906,7 +889,7 @@
   // Un click sobre el muñequito mientras se juega repite lo último que dijo; si todavía no dijo nada, la misión.
   document.addEventListener('click', event => {
     if (mode !== 'play' || Math.hypot(event.clientX - P.x - S / 2, event.clientY + scrollY - P.y - S / 2) > 34) return;
-    if (lastSaid) { labels = []; queued = []; say(lastSaid); } else missionUntil = performance.now() + 9000;
+    if (lastSaid) { labels = []; say(lastSaid); } else missionUntil = performance.now() + 9000;
   });
   // Scrollear no corta el juego: la página se mira libre y el muñequito espera donde está. La cámara vuelve a
   // seguirlo con la próxima tecla.
@@ -916,7 +899,7 @@
   addEventListener('scroll', () => { if (mode === 'play' && Math.abs(scrollY - expected) > 40) look(); }, { passive: true });
   pad.querySelectorAll('[data-k]').forEach(button => {
     const k = button.dataset.k;
-    const on = event => { event.preventDefault(); letGo(); keys[k] = true; camFree = false; missionUntil = Math.min(missionUntil, performance.now() + 6000); button.setPointerCapture?.(event.pointerId); };
+    const on = event => { event.preventDefault(); letGo(); keys[k] = true; camFree = false; missionUntil = Math.min(missionUntil, Math.max(performance.now(), lockUntil) + 800); button.setPointerCapture?.(event.pointerId); };
     const off = () => { keys[k] = false; };
     button.addEventListener('pointerdown', on);
     ['pointerup', 'pointercancel', 'lostpointercapture'].forEach(type => button.addEventListener(type, off));
