@@ -47,16 +47,16 @@
   const waitSpot = () => { const b = box($('.hero .tools')); return { x: b.x + 10, y: b.b + 34 }; };
   // Un cartelito que flota sobre el muñequito o sobre una pieza.
   // Los diálogos siempre salen justo arriba del muñequito y lo siguen mientras se mueve.
-  // De a un diálogo por vez: el que llega mientras otro recién apareció espera su turno, y si llega otro después, gana el último.
+  // De a un diálogo por vez: el que llega mientras otro está en pantalla hace fila, y ninguno se pierde.
   // Cada frase dura al menos LINGER, y clickear al muñequito repite la última.
   const READ = 3500, LINGER = 7000, FADE = 320, POP = 320;
-  let queued = null, lastSaid = null;
+  let queued = [], lastSaid = null;
   const say = (text, ms = 2000) => {
     const now = performance.now(), shown = labels[0];
     const until = now + Math.max(ms, LINGER);
     if (shown && now < shown.until && shown.text === text) { shown.until = Math.max(shown.until, until); return; }
-    if (shown && now < shown.until) { queued = { text, ms }; return; }
-    labels = [{ text, from: now, until }]; queued = null; lastSaid = text;
+    if (shown && now < shown.until) { if (!queued.some(q => q.text === text)) queued.push({ text, ms }); return; }
+    labels = [{ text, from: now, until }]; lastSaid = text;
   };
   // Lo que el muñequito va contando del recorrido: cada frase, una sola vez por partida.
   const said = new Set();
@@ -434,8 +434,8 @@
       drawPk(P.x, P.y, now);
     }
     labels = labels.filter(l => now < l.until);
-    if (queued && labels[0] && now - labels[0].from >= READ) labels[0].until = Math.min(labels[0].until, now + FADE);
-    if (queued && !labels[0]) { const { text, ms } = queued; say(text, ms); }
+    if (queued.length && labels[0] && now - labels[0].from >= READ) labels[0].until = Math.min(labels[0].until, now + FADE);
+    if (queued.length && !labels[0]) { const { text, ms } = queued.shift(); say(text, ms); }
     // Los diálogos: globos apilados sobre el muñequito, con su entrada, sin salirse de la pantalla ni tapar el menú.
     ctx.font = '500 15px "JetBrains Mono", monospace'; ctx.textBaseline = 'middle';
     labels.forEach((l, k) => {
@@ -781,7 +781,7 @@
   function reset() {
     try { sessionStorage.removeItem(SAVE); } catch (e) {}
     document.querySelectorAll(TASKS).forEach(el => el.classList.remove('read', 'lit'));
-    won = false; endAt = 0; lastSaid = null; said.clear(); P.fast = false; document.body.classList.remove('ran'); if (note) note.hidden = true; labels = []; queued = null; P.ride = null; P.rail = null; P.dive = null; P.form = 'pk'; P.vy = 0; P.on = null;
+    won = false; endAt = 0; lastSaid = null; said.clear(); P.fast = false; document.body.classList.remove('ran'); if (note) note.hidden = true; labels = []; queued = []; P.ride = null; P.rail = null; P.dive = null; P.form = 'pk'; P.vy = 0; P.on = null;
     keys = {}; mode = 'wait';
     document.body.classList.remove('playing'); pad.hidden = true;
     document.documentElement.style.scrollBehavior = '';
@@ -791,7 +791,7 @@
   // en el contacto, con un botón para jugar de nuevo.
   let note = null;
   function finish() {
-    endAt = 0; mode = 'done'; keys = {}; labels = []; queued = null;
+    endAt = 0; mode = 'done'; keys = {}; labels = []; queued = [];
     document.body.classList.remove('playing'); document.body.classList.add('ran'); pad.hidden = true;
     document.documentElement.style.scrollBehavior = '';
     const read = [...document.querySelectorAll(TASKS)].filter(el => el.classList.contains('read')).length;
@@ -906,7 +906,7 @@
   // Un click sobre el muñequito mientras se juega repite lo último que dijo; si todavía no dijo nada, la misión.
   document.addEventListener('click', event => {
     if (mode !== 'play' || Math.hypot(event.clientX - P.x - S / 2, event.clientY + scrollY - P.y - S / 2) > 34) return;
-    if (lastSaid) { labels = []; queued = null; say(lastSaid); } else missionUntil = performance.now() + 9000;
+    if (lastSaid) { labels = []; queued = []; say(lastSaid); } else missionUntil = performance.now() + 9000;
   });
   // Scrollear no corta el juego: la página se mira libre y el muñequito espera donde está. La cámara vuelve a
   // seguirlo con la próxima tecla.
