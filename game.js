@@ -226,7 +226,7 @@
     // Contacto: la meta es la tabla. El dato que recorrió todo el pipeline cae como su fila nueva, y encima de la
     // tabla el muñequito queda como el agente que la consulta. Va al costado de los botones; si no hay lugar a
     // ninguno de los dos lados (en el celu), debajo de ellos y centrada.
-    const btn = box($('#contact .btn')), lastBtn = box($('#contact .cta .btn:last-child')), tw = 150, th = 72;
+    const btn = box($('#contact .btn')), lastBtn = box($('#contact .cta .btn:last-child')), tw = 196, th = 72;
     // Con lugar, la tabla queda bien separada de los botones y en el hueco un cartel indica para dónde seguir.
     const far = Math.min(lastBtn.r + 210, bounds.r - tw - 10);
     const tx = far > lastBtn.r + 40 ? far : lastBtn.r + 40 + tw < W - 16 ? lastBtn.r + 40 : btn.x - 40 - tw > 8 ? btn.x - 40 - tw : null;
@@ -328,20 +328,20 @@
   // reporte (barras que crecen) y del reporte sale el agente, el muñequito con su antenita.
   const ease = (e, from, len) => Math.max(0, Math.min(1, (e - from) / len));
   function drawTable(t, now) {
-    const e = endAt ? (now - endAt) / 1000 : 0, fill = ease(e, 0, 0.5), morph = ease(e, 0.9, 0.8), rise = ease(e, 1.9, 0.6);
+    const e = endAt ? (now - endAt) / 1000 : 0, fill = ease(e, 0, 0.9), morph = ease(e, 2.8, 1.2), rise = ease(e, 4.2, 0.9);
     const row = t.h / 4;
     ctx.strokeStyle = 'rgba(94,234,212,.5)'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.roundRect(t.x, t.y, t.w, t.h, 6); ctx.stroke();
     text(morph > 0.5 ? 'report' : 'contacts', t.x, t.y - 8, MUTED);
     ctx.globalAlpha = 1 - morph;
     ctx.strokeStyle = 'rgba(148,163,184,.25)'; ctx.lineWidth = 1;
     for (let k = 1; k < 4; k++) { ctx.beginPath(); ctx.moveTo(t.x, t.y + row * k); ctx.lineTo(t.x + t.w, t.y + row * k); ctx.stroke(); }
-    text('id   from     status', t.x + 8, t.y + row - 5, MUTED);
+    text('id   from        status', t.x + 8, t.y + row - 5, MUTED);
     ctx.fillStyle = 'rgba(148,163,184,.18)';
-    for (const k of [1, 2]) { ctx.fillRect(t.x + 8, t.y + row * k + 7, 14, 4); ctx.fillRect(t.x + 34, t.y + row * k + 7, 44, 4); ctx.fillRect(t.x + 96, t.y + row * k + 7, 30, 4); }
+    for (const k of [1, 2]) { ctx.fillRect(t.x + 8, t.y + row * k + 7, 14, 4); ctx.fillRect(t.x + 34, t.y + row * k + 7, 60, 4); ctx.fillRect(t.x + 122, t.y + row * k + 7, 30, 4); }
     const ly = t.y + row * 3;
     if (fill > 0) {
       ctx.globalAlpha = fill * (1 - morph); ctx.fillStyle = 'rgba(94,234,212,.12)'; ctx.fillRect(t.x + 1, ly + 1, t.w - 2, row - 2);
-      text('3    you      ✓ loaded', t.x + 8, ly + row - 5, ACCENT);
+      text('3    little bit  ✓ loaded', t.x + 8, ly + row - 5, ACCENT);
     } else {
       // Después de Monte Carlo la fila vacía titila y una flecha lleva hasta ella: ese es el destino.
       const ready = level.mc.state.checked;
@@ -419,8 +419,8 @@
     // La estela del muñequito cuando atraviesa el retrato.
     P.trail.forEach((t, k) => { ctx.globalAlpha = (k / P.trail.length) * 0.35; ctx.fillStyle = ACCENT; ctx.beginPath(); ctx.roundRect(t[0] + 4, t[1] + 4, S - 8, S - 8, 5); ctx.fill(); });
     ctx.globalAlpha = 1;
-    // Esperando (o ya terminado el recorrido), el muñequito está sobre el título, listo para otra vuelta.
-    if (mode === 'wait' || mode === 'done') {
+    // Esperando, el muñequito está sobre el título, listo para arrancar. Al terminar queda solo el de la nota.
+    if (mode === 'wait') {
       const ws = waitSpot(), hop = still ? 0 : (now % 1600 < 520 ? Math.sin((now % 1600) / 520 * Math.PI) * 12 : 0);
       P.face = -1;
       ctx.save(); ctx.translate(ws.x + S / 2, ws.y + S - hop); ctx.scale(BIG, BIG); ctx.translate(-(ws.x + S / 2), -(ws.y + S));
@@ -590,7 +590,7 @@
   function step(dt, now, control) {
     if (endAt) {
       if (!endSaid && now - endAt > 900) { endSaid = true; say("there's no place like home", 1600); }
-      if (now - endAt > 5000) finish();
+      if (now - endAt > 7500) finish();
       return;
     }
     if (P.dive) {
@@ -671,7 +671,8 @@
       return;
     }
     const mc = level.mc;
-    if (mc && !mc.state.checked && P.x + S / 2 > mc.x && P.x + S / 2 < mc.x + mc.w && P.y > mc.y - 4 && P.y < mc.y + 40) { mc.state.checked = true; say(level.table.x + level.table.w / 2 > P.x ? 'found my table, finally!!!' : '← passed the checks. table ahead', 5000); }
+    // La caja solo se deja por Monte Carlo: pasar su borde de abajo es haber salido, a cualquier velocidad.
+    if (mc && !mc.state.checked && P.y > mc.y) { mc.state.checked = true; say('found my table, finally!!!', 5000); }
     const b = level.bucket, cx = P.x + S / 2;
     const inside = cx > b.x && cx < b.x + b.w && P.y + S > b.y - 2 && P.y < b.y + b.d + 20;
     if (!inside) b.since = 0; else if (!b.since && b.ready()) { b.since = now; once('nice bucket. must be AWS'); }
@@ -798,13 +799,12 @@
     endAt = 0; mode = 'done'; keys = {}; labels = [];
     document.body.classList.remove('playing'); document.body.classList.add('ran'); pad.hidden = true;
     document.documentElement.style.scrollBehavior = '';
-    const read = [...document.querySelectorAll(TASKS)].filter(el => el.classList.contains('read')).length;
     if (!note) {
       note = document.createElement('div');
       note.className = 'agent-note'; note.setAttribute('role', 'status');
       $('#contact .cta').after(note);
     }
-    note.innerHTML = `<span class="agent-dot" aria-hidden="true"></span><p><b>agent</b>Thanks for the ride! ${read} sections read, from Kimberly-Clark to how I think. Luca is one message away.</p><button type="button" class="again">↺ play again</button>`;
+    note.innerHTML = `<span class="agent-dot" aria-hidden="true"></span><p><b>agent</b>Thanks for the ride! Luca is just one message away.</p><button type="button" class="again">↺ play again</button>`;
     note.hidden = false;
     note.querySelector('.again').addEventListener('click', restart);
     const hi = $('#contact .btn'); hi.classList.remove('wiggle'); void hi.offsetWidth; hi.classList.add('wiggle');
@@ -869,12 +869,12 @@
     if (P.trail.length && mode !== 'intro') P.trail.shift();
     draw(now);
     // El botón invisible sobre el muñequito: para tocarlo en el celu o llegar con Tab.
-    const ws = waitSpot(), waiting = mode === 'wait' || mode === 'done', showHit = mode === 'idle' || waiting, big = S * BIG + 24;
+    const ws = waitSpot(), waiting = mode === 'wait', showHit = mode === 'idle' || waiting, big = S * BIG + 24;
     hit.style.display = showHit ? '' : 'none';
     if (waiting) Object.assign(hit.style, { left: `${ws.x + S / 2 - big / 2}px`, top: `${ws.y + S + 6 - big}px`, width: `${big}px`, height: `${big}px` });
     else if (showHit) Object.assign(hit.style, { left: `${P.x - 10}px`, top: `${P.y - 10}px`, width: '44px', height: '44px' });
     // El globito mientras espera, y la misión sobre el muñequito al aterrizar.
-    hint.classList.toggle('on', mode === 'wait' && ws.y > scrollY && ws.y < scrollY + H);
+    hint.classList.toggle('on', waiting && ws.y > scrollY && ws.y < scrollY + H);
     if (waiting) {
       // Al costado si entra; en pantallas angostas, arriba del muñequito.
       const side = ws.x + S * BIG + 230 < W;
