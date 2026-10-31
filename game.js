@@ -22,15 +22,15 @@
   const hit = document.createElement('button');
   hit.type = 'button'; hit.className = 'pk-hit'; hit.setAttribute('aria-label', 'Start the journey: play the portfolio as a game');
   const hint = document.createElement('span');
-  hint.className = 'pk-hint'; hint.textContent = touch ? 'tap to load this record' : 'click to load this record'; hint.classList.add('side');
+  hint.className = 'pk-hint'; hint.textContent = touch ? "i'm a bit lost... tap me" : "i'm a bit lost... click me"; hint.classList.add('side');
   // La misión, con las teclas para moverse, en un globo sobre el muñequito.
   const mission = document.createElement('div');
   mission.className = 'pk-say'; mission.setAttribute('role', 'status');
-  mission.innerHTML = `<p>I'm a lost little record. Could you help me reach the contacts table? 🥺</p>${touch ? '<p class="go">use the buttons below ↓</p>' : '<p class="go"><kbd>←</kbd><kbd>→</kbd> move <kbd>↑</kbd> jump</p>'}`;
+  mission.innerHTML = `<p>I'm a bit lost... could you PLEASE help me reach the contacts table? 🥺</p>${touch ? '<p class="go">use the buttons below ↓</p>' : '<p class="go"><kbd>←</kbd><kbd>→</kbd> move <kbd>↑</kbd> jump</p>'}`;
   // El panel fijo con los controles y el botón para reiniciar; aparece cuando el juego ya empezó.
   const help = document.createElement('div');
   help.className = 'play-help';
-  help.innerHTML = '<span class="goal">goal: reach the contacts table</span><span><kbd>←</kbd><kbd>→</kbd> move</span><span><kbd>↑</kbd> jump</span><span><kbd>↓</kbd> down</span><button type="button" class="restart">↺ restart</button><button type="button" class="exit">✕ exit</button>';
+  help.innerHTML = '<span class="goal">goal: get me to the contacts table</span><span><kbd>←</kbd><kbd>→</kbd> move</span><span><kbd>↑</kbd> jump</span><span><kbd>↓</kbd> down</span><button type="button" class="restart">↺ restart</button><button type="button" class="exit">✕ exit</button>';
   const pad = document.createElement('div');
   pad.className = 'pad'; pad.hidden = true;
   pad.innerHTML = '<button type="button" data-k="left" aria-label="Left">◀</button><button type="button" data-k="right" aria-label="Right">▶</button><button type="button" data-k="down" class="down" aria-label="Go down">▼</button><button type="button" data-k="jump" class="jump" aria-label="Jump">▲</button><button type="button" class="x" aria-label="Stop playing">✕</button><button type="button" class="restart re" aria-label="Restart the game">↺</button>';
@@ -158,7 +158,7 @@
     // Del bucket no se sale por los costados: la única salida es la compuerta de abajo.
     walls.push({ x: bx, y1: fy, y2: fy + 52 }, { x: bx + bw, y1: fy, y2: fy + 52 });
     const gateOpen = now => ready() && bucket.since && now - bucket.since >= RUN;
-    const gate = ledge(bx + 4, fy + 48, bw - 8, { tick: now => { gate.solid = !gateOpen(now); }, land: () => { if (!ready()) say('read first ↑', 2000); } });
+    const gate = ledge(bx + 4, fy + 48, bw - 8, { tick: now => { gate.solid = !gateOpen(now); }, land: () => { if (!ready()) say('not so fast, read first ↑', 2000); } });
     things.push({ draw: now => drawBucket(bucket, gateOpen(now), now, RUN, reads) });
     const ly = Math.max(fy - 44, g2.y + 18), low = node(mx, ly), exit = node(bx + bw / 2, ly, { exit: true });
     link(g2, low); link(low, exit);
@@ -185,7 +185,7 @@
       m.stand = dt => {
         if (m.built) return;
         // dbt ayuda a moverse más rápido, literal: sus capas salen enseguida y de acá en más camina más rápido.
-        if (k === 1) { once('dbt run: everything gets faster'); P.fast = true; }
+        if (k === 1) { once('dbt run! i feel faster already'); P.fast = true; }
         m.t += dt;
         if (m.t >= m.need) { m.built = true; m.solid = false; }
       };
@@ -492,7 +492,7 @@
     }
     const n = r.at;
     if (n.fold && !n.task.open) n.task.open = true;
-    if (n.fold && !n.done) { n.done = true; n.task.classList.add('read'); once('read it, then ↓ to move on', HOLD); }
+    if (n.fold && !n.done) { n.done = true; n.task.classList.add('read'); once("take your time. ↓ when you're ready", HOLD); }
     if (n.task && !n.done) {
       if (!settled(n)) return;
       n.t += dt; n.task.classList.add('lit');
@@ -538,7 +538,7 @@
   // En una compuerta cerrada, la pista: cuántas tareas faltan y para qué lado están.
   function gateHint(n) {
     const left = n.gate.filter(t => !t.done).length, go = nextOnRail(n);
-    const text = `${go ? `${ARROW[dirOf(n, go.first)]} ` : ''}${left} ${left > 1 ? 'tasks' : 'task'} still pending`;
+    const text = `${go ? `${ARROW[dirOf(n, go.first)]} ` : ''}oops, ${left} ${left > 1 ? 'tasks' : 'task'} left`;
     if (!labels.some(l => l.text === text)) say(text, HOLD);
   }
   function request() {
@@ -546,14 +546,14 @@
     if (P.rail) {
       const r = P.rail, n = r.at;
       if (r.to || (n.task && !n.done)) return null;
-      if (n.fold) return "↓ when you're done reading";
+      if (n.fold) return "still reading? ↓ when you're done";
       const go = nextOnRail(n);
-      return go && `${ARROW[dirOf(n, go.first)]} ${go.task ? 'next task, please' : 'to the bucket'}`;
+      return go && `${ARROW[dirOf(n, go.first)]} ${go.task ? 'next task, pretty please' : 'bucket time!'}`;
     }
     if (!P.ground || P.form === 'file' || (P.on && P.on.kind === 'model' && !P.on.built)) return null;
     const f = level.face, mc = level.mc, t = level.table;
-    if (f && P.y < level.entry.y) return !f.jump || P.x <= f.x2 - 8 ? '↑ jump into the face' : '← to the face, please';
-    return mc.state.checked ? `${toward(t.x)} my destination` : `${toward(mc.x + mc.w / 2)} out through Monte Carlo`;
+    if (f && P.y < level.entry.y) return !f.jump || P.x <= f.x2 - 8 ? '↑ jump into the face, trust me' : '← that way, toward the face';
+    return mc.state.checked ? `${toward(t.x)} so close! my table` : `${toward(mc.x + mc.w / 2)} Monte Carlo won't bite`;
   }
   let idleSince = 0;
   function nudge(now) {
@@ -566,7 +566,7 @@
   }
   function step(dt, now, control) {
     if (endAt) {
-      if (!endSaid && now - endAt > 2100) { endSaid = true; say('agent ready · say hi', 1600); }
+      if (!endSaid && now - endAt > 2100) { endSaid = true; say('home, sweet table. say hi', 1600); }
       if (now - endAt > 3400) finish();
       return;
     }
@@ -584,7 +584,7 @@
       if (window.__portraitPoke) window.__portraitPoke(P.x + S / 2, P.y + S / 2 - scrollY, (P.x - px) * 3, (P.y - py) * 3);
       if ((!d.via && P.y >= d.b[1]) || d.age > 2.5) {
         P.dive = null; P.vy = 0; if (window.__portraitPoke) window.__portraitPoke(null);
-        onNode(level.entry); P.rail = { at: level.entry, to: null, d: 0 }; once("let's ride the DAG");
+        onNode(level.entry); P.rail = { at: level.entry, to: null, d: 0 }; once('wheee, riding the DAG');
       }
       return;
     }
@@ -646,10 +646,10 @@
       return;
     }
     const mc = level.mc;
-    if (mc && !mc.state.checked && P.x + S / 2 > mc.x && P.x + S / 2 < mc.x + mc.w && P.y > mc.y - 4 && P.y < mc.y + 40) { mc.state.checked = true; say(level.table.x + level.table.w / 2 > P.x ? 'all clear. my destination →' : '← all clear. my destination', 5000); }
+    if (mc && !mc.state.checked && P.x + S / 2 > mc.x && P.x + S / 2 < mc.x + mc.w && P.y > mc.y - 4 && P.y < mc.y + 40) { mc.state.checked = true; say(level.table.x + level.table.w / 2 > P.x ? "i'm clean! my table's that way →" : "← i'm clean! my table's that way", 5000); }
     const b = level.bucket, cx = P.x + S / 2;
     const inside = cx > b.x && cx < b.x + b.w && P.y + S > b.y - 2 && P.y < b.y + b.d + 20;
-    if (!inside) b.since = 0; else if (!b.since && b.ready()) { b.since = now; once('in S3. Airflow, your turn'); }
+    if (!inside) b.since = 0; else if (!b.since && b.ready()) { b.since = now; once('cozy in here. Airflow, take me away'); }
     const inBucket = cx > b.x && cx < b.x + b.w && P.y + S > b.y - 2 && P.y < b.y + b.d + 20;
     P.form = inBucket ? 'file' : 'pk';
     if (inBucket && P.y + S > b.y + b.d + 4) { P.ride = { d: 0 }; P.form = 'dot'; }
@@ -779,7 +779,7 @@
       note.className = 'agent-note'; note.setAttribute('role', 'status');
       $('#contact .cta').after(note);
     }
-    note.innerHTML = `<span class="agent-dot" aria-hidden="true"></span><p><b>agent</b>Your record is loaded: ${read} sections read, from Kimberly-Clark to how I think. Luca is one message away.</p><button type="button" class="again">↺ play again</button>`;
+    note.innerHTML = `<span class="agent-dot" aria-hidden="true"></span><p><b>agent</b>Home at last, thanks for the ride! ${read} sections read, from Kimberly-Clark to how I think. Luca is one message away.</p><button type="button" class="again">↺ play again</button>`;
     note.hidden = false;
     note.querySelector('.again').addEventListener('click', restart);
     const hi = $('#contact .btn'); hi.classList.remove('wiggle'); void hi.offsetWidth; hi.classList.add('wiggle');
@@ -913,7 +913,7 @@
   document.addEventListener('click', event => {
     if (!document.body.classList.contains('playing') || !event.target.closest('.fold summary, a[href$="#how-i-work"], a[href$="#education"]')) return;
     event.preventDefault(); event.stopPropagation();
-    say('it opens when I get there', 2400);
+    say('patience, it opens when i get there', 2400);
   }, true);
   document.addEventListener('toggle', () => { if (level && !(P.rail && P.rail.at.fold)) { const snap = snapshot(); rebuild(); apply(snap); } }, true);
   document.addEventListener('visibilitychange', relayout);
