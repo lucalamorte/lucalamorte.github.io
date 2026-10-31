@@ -449,7 +449,7 @@
       if (n.exit) { P.rail = null; P.vy = 120; return; }
       if (n.task && !n.done) { r.fresh = !!n.fold; return; }
       const ahead = n.links.filter(m => m !== from);
-      if (n.gate && from.y < n.y && gateOpen(n)) once('all_success, moving on');
+      if (n.gate && from.y < n.y && gateOpen(n)) once('i ❤️ dbt. data moves fast');
       if (n.links.length === 2 && !n.task && !n.bus && (!n.gate || (from.y < n.y && gateOpen(n)))) r.to = ahead[0];
       else r.fresh = true;
       return;
