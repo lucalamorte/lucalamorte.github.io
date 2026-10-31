@@ -282,7 +282,7 @@ footer a:hover { color: var(--text); }
 .pr-item.on .bar { transform: scaleX(1); }
 .auto .pr-item.on .bar { background: var(--accent); animation: rule-timer 12s linear forwards; animation-play-state: paused; }
 .auto.live .pr-item.on .bar { animation-play-state: running; }
-.auto.live:hover .pr-item.on .bar, .auto.live:focus-within .pr-item.on .bar { animation-play-state: paused; }
+.auto.live:focus-within .pr-item.on .bar { animation-play-state: paused; }
 @keyframes rule-timer { from { transform: scaleX(0); } to { transform: scaleX(1); } }
 .pr-panel { position: relative; align-self: center; }
 .pr-panel { display: grid; }
@@ -679,6 +679,7 @@ main > section#more { padding: 100px 0 90px; }
 .fold.swap::details-content { height: 0; overflow: clip; transition: height .42s ease, content-visibility .42s allow-discrete; }
 .fold.swap[open]::details-content { height: auto; }
 .fold.swap > :not(summary) { animation: none; }
+.fold.swap > summary + * { margin-top: 0; padding-top: 26px; }
 @keyframes fold-in { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
 /* El título "generándose": las letras aún no escritas no se ven pero ocupan su lugar, y una barra fina titila al final. */
 .hero h1.typing .ch:not(.on) { color: transparent; }

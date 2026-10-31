@@ -36,7 +36,7 @@
   pad.innerHTML = '<button type="button" data-k="left" aria-label="Left">◀</button><button type="button" data-k="right" aria-label="Right">▶</button><button type="button" data-k="down" class="down" aria-label="Go down">▼</button><button type="button" data-k="jump" class="jump" aria-label="Jump">▲</button><button type="button" class="x" aria-label="Stop playing">✕</button><button type="button" class="restart re" aria-label="Restart the game">↺</button>';
   document.body.append(canvas, hit, hint, mission, help, pad);
 
-  let camFree = false, endAt = 0, endSaid = false, fade = 1, mode = 'wait', missionUntil = 0, lockFrom = 0, lockUntil = 0, swapUntil = 0, W = 0, H = 0, level = null, keys = {}, last = 0, labels = [], expected = -1, intro = null, won = false;
+  let camFree = false, endAt = 0, endSaid = false, fade = 1, mode = 'wait', missionUntil = 0, lockFrom = 0, lockUntil = 0, swapUntil = 0, swapping = null, W = 0, H = 0, level = null, keys = {}, last = 0, labels = [], expected = -1, intro = null, won = false;
   const P = { x: 0, y: 0, vx: 0, vy: 0, ground: false, on: null, face: 1, squash: 0, form: 'pk', ride: null, dropUntil: 0, trail: [] };
 
   const box = el => { const r = el.getBoundingClientRect(); return { x: r.left, y: r.top + scrollY, w: r.width, h: r.height, r: r.right, b: r.bottom + scrollY }; };
@@ -200,7 +200,7 @@
         // Una capa no se termina mientras el muñequito está hablando: cada frase de Snowflake llega a leerse.
         if (k === 0) once('brr, Snowflake runs cold');
         // dbt ayuda a moverse más rápido, literal: sus capas salen enseguida y de acá en más camina más rápido.
-        if (k === 1) { once('i ❤️ dbt. it made me faster'); P.fast = true; }
+        if (k === 1) P.fast = true;
         if (now >= lockUntil) m.t += dt;
         if (m.t >= m.need) { m.built = true; m.solid = false; }
       };
@@ -398,10 +398,10 @@
     const seen = (y, h = 0) => y + h > top - 120 && y < top + H + 120;
     if (mode === 'play' && level) {
       // Con un desplegable abierto, lo de abajo está medido con él cerrado: no se dibuja encima de su contenido.
-      const openFold = P.rail && [P.rail.at, P.rail.to].find(n => n && n.fold && n.task.open);
-      const unfolded = openFold && box(openFold.task.querySelector('summary'));
+      // En el cambio entre dos desplegables manda el de más arriba, porque los dos se están moviendo.
+      const unfolded = P.rail ? [P.rail.at, P.rail.to].filter(n => n && n.fold && (n.task.open || now < swapUntil)).map(n => box(n.task.querySelector('summary')).b) : [];
       ctx.save();
-      if (unfolded) { ctx.beginPath(); ctx.rect(0, top - 40, W, unfolded.b + 40 - top); ctx.clip(); }
+      if (unfolded.length) { ctx.beginPath(); ctx.rect(0, top - 40, W, Math.min(...unfolded) + 40 - top); ctx.clip(); }
       for (const t of level.things) t.draw(now);
       ctx.setLineDash([2, 8]); ctx.strokeStyle = 'rgba(148,163,184,.25)'; ctx.lineWidth = 1; ctx.beginPath();
       for (const w of level.walls) { const y1 = Math.max(w.y1, top - 20), y2 = Math.min(w.y2, top + H + 20); if (y2 > y1) { ctx.moveTo(w.x, y1); ctx.lineTo(w.x, y2); } }
@@ -486,7 +486,9 @@
       if (u < 1) return;
       const from = r.at, n = r.at = r.to; r.to = null; r.d = 0; onNode(n); P.form = 'pk';
       if (n.exit) { P.rail = null; P.vy = 120; return; }
-      if (n.task && n.task.dataset.say) once(n.task.dataset.say);
+      // Si la tarea trae frase, un solo anillo cubre las dos cosas: la frase y la lectura.
+      if (n.task && n.task.dataset.say) { once(n.task.dataset.say); if (!n.done) hold(n.need * 1000 + 500); }
+      if (n.bus && from.gate && from.y < n.y) once('i ❤️ dbt. raw in, clean out');
       if (n.task && !n.done) { r.fresh = !!n.fold; return; }
       if (n.gate && from.y < n.y && !gateOpen(n)) gateHint(n);
       const ahead = n.links.filter(m => m !== from);
@@ -498,8 +500,10 @@
     if (n.fold && !n.task.open) n.task.open = true;
     if (n.fold && !n.done) { n.done = true; n.task.classList.add('read'); once("ooh, reading time. ↓ when you're ready", HOLD); }
     if (n.task && !n.done) {
-      if (!settled(n) || now < lockUntil) return;
-      n.t += dt; n.task.classList.add('lit');
+      if (!settled(n)) return;
+      n.task.classList.add('lit');
+      if (now < lockUntil) { n.t = n.need; return; }
+      n.t += dt;
       if (n.t >= n.need) { n.done = true; n.task.classList.add('read'); n.task.classList.remove('lit'); }
       return;
     }
@@ -514,12 +518,19 @@
     // Entre desplegables es un acordeón: uno se pliega mientras el otro se abre, en los dos sentidos, sin que la
     // página quede nunca con los dos cerrados. La cámara espera quieta: si persiguiera las alturas a mitad de la
     // animación, saltaría.
-    if (n.fold && m.fold) {
-      swapUntil = now + 460;
-      [n, m].forEach(f => { f.task.classList.add('swap'); setTimeout(() => f.task.classList.remove('swap'), 500); });
-    }
+    const swap = n.fold && m.fold;
+    if (swap) { swapUntil = now + 420; n.task.classList.add('swap'); }
     if (n.fold) n.task.open = false;
     if (m.fold) m.task.open = true;
+    // El que se abre no tiene de dónde transicionar, así que su altura se anima a mano, del cero a la que le toca.
+    if (swap) {
+      const full = getComputedStyle(m.task, '::details-content').height;
+      m.task.classList.add('swap');
+      // Si se vuelve antes de que termine, la animación nueva reemplaza a la anterior.
+      if (swapping) swapping.cancel();
+      swapping = m.task.animate({ height: ['0px', full] }, { duration: 420, easing: 'ease', pseudoElement: '::details-content' });
+      swapping.onfinish = () => { swapping = null; [n, m].forEach(f => f.task.classList.remove('swap')); };
+    }
     r.to = m; r.d = 0; P.face = m.x < n.x ? -1 : m.x > n.x ? 1 : P.face;
   }
   // Si pasa un rato sin que el jugador haga nada, el muñequito le pide lo que falta. Nunca interrumpe lo que corre
@@ -660,7 +671,7 @@
       return;
     }
     const mc = level.mc;
-    if (mc && !mc.state.checked && P.x + S / 2 > mc.x && P.x + S / 2 < mc.x + mc.w && P.y > mc.y - 4 && P.y < mc.y + 40) { mc.state.checked = true; say(level.table.x + level.table.w / 2 > P.x ? 'passed the checks. table ahead →' : '← passed the checks. table ahead', 5000); }
+    if (mc && !mc.state.checked && P.x + S / 2 > mc.x && P.x + S / 2 < mc.x + mc.w && P.y > mc.y - 4 && P.y < mc.y + 40) { mc.state.checked = true; say(level.table.x + level.table.w / 2 > P.x ? 'found my table, finally!!!' : '← passed the checks. table ahead', 5000); }
     const b = level.bucket, cx = P.x + S / 2;
     const inside = cx > b.x && cx < b.x + b.w && P.y + S > b.y - 2 && P.y < b.y + b.d + 20;
     if (!inside) b.since = 0; else if (!b.since && b.ready()) { b.since = now; once('nice bucket. must be AWS'); }
@@ -863,7 +874,7 @@
     if (waiting) Object.assign(hit.style, { left: `${ws.x + S / 2 - big / 2}px`, top: `${ws.y + S + 6 - big}px`, width: `${big}px`, height: `${big}px` });
     else if (showHit) Object.assign(hit.style, { left: `${P.x - 10}px`, top: `${P.y - 10}px`, width: '44px', height: '44px' });
     // El globito mientras espera, y la misión sobre el muñequito al aterrizar.
-    hint.classList.toggle('on', waiting && ws.y > scrollY && ws.y < scrollY + H);
+    hint.classList.toggle('on', mode === 'wait' && ws.y > scrollY && ws.y < scrollY + H);
     if (waiting) {
       // Al costado si entra; en pantallas angostas, arriba del muñequito.
       const side = ws.x + S * BIG + 230 < W;
