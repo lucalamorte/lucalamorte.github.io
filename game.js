@@ -276,7 +276,7 @@
         ctx.fillStyle = n.done ? ACCENT : INK; ctx.strokeStyle = n.done ? ACCENT : MUTED; ctx.fill(); ctx.stroke();
         if (n.done) { ctx.strokeStyle = INK; ctx.beginPath(); ctx.moveTo(n.x - 3.5, n.y); ctx.lineTo(n.x - 1, n.y + 3); ctx.lineTo(n.x + 4, n.y - 3); ctx.stroke(); }
         else if (here && here.gate && here.gate.includes(n)) { ctx.strokeStyle = ACCENT; ctx.lineWidth = 2; ctx.globalAlpha = 0.45 + Math.sin(now / 220) * 0.45; ctx.beginPath(); ctx.arc(n.x, n.y, 15, 0, Math.PI * 2); ctx.stroke(); ctx.globalAlpha = 1; }
-        else if (n.t) { ctx.strokeStyle = ACCENT; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(n.x, n.y, 19, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * Math.min(1, n.t / n.need)); ctx.stroke(); }
+        else if (n.t && now >= lockUntil) { ctx.strokeStyle = ACCENT; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(n.x, n.y, 19, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * Math.min(1, n.t / n.need)); ctx.stroke(); }
       } else if (n.gate) {
         const open = gateOpen(n), done = n.gate.filter(t => t.done).length, k = n.nudge && now - n.nudge < 400 ? Math.sin((now - n.nudge) / 30) * 3 : 0;
         ctx.fillStyle = open ? ACCENT : INK; ctx.strokeStyle = open ? ACCENT : MUTED; ctx.lineWidth = 2;
@@ -498,7 +498,7 @@
     if (n.fold && !n.task.open) n.task.open = true;
     if (n.fold && !n.done) { n.done = true; n.task.classList.add('read'); once("ooh, reading time. ↓ when you're ready", HOLD); }
     if (n.task && !n.done) {
-      if (!settled(n)) return;
+      if (!settled(n) || now < lockUntil) return;
       n.t += dt; n.task.classList.add('lit');
       if (n.t >= n.need) { n.done = true; n.task.classList.add('read'); n.task.classList.remove('lit'); }
       return;
