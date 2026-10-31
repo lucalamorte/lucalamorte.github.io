@@ -126,7 +126,7 @@
   }
 
   // ---------- dibujo ----------
-  let born = null, age = still ? Infinity : 0;
+  let born = null, age = still ? Infinity : 0, formed = false;
   // 0 mientras el dato anda suelto, 1 cuando llegó a su lugar.
   const landed = p => { const k = Math.max(0, Math.min(1, (age - p.delay) / LAND)); return 1 - (1 - k) ** 3; };
   function position(p, t) {
@@ -140,6 +140,8 @@
     const t = time / 1000;
     if (born === null) born = time;
     if (!still) age = (time - born) / 1000;
+    // Con la figura armada puede escribirse el título. Si la pestaña estaba oculta, el armado espera a que se vea.
+    if (!formed && age >= SWEEP + .25 + LAND) { formed = true; dispatchEvent(new Event('portrait-formed')); }
     if (playing) moveRows(); else rows.forEach(row => { row.x *= .86; row.y *= .86; });
     simulate();
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);

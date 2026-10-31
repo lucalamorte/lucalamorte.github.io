@@ -319,7 +319,8 @@
   }), { threshold: 0.2 });
   document.querySelectorAll('.principles').forEach(el => motion.observe(el));
   // El título se escribe como responde un modelo: las letras aparecen de a pedazos (tokens) y al final queda el
-  // cursor titilando. El texto ocupa su lugar desde el principio, así nada se mueve mientras se escribe.
+  // cursor titilando. El texto ocupa su lugar desde el principio, así nada se mueve mientras se escribe. Arranca
+  // cuando el retrato terminó de armarse: mientras tanto, el cursor espera.
   const title = document.querySelector('.hero h1');
   if (title && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
     const chars = [];
@@ -335,14 +336,15 @@
     title.classList.add('typing');
     let k = 0;
     const next = () => {
-      const size = 1 + Math.floor(Math.random() * 3);
+      const size = 1 + Math.floor(Math.random() * 2);
       chars.slice(k, k + size).forEach(ch => ch.classList.add('on'));
       k = Math.min(chars.length, k + size);
       chars[k - 1].after(caret);
-      if (k < chars.length) setTimeout(next, 60 + Math.random() * 90);
+      if (k < chars.length) setTimeout(next, 170 + Math.random() * 130);
     };
     chars[0].before(caret);
-    setTimeout(next, 450);
+    if (document.getElementById('portrait')) addEventListener('portrait-formed', next, { once: true });
+    else setTimeout(next, 450);
   }
   // Cada bloque aparece al llegar a él.
   if ('IntersectionObserver' in window) {
