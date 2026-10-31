@@ -36,7 +36,7 @@
   pad.innerHTML = '<button type="button" data-k="left" aria-label="Left">◀</button><button type="button" data-k="right" aria-label="Right">▶</button><button type="button" data-k="down" class="down" aria-label="Go down">▼</button><button type="button" data-k="jump" class="jump" aria-label="Jump">▲</button><button type="button" class="x" aria-label="Stop playing">✕</button><button type="button" class="restart re" aria-label="Restart the game">↺</button>';
   document.body.append(canvas, hit, hint, mission, help, pad);
 
-  let camFree = false, endAt = 0, endSaid = false, fade = 1, mode = 'wait', missionUntil = 0, lockUntil = 0, swapUntil = 0, W = 0, H = 0, level = null, keys = {}, last = 0, labels = [], expected = -1, intro = null, won = false;
+  let camFree = false, endAt = 0, endSaid = false, fade = 1, mode = 'wait', missionUntil = 0, lockFrom = 0, lockUntil = 0, swapUntil = 0, W = 0, H = 0, level = null, keys = {}, last = 0, labels = [], expected = -1, intro = null, won = false;
   const P = { x: 0, y: 0, vx: 0, vy: 0, ground: false, on: null, face: 1, squash: 0, form: 'pk', ride: null, dropUntil: 0, trail: [] };
 
   const box = el => { const r = el.getBoundingClientRect(); return { x: r.left, y: r.top + scrollY, w: r.width, h: r.height, r: r.right, b: r.bottom + scrollY }; };
@@ -61,7 +61,9 @@
   // Lo que le pide algo al jugador queda en pantalla hasta que toque una tecla: así nadie se pierde la pista.
   const HOLD = Infinity, letGo = () => { const now = performance.now(); labels.forEach(l => { if (l.until === HOLD) l.until = Math.max(now, l.from + READ); }); };
   // Cada frase del recorrido frena al muñequito lo justo para leerla: así nunca llega antes que lo que dice.
-  const once = (text, ms = 3600) => { if (said.has(text)) return; said.add(text); say(text, ms); lockUntil = Math.max(lockUntil, performance.now() + 500 + text.length * 35); };
+  // Mientras tanto, un anillo alrededor suyo muestra cuánto falta para que vuelva a moverse.
+  const hold = ms => { lockFrom = performance.now(); lockUntil = Math.max(lockUntil, lockFrom + ms); };
+  const once = (text, ms = 3600) => { if (said.has(text)) return; said.add(text); say(text, ms); hold(500 + text.length * 35); };
 
   // ---------- el nivel ----------
   function build() {
@@ -434,6 +436,12 @@
     labels = labels.filter(l => now < l.until);
     // Los diálogos: globos apilados sobre el muñequito, con su entrada, sin salirse de la pantalla ni tapar el menú.
     ctx.font = '500 15px "JetBrains Mono", monospace'; ctx.textBaseline = 'middle';
+    if (mode === 'play' && now < lockUntil) {
+      const k = Math.max(0, Math.min(1, (now - lockFrom) / (lockUntil - lockFrom)));
+      ctx.lineWidth = 2; ctx.lineCap = 'round';
+      ctx.strokeStyle = 'rgba(148,163,184,.25)'; ctx.beginPath(); ctx.arc(P.x + S / 2, P.y + S / 2, S * 0.95, 0, Math.PI * 2); ctx.stroke();
+      ctx.strokeStyle = ACCENT; ctx.beginPath(); ctx.arc(P.x + S / 2, P.y + S / 2, S * 0.95, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * k); ctx.stroke();
+    }
     labels.forEach((l, k) => {
       const a = Math.min(1, (l.until - now) / FADE), rise = Math.max(0, Math.min(1, (now - l.from) / POP)), pop = 1 - (1 - rise) ** 3, half = ctx.measureText(l.text).width / 2 + 16;
       const cx = Math.max(half + 8, Math.min(W - half - 8, P.x + S / 2)), up = 0;
@@ -802,7 +810,7 @@
     const spot = home(); P.x = spot.x; P.y = spot.y; P.vy = 0; mode = 'idle';
     // Apenas aterriza ya se juega: cuenta la misión y muestra con qué se mueve.
     // Unos segundos sin moverse para que la misión se lea: al salir ya cede el lugar a lo que dice frente al NULL.
-    start(); P.squash = 1; missionUntil = performance.now() + 9000; lockUntil = performance.now() + 2500;
+    start(); P.squash = 1; missionUntil = performance.now() + 9000; hold(2500);
     if (touch) { pad.classList.remove('pulse'); void pad.offsetWidth; pad.classList.add('pulse'); }
   }
   // Abrir el mail (o apretar una flecha mientras espera) hace la entrada; después solo retoma el juego.
