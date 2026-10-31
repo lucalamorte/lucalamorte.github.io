@@ -276,7 +276,9 @@ footer a:hover { color: var(--text); }
 .pr-item:hover { color: var(--text); }
 .pr-item.on { color: var(--text); }
 .pr-item.on .n { color: var(--accent); }
-.pr-item .bar { position: absolute; left: 0; right: 0; bottom: -1px; height: 1px; background: var(--accent-line); transform-origin: left; transform: scaleX(0); }
+.pr-item .bar { position: absolute; left: 78px; right: 0; bottom: 3px; height: 2px; border-radius: 2px; background: var(--accent-line); transform-origin: left; transform: scaleX(0); }
+/* La regla activa muestra cuánto falta para pasar a la siguiente: un riel tenue que se llena. */
+.auto .pr-item.on::before { content: ""; position: absolute; left: 78px; right: 0; bottom: 3px; height: 2px; border-radius: 2px; background: rgba(148, 163, 184, .16); }
 .pr-item.on .bar { transform: scaleX(1); }
 .auto .pr-item.on .bar { background: var(--accent); animation: rule-timer 12s linear forwards; animation-play-state: paused; }
 .auto.live .pr-item.on .bar { animation-play-state: running; }

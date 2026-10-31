@@ -169,7 +169,7 @@
     // Del bucket no se sale por los costados: la única salida es la compuerta de abajo.
     walls.push({ x: bx, y1: fy, y2: fy + 52 }, { x: bx + bw, y1: fy, y2: fy + 52 });
     const gateOpen = now => ready() && bucket.since && now - bucket.since >= RUN;
-    const gate = ledge(bx + 4, fy + 48, bw - 8, { tick: now => { gate.solid = !gateOpen(now); }, land: () => { if (!ready()) say('hmm, did we skip something? ↑', 2000); } });
+    const gate = ledge(bx + 4, fy + 48, bw - 8, { tick: now => { gate.solid = !gateOpen(now); }, land: () => { if (!ready()) say('↑ we skipped something', 2000); } });
     things.push({ draw: now => drawBucket(bucket, gateOpen(now), now, RUN, reads) });
     const ly = Math.max(fy - 44, g2.y + 18), low = node(mx, ly), exit = node(bx + bw / 2, ly, { exit: true });
     link(g2, low); link(low, exit);
@@ -196,10 +196,10 @@
       m.stand = (dt, now) => {
         if (m.built) return;
         // Una capa no se termina mientras el muñequito está hablando: cada frase de Snowflake llega a leerse.
-        if (k === 0) once('brr, is this Snowflake?');
+        if (k === 0) once('brr, Snowflake runs cold');
         if (k === 3) once('i ❤️ dbt. raw in, clean out');
         // dbt ayuda a moverse más rápido, literal: sus capas salen enseguida y de acá en más camina más rápido.
-        if (k === 1) { once('wait, am i getting faster? is that dbt?'); P.fast = true; }
+        if (k === 1) { once('whoa, dbt made me faster'); P.fast = true; }
         if (now >= lockUntil) m.t += dt;
         if (m.t >= m.need) { m.built = true; m.solid = false; }
       };
@@ -489,7 +489,7 @@
     }
     const n = r.at;
     if (n.fold && !n.task.open) n.task.open = true;
-    if (n.fold && !n.done) { n.done = true; n.task.classList.add('read'); once("ooh, what's in here? ↓ when you're ready", HOLD); }
+    if (n.fold && !n.done) { n.done = true; n.task.classList.add('read'); once("ooh, reading time. ↓ when you're ready", HOLD); }
     if (n.task && !n.done) {
       if (!settled(n)) return;
       n.t += dt; n.task.classList.add('lit');
@@ -533,28 +533,28 @@
   // En una compuerta cerrada, la pista: cuántas tareas faltan y para qué lado están.
   function gateHint(n) {
     const left = n.gate.filter(t => !t.done).length, go = nextOnRail(n);
-    const text = `${go ? `${ARROW[dirOf(n, go.first)]} ` : ''}hmm, ${left} ${left > 1 ? 'tasks' : 'task'} left?`;
+    const text = `${go ? `${ARROW[dirOf(n, go.first)]} ` : ''}${left} ${left > 1 ? 'tasks' : 'task'} left back there`;
     if (!labels.some(l => l.text === text)) say(text, HOLD);
   }
   // En la portada habla poco: al frenar en el NULL y al pasarlo. Lo del borde queda para quien se quede quieto ahí.
   const faceLine = f => {
     const b = level.block;
     if (!b || P.x + S / 2 < b.x) return "← who's that handsome guy? my creator?";
-    return P.x - b.x - b.w < 70 ? '↑ a NULL? can we hop over it?' : null;
+    return P.x - b.x - b.w < 70 ? '↑ a NULL in the way. hop over it?' : null;
   };
   function request() {
     if (P.dive || P.ride || endAt) return null;
     if (P.rail) {
       const r = P.rail, n = r.at;
       if (r.to || (n.task && !n.done)) return null;
-      if (n.fold) return "did you read it all? ↓ when you're done";
+      if (n.fold) return "no rush. ↓ when you're done";
       const go = nextOnRail(n);
-      return go && `${ARROW[dirOf(n, go.first)]} ${go.task ? "what's over there?" : 'is that a bucket?'}`;
+      return go && `${ARROW[dirOf(n, go.first)]} ${go.task ? 'more tasks that way' : 'i smell a bucket'}`;
     }
     if (!P.ground || P.form === 'file' || (P.on && P.on.kind === 'model' && !P.on.built)) return null;
     const f = level.face, mc = level.mc, t = level.table;
-    if (f && P.y < level.entry.y) return !f.jump || P.x <= f.x2 - 8 ? '↑ can we jump in there?' : faceLine(f);
-    return mc.state.checked ? `${toward(t.x)} wait... is that my table?` : `${toward(mc.x + mc.w / 2)} is that a way out?`;
+    if (f && P.y < level.entry.y) return !f.jump || P.x <= f.x2 - 8 ? '↑ feels like we should jump here' : faceLine(f);
+    return mc.state.checked ? `${toward(t.x)} almost there, i can feel it` : `${toward(mc.x + mc.w / 2)} the exit's over here`;
   }
   let idleSince = 0;
   function nudge(now) {
@@ -567,7 +567,7 @@
   }
   function step(dt, now, control) {
     if (endAt) {
-      if (!endSaid && now - endAt > 900) { endSaid = true; say('so this is home? say hi', 1600); }
+      if (!endSaid && now - endAt > 900) { endSaid = true; say('home at last. say hi', 1600); }
       if (now - endAt > 5000) finish();
       return;
     }
@@ -585,7 +585,7 @@
       if (window.__portraitPoke) window.__portraitPoke(P.x + S / 2, P.y + S / 2 - scrollY, (P.x - px) * 3, (P.y - py) * 3);
       if ((!d.via && P.y >= d.b[1]) || d.age > 2.5) {
         P.dive = null; P.vy = 0; if (window.__portraitPoke) window.__portraitPoke(null);
-        onNode(level.entry); P.rail = { at: level.entry, to: null, d: 0 }; once('hmm, is this a DAG? could be helpful...');
+        onNode(level.entry); P.rail = { at: level.entry, to: null, d: 0 }; once('a DAG! this could be helpful');
       }
       return;
     }
@@ -649,10 +649,10 @@
       return;
     }
     const mc = level.mc;
-    if (mc && !mc.state.checked && P.x + S / 2 > mc.x && P.x + S / 2 < mc.x + mc.w && P.y > mc.y - 4 && P.y < mc.y + 40) { mc.state.checked = true; say(level.table.x + level.table.w / 2 > P.x ? "i passed? is that my table →" : "← i passed? is that my table", 5000); }
+    if (mc && !mc.state.checked && P.x + S / 2 > mc.x && P.x + S / 2 < mc.x + mc.w && P.y > mc.y - 4 && P.y < mc.y + 40) { mc.state.checked = true; say(level.table.x + level.table.w / 2 > P.x ? 'passed the checks. table ahead →' : '← passed the checks. table ahead', 5000); }
     const b = level.bucket, cx = P.x + S / 2;
     const inside = cx > b.x && cx < b.x + b.w && P.y + S > b.y - 2 && P.y < b.y + b.d + 20;
-    if (!inside) b.since = 0; else if (!b.since && b.ready()) { b.since = now; once('hmm, is this AWS? nice bucket'); }
+    if (!inside) b.since = 0; else if (!b.since && b.ready()) { b.since = now; once('nice bucket. must be AWS'); }
     const inBucket = cx > b.x && cx < b.x + b.w && P.y + S > b.y - 2 && P.y < b.y + b.d + 20;
     P.form = inBucket ? 'file' : 'pk';
     if (inBucket && P.y + S > b.y + b.d + 4) { P.ride = { d: 0 }; P.form = 'dot'; }
@@ -782,7 +782,7 @@
       note.className = 'agent-note'; note.setAttribute('role', 'status');
       $('#contact .cta').after(note);
     }
-    note.innerHTML = `<span class="agent-dot" aria-hidden="true"></span><p><b>agent</b>Home at last, thanks for the ride! ${read} sections read, from Kimberly-Clark to how I think. Luca is one message away.</p><button type="button" class="again">↺ play again</button>`;
+    note.innerHTML = `<span class="agent-dot" aria-hidden="true"></span><p><b>agent</b>Thanks for the ride! ${read} sections read, from Kimberly-Clark to how I think. Luca is one message away.</p><button type="button" class="again">↺ play again</button>`;
     note.hidden = false;
     note.querySelector('.again').addEventListener('click', restart);
     const hi = $('#contact .btn'); hi.classList.remove('wiggle'); void hi.offsetWidth; hi.classList.add('wiggle');
@@ -922,7 +922,7 @@
   document.addEventListener('click', event => {
     if (!document.body.classList.contains('playing') || !event.target.closest('.fold summary, a[href$="#how-i-work"], a[href$="#education"]')) return;
     event.preventDefault(); event.stopPropagation();
-    say('hmm, i think it opens when i get there', 2400);
+    say('it opens when i arrive, promise', 2400);
   }, true);
   document.addEventListener('toggle', () => { if (level && !(P.rail && P.rail.at.fold)) { const snap = snapshot(); rebuild(); apply(snap); } }, true);
   document.addEventListener('visibilitychange', relayout);
