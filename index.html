@@ -318,7 +318,7 @@
     });
   }), { threshold: 0.2 });
   document.querySelectorAll('.principles').forEach(el => motion.observe(el));
-  // El título se escribe como responde un modelo: las letras aparecen de a pedazos (tokens) y al final queda el
+  // El título se escribe como responde un modelo: las letras aparecen de a una, rápido, y al final queda el
   // cursor titilando. El texto ocupa su lugar desde el principio, así nada se mueve mientras se escribe. Arranca
   // cuando el retrato terminó de armarse: mientras tanto, el cursor espera.
   const title = document.querySelector('.hero h1');
@@ -336,11 +336,10 @@
     title.classList.add('typing');
     let k = 0;
     const next = () => {
-      const size = 1 + Math.floor(Math.random() * 3);
-      chars.slice(k, k + size).forEach(ch => ch.classList.add('on'));
-      k = Math.min(chars.length, k + size);
-      chars[k - 1].after(caret);
-      if (k < chars.length) setTimeout(next, 60 + Math.random() * 90);
+      chars[k].classList.add('on');
+      chars[k].after(caret);
+      k++;
+      if (k < chars.length) setTimeout(next, 35 + Math.random() * 25);
     };
     chars[0].before(caret);
     if (document.getElementById('portrait')) addEventListener('portrait-formed', next, { once: true });
