@@ -2,7 +2,7 @@
 // y se mecen; algunos en el color de acento. Cerca del cursor se apartan y brillan. Detrás de cada bloque de
 // texto se desvanecen con un borde suave, así la lectura queda limpia. Cada tanto cruza un cometa, y en los
 // márgenes hay constelaciones que son agentes: un centro con sus herramientas, y llamadas que van y vuelven.
-// Desde los bordes entran haces de datos sueltos que se juntan en un punto: el primero, en el retrato.
+// Desde los bordes entran haces de datos sueltos que se juntan en un punto.
 (() => {
   const small = matchMedia('(max-width: 760px)').matches;
   const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -78,18 +78,14 @@
   }
 
   // Los haces: varias curvas que salen separadas del borde y terminan juntas, con datos que viajan por ellas. Van en
-  // el lado opuesto a una constelación, para que no se pisen, y uno por medio: pocos y tenues.
+  // el margen opuesto a una constelación, para que no se pisen, y nunca en la portada: el retrato queda solo.
   function buildStreams() {
     streams = [];
     if (small) return;
     let s = 23; const r = () => (s = (s * 16807) % 2147483647) / 2147483647;
-    const margin = Math.max(90, (width - 1200) / 2), spots = [];
-    const portrait = document.getElementById('portrait'), fig = portrait && portrait.getBoundingClientRect();
-    if (fig && fig.width && fig.left > 60) spots.push({ edge: 0, x: fig.left + fig.width * .34, y: fig.top + scrollY + fig.height * .46, node: false });
-    agents.forEach((g, k) => {
-      if (k && k % 2 === 0) spots.push({ edge: width, x: width - margin * .9, y: g.y, node: true });
-    });
-    streams = spots.map(({ edge, x, y, node }) => {
+    const margin = Math.max(90, (width - 1200) / 2);
+    const spots = agents.slice(1).map((g, k) => (k % 2 ? { edge: width, x: width - margin * .9, y: g.y } : { edge: 0, x: margin * .9, y: g.y }));
+    streams = spots.map(({ edge, x, y }) => {
       const reach = x - edge, spread = 150 + Math.abs(reach) * .3, count = 12;
       const lines = Array.from({ length: count }, (_, i) => {
         const y0 = y + (i / (count - 1) - .5) * spread * 2 + (r() - .5) * 24;
@@ -97,7 +93,7 @@
       });
       const paint = ctx.createLinearGradient(edge, 0, x, 0);
       paint.addColorStop(0, 'rgba(94,234,212,0)'); paint.addColorStop(1, 'rgba(94,234,212,.2)');
-      return { edge, x, y, node, reach, lines, paint, top: y - spread - 20, bottom: y + spread + 20 };
+      return { edge, x, y, reach, lines, paint, top: y - spread - 20, bottom: y + spread + 20 };
     });
   }
   function drawStreams(t) {
@@ -115,7 +111,7 @@
         const py = v * v * v * l.y0 + 3 * v * v * u * l.cy + 3 * v * u * u * st.y + u * u * u * st.y;
         ctx.fillStyle = `rgba(94,234,212,${.15 + u * .65})`; ctx.beginPath(); ctx.arc(px, py, 1.5, 0, Math.PI * 2); ctx.fill();
       }
-      if (st.node) { ctx.strokeStyle = 'rgba(94,234,212,.5)'; ctx.beginPath(); ctx.arc(st.x, st.y, 4, 0, Math.PI * 2); ctx.stroke(); }
+      ctx.strokeStyle = 'rgba(94,234,212,.5)'; ctx.beginPath(); ctx.arc(st.x, st.y, 4, 0, Math.PI * 2); ctx.stroke();
       ctx.restore();
     }
   }
