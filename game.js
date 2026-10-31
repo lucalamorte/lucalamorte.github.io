@@ -567,7 +567,7 @@
   }
   function step(dt, now, control) {
     if (endAt) {
-      if (!endSaid && now - endAt > 900) { endSaid = true; say('home at last. say hi', 1600); }
+      if (!endSaid && now - endAt > 900) { endSaid = true; say("there's no place like home", 1600); }
       if (now - endAt > 5000) finish();
       return;
     }
