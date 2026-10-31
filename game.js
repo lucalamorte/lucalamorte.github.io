@@ -447,6 +447,7 @@
       if (u < 1) return;
       const from = r.at, n = r.at = r.to; r.to = null; r.d = 0; onNode(n); P.form = 'pk';
       if (n.exit) { P.rail = null; P.vy = 120; return; }
+      if (n.task && n.task.dataset.say) once(n.task.dataset.say);
       if (n.task && !n.done) { r.fresh = !!n.fold; return; }
       const ahead = n.links.filter(m => m !== from);
       if (n.bus && from.gate && from.y < n.y) once('i ❤️ dbt. raw in, clean out');
