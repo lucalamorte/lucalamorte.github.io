@@ -487,7 +487,7 @@
       const from = r.at, n = r.at = r.to; r.to = null; r.d = 0; onNode(n); P.form = 'pk';
       if (n.exit) { P.rail = null; P.vy = 120; return; }
       // Si la tarea trae frase, un solo anillo cubre las dos cosas: la frase y la lectura.
-      if (n.task && n.task.dataset.say) { once(n.task.dataset.say); if (!n.done) hold(n.need * 1000 + 500); }
+      if (n.task && !n.fold && n.task.dataset.say) { once(n.task.dataset.say); if (!n.done) hold(n.need * 1000 + 500); }
       if (n.bus && from.gate && from.y < n.y) once('i ❤️ dbt. raw in, clean out');
       if (n.task && !n.done) { r.fresh = !!n.fold; return; }
       if (n.gate && from.y < n.y && !gateOpen(n)) gateHint(n);
@@ -498,7 +498,7 @@
     }
     const n = r.at;
     if (n.fold && !n.task.open) n.task.open = true;
-    if (n.fold && !n.done) { n.done = true; n.task.classList.add('read'); once("ooh, reading time. ↓ when you're ready", HOLD); }
+    if (n.fold && !n.done) { n.done = true; n.task.classList.add('read'); once(n.task.dataset.say || "ooh, reading time. ↓ when you're ready", HOLD); }
     if (n.task && !n.done) {
       if (!settled(n)) return;
       n.task.classList.add('lit');
