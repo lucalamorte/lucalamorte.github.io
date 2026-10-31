@@ -22,11 +22,11 @@
   const hit = document.createElement('button');
   hit.type = 'button'; hit.className = 'pk-hit'; hit.setAttribute('aria-label', 'Start the journey: play the portfolio as a game');
   const hint = document.createElement('span');
-  hint.className = 'pk-hint'; hint.textContent = touch ? "i'm a bit lost... tap me" : "i'm a bit lost... click me"; hint.classList.add('side');
+  hint.className = 'pk-hint'; hint.textContent = touch ? "hi, i'm Little Bit. tap me" : "hi, i'm Little Bit. click me"; hint.classList.add('side');
   // La misión, con las teclas para moverse, en un globo sobre el muñequito.
   const mission = document.createElement('div');
   mission.className = 'pk-say'; mission.setAttribute('role', 'status');
-  mission.innerHTML = `<p>Hi, I'm Little Bit. Help me reach the contacts table? 🥺</p>${touch ? '<p class="go">use the buttons below ↓</p>' : '<p class="go"><kbd>←</kbd><kbd>→</kbd> move <kbd>↑</kbd> jump</p>'}`;
+  mission.innerHTML = `<p>I'm a bit lost... help me reach the contacts table? 🥺</p>${touch ? '<p class="go">use the buttons below ↓</p>' : '<p class="go"><kbd>←</kbd><kbd>→</kbd> move <kbd>↑</kbd> jump</p>'}`;
   // El panel fijo con los controles y el botón para reiniciar; aparece cuando el juego ya empezó.
   const help = document.createElement('div');
   help.className = 'play-help';
