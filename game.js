@@ -50,6 +50,8 @@
   const say = (text, ms = 2000) => { labels = labels.filter(l => l.text !== text); labels.push({ text, from: performance.now(), until: performance.now() + ms }); };
   // Lo que el muñequito va contando del recorrido: cada frase, una sola vez por partida.
   const said = new Set();
+  // Lo que le pide algo al jugador queda en pantalla hasta que toque una tecla: así nadie se pierde la pista.
+  const HOLD = Infinity, letGo = () => { labels = labels.filter(l => l.until !== HOLD); };
   const once = (text, ms = 3600) => { if (said.has(text)) return; said.add(text); say(text, ms); };
 
   // ---------- el nivel ----------
@@ -457,7 +459,7 @@
       return;
     }
     const n = r.at;
-    if (n.fold && !n.task.open) { n.task.open = true; n.done = true; n.task.classList.add('read'); once('read it, then ↓ to move on', 5000); }
+    if (n.fold && !n.task.open) { n.task.open = true; n.done = true; n.task.classList.add('read'); once('read it, then ↓ to move on', HOLD); }
     if (n.task && !n.done) {
       if (!settled(n)) return;
       n.t += dt; n.task.classList.add('lit');
@@ -477,7 +479,7 @@
   }
   // Si pasa un rato sin que el jugador haga nada, el muñequito le pide lo que falta. Nunca interrumpe lo que corre
   // solo, ni a quien scrollea para leer, y en un desplegable abierto espera más.
-  const IDLE = 12000, READING = 30000, ARROW = { left: '←', right: '→', up: '↑', down: '↓' };
+  const IDLE = 8000, READING = 20000, ARROW = { left: '←', right: '→', up: '↑', down: '↓' };
   const toward = x => (x > P.x ? '→' : '←');
   // Por dónde seguir en el DAG: hacia la tarea pendiente más cercana o, si no queda ninguna, hacia la salida.
   function nextOnRail(from) {
@@ -498,7 +500,7 @@
   function gateHint(n) {
     const left = n.gate.filter(t => !t.done).length, go = nextOnRail(n);
     const text = `${go ? `${ARROW[dirOf(n, go.first)]} ` : ''}${left} ${left > 1 ? 'tasks' : 'task'} still pending`;
-    if (!labels.some(l => l.text === text)) say(text, 3000);
+    if (!labels.some(l => l.text === text)) say(text, HOLD);
   }
   function request() {
     if (P.dive || P.ride || endAt) return null;
@@ -520,7 +522,7 @@
     if (busy) { idleSince = now; return; }
     if (now - idleSince < (P.rail && P.rail.at.fold ? READING : IDLE)) return;
     const text = request();
-    if (text) say(text, 3200);
+    if (text) say(text, HOLD);
     idleSince = now;
   }
   function step(dt, now, control) {
@@ -831,7 +833,7 @@
     if (mode === 'intro') { if (k) event.preventDefault(); return; }
     if (mode === 'play') {
       if (event.key === 'Escape') { stop(); return; }
-      if (k) { keys[k] = true; camFree = false; event.preventDefault(); missionUntil = Math.min(missionUntil, performance.now() + 2500); }
+      if (k) { if (!event.repeat) letGo(); keys[k] = true; camFree = false; event.preventDefault(); missionUntil = Math.min(missionUntil, performance.now() + 2500); }
       else if (['PageDown', 'PageUp', 'Home', 'End'].includes(event.key)) camFree = true;
       return;
     }
@@ -849,7 +851,7 @@
   addEventListener('scroll', () => { if (mode === 'play' && Math.abs(scrollY - expected) > 40) look(); }, { passive: true });
   pad.querySelectorAll('[data-k]').forEach(button => {
     const k = button.dataset.k;
-    const on = event => { event.preventDefault(); keys[k] = true; camFree = false; missionUntil = Math.min(missionUntil, performance.now() + 2500); button.setPointerCapture?.(event.pointerId); };
+    const on = event => { event.preventDefault(); letGo(); keys[k] = true; camFree = false; missionUntil = Math.min(missionUntil, performance.now() + 2500); button.setPointerCapture?.(event.pointerId); };
     const off = () => { keys[k] = false; };
     button.addEventListener('pointerdown', on);
     ['pointerup', 'pointercancel', 'lostpointercapture'].forEach(type => button.addEventListener(type, off));
