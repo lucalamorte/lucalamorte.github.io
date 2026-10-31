@@ -22,15 +22,15 @@
   const hit = document.createElement('button');
   hit.type = 'button'; hit.className = 'pk-hit'; hit.setAttribute('aria-label', 'Start the journey: play the portfolio as a game');
   const hint = document.createElement('span');
-  hint.className = 'pk-hint'; hint.textContent = touch ? 'tap to start' : 'click to start the journey'; hint.classList.add('side');
+  hint.className = 'pk-hint'; hint.textContent = touch ? 'tap to load this record' : 'click to load this record'; hint.classList.add('side');
   // La misión, con las teclas para moverse, en un globo sobre el muñequito.
   const mission = document.createElement('div');
   mission.className = 'pk-say'; mission.setAttribute('role', 'status');
-  mission.innerHTML = `<p>Find Luca. He's at the end.</p>${touch ? '<p class="go">use the buttons below ↓</p>' : '<p class="go"><kbd>←</kbd><kbd>→</kbd> move <kbd>↑</kbd> jump</p>'}`;
+  mission.innerHTML = `<p>I'm a raw record. Get me into the contacts table.</p>${touch ? '<p class="go">use the buttons below ↓</p>' : '<p class="go"><kbd>←</kbd><kbd>→</kbd> move <kbd>↑</kbd> jump</p>'}`;
   // El panel fijo con los controles y el botón para reiniciar; aparece cuando el juego ya empezó.
   const help = document.createElement('div');
   help.className = 'play-help';
-  help.innerHTML = '<span><kbd>←</kbd><kbd>→</kbd> move</span><span><kbd>↑</kbd> jump</span><span><kbd>↓</kbd> down</span><button type="button" class="restart">↺ restart</button><button type="button" class="exit">✕ exit</button>';
+  help.innerHTML = '<span class="goal">goal: reach the contacts table</span><span><kbd>←</kbd><kbd>→</kbd> move</span><span><kbd>↑</kbd> jump</span><span><kbd>↓</kbd> down</span><button type="button" class="restart">↺ restart</button><button type="button" class="exit">✕ exit</button>';
   const pad = document.createElement('div');
   pad.className = 'pad'; pad.hidden = true;
   pad.innerHTML = '<button type="button" data-k="left" aria-label="Left">◀</button><button type="button" data-k="right" aria-label="Right">▶</button><button type="button" data-k="down" class="down" aria-label="Go down">▼</button><button type="button" data-k="jump" class="jump" aria-label="Jump">▲</button><button type="button" class="x" aria-label="Stop playing">✕</button><button type="button" class="restart re" aria-label="Restart the game">↺</button>';
@@ -47,7 +47,14 @@
   const waitSpot = () => { const b = box($('.hero .tools')); return { x: b.x + 10, y: b.b + 34 }; };
   // Un cartelito que flota sobre el muñequito o sobre una pieza.
   // Los diálogos siempre salen justo arriba del muñequito y lo siguen mientras se mueve.
-  const say = (text, ms = 2000) => { labels = labels.filter(l => l.text !== text); labels.push({ text, from: performance.now(), until: performance.now() + ms }); };
+  // De a un diálogo por vez: el que llega mientras otro recién apareció espera su turno, y si llega otro después, gana el último.
+  const READ = 2500;
+  let queued = null;
+  const say = (text, ms = 2000) => {
+    const now = performance.now(), shown = labels[0];
+    if (shown && now < shown.until && shown.text !== text && now - shown.from < READ) { queued = { text, ms }; return; }
+    labels = [{ text, from: now, until: now + ms }]; queued = null;
+  };
   // Lo que el muñequito va contando del recorrido: cada frase, una sola vez por partida.
   const said = new Set();
   // Lo que le pide algo al jugador queda en pantalla hasta que toque una tecla: así nadie se pierde la pista.
@@ -158,6 +165,7 @@
 
     // La tarea de Airflow carga el archivo hasta Snowflake (extract y load). La caja de Snowflake queda a la
     // izquierda del contacto, que tiene lugar libre, con su piso justo arriba de los botones.
+    const bounds = { l: Math.max(0, colL - 44), r: Math.min(W, colR + 44) };
     const ctBtn = box($('#contact .btn'));
     const wx = colL + 14, wy = ctBtn.b - 60, top = wy - 240;
     const sfW = Math.min(240, W - wx - 16), boxL = wx - 14, boxR = boxL + sfW, boxB = wy + 28;
@@ -176,7 +184,6 @@
       if (k === 0) m.label = () => m.built ? 'warehouse M · running' : `warehouse ${['XS', 'S', 'M'][Math.min(2, Math.floor(m.t / m.need * 3))]}`;
       m.stand = dt => {
         if (m.built) return;
-        if (k === 0) once('warehouse up');
         // dbt ayuda a moverse más rápido, literal: sus capas salen enseguida y de acá en más camina más rápido.
         if (k === 1) { once('dbt run: everything gets faster'); P.fast = true; }
         m.t += dt;
@@ -205,15 +212,23 @@
     // tabla el muñequito queda como el agente que la consulta. Va al costado de los botones; si no hay lugar a
     // ninguno de los dos lados (en el celu), debajo de ellos y centrada.
     const btn = box($('#contact .btn')), lastBtn = box($('#contact .cta .btn:last-child')), tw = 150, th = 72;
-    const tx = lastBtn.r + 40 + tw < W - 16 ? lastBtn.r + 40 : btn.x - 40 - tw > 8 ? btn.x - 40 - tw : null;
+    // Con lugar, la tabla queda bien separada de los botones y en el hueco un cartel indica para dónde seguir.
+    const far = Math.min(lastBtn.r + 210, bounds.r - tw - 10);
+    const tx = far > lastBtn.r + 40 ? far : lastBtn.r + 40 + tw < W - 16 ? lastBtn.r + 40 : btn.x - 40 - tw > 8 ? btn.x - 40 - tw : null;
     const table = tx === null ? { x: (W - tw) / 2, y: btn.b + 40, w: tw, h: th, fill: 0 } : { x: tx, y: btn.b - th, w: tw, h: th, fill: 0 };
     things.push({ draw: now => drawTable(table, now) });
+    if (tx === far && far - lastBtn.r > 130) {
+      const sw = 130, sx = lastBtn.r + (far - lastBtn.r - sw) / 2, sy = table.y + th - 34;
+      things.push({ draw: () => {
+        ctx.strokeStyle = 'rgba(94,234,212,.55)'; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.roundRect(sx, sy, sw, 26, 8); ctx.stroke();
+        text('contacts table →', sx + sw / 2, sy + 17, ACCENT, 'center');
+      } });
+    }
     ledge(table.x, table.y, tw, { hidden: true });
     floor(table.y + th, []);
 
     // Si se cae fuera del nivel, reaparece al comienzo de la última sección que pasó.
     for (const id of ['experience', 'projects', 'contact']) checkpoints.push({ y: box(document.getElementById(id)).y, x: colL + 30 });
-    const bounds = { l: Math.max(0, colL - 44), r: Math.min(W, colR + 44) };
     return { plats, things, walls, bounds, face, nodes, entry, mc: level_mc, pipe, bucket, table, checkpoints, colL, colR, docH: document.documentElement.scrollHeight };
   }
 
@@ -368,7 +383,11 @@
     const seen = (y, h = 0) => y + h > top - 120 && y < top + H + 120;
     if (mode === 'play' && level) {
       // Con un desplegable abierto, lo de abajo está medido con él cerrado: no se dibuja encima de su contenido.
-      const unfolded = P.rail && P.rail.at.fold && P.rail.at.task.open && box(P.rail.at.task.querySelector('summary'));
+      const openFold = P.rail && [P.rail.at, P.rail.to].find(n => n && n.fold && n.task.open);
+      const unfolded = openFold && box(openFold.task.querySelector('summary'));
+      // El tramo entre dos desplegables pasa por al lado del abierto: se dibuja aparte, fuera del recorte.
+      const hop = P.rail && P.rail.to && P.rail.to.fold && P.rail.at.fold && P.rail.to;
+      if (hop) { ctx.strokeStyle = 'rgba(94,234,212,.45)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(hop.x, P.rail.at.y); ctx.lineTo(hop.x, hop.y); ctx.stroke(); }
       ctx.save();
       if (unfolded) { ctx.beginPath(); ctx.rect(0, top - 40, W, unfolded.b + 40 - top); ctx.clip(); }
       for (const t of level.things) t.draw(now);
@@ -403,6 +422,7 @@
       drawPk(P.x, P.y, now);
     }
     labels = labels.filter(l => now < l.until);
+    if (queued && (!labels[0] || now - labels[0].from >= READ)) { const { text, ms } = queued; say(text, ms); }
     // Los diálogos: globos apilados sobre el muñequito, con su entrada, sin salirse de la pantalla ni tapar el menú.
     ctx.font = '500 15px "JetBrains Mono", monospace'; ctx.textBaseline = 'middle';
     labels.forEach((l, k) => {
@@ -436,6 +456,16 @@
   // compuerta abierta sigue de largo; en una tarea se queda hasta que corre.
   const RAIL = 560;
   const onNode = n => { P.x = n.x - S / 2; P.y = n.y - S / 2; };
+  // El relevo al llegar: se abre el nuevo y se cierra el de arriba, y el scroll compensa lo que se achicó la página,
+  // así nada se mueve en pantalla. El nodo vuelve a su lugar, que está medido con todo cerrado.
+  function swapFolds(from, n) {
+    const s = n.task.querySelector('summary'), before = box(s).y;
+    n.task.open = true; from.task.open = false;
+    const now = box(s);
+    n.y = now.y + now.h / 2;
+    scrollTo({ top: scrollY + now.y - before, behavior: 'instant' });
+    expected = scrollY;
+  }
   function railStep(dt, control, now) {
     const r = P.rail;
     // Primero se centra lo que hay que leer: hasta que la cámara llega, no arranca el viaje ni corre la tarea.
@@ -447,7 +477,9 @@
       const len = Math.hypot(r.to.x - r.at.x, r.to.y - r.at.y), u = Math.min(1, r.d / (len || 1));
       P.x = r.at.x + (r.to.x - r.at.x) * u - S / 2; P.y = r.at.y + (r.to.y - r.at.y) * u - S / 2; P.form = 'dot';
       if (u < 1) return;
-      const from = r.at, n = r.at = r.to; r.to = null; r.d = 0; onNode(n); P.form = 'pk';
+      const from = r.at, n = r.at = r.to; r.to = null; r.d = 0;
+      if (n.fold && from.fold && from.task.open && n.y > from.y) swapFolds(from, n);
+      onNode(n); P.form = 'pk';
       if (n.exit) { P.rail = null; P.vy = 120; return; }
       if (n.task && n.task.dataset.say) once(n.task.dataset.say);
       if (n.task && !n.done) { r.fresh = !!n.fold; return; }
@@ -459,7 +491,8 @@
       return;
     }
     const n = r.at;
-    if (n.fold && !n.task.open) { n.task.open = true; n.done = true; n.task.classList.add('read'); once('read it, then ↓ to move on', HOLD); }
+    if (n.fold && !n.task.open) n.task.open = true;
+    if (n.fold && !n.done) { n.done = true; n.task.classList.add('read'); once('read it, then ↓ to move on', HOLD); }
     if (n.task && !n.done) {
       if (!settled(n)) return;
       n.t += dt; n.task.classList.add('lit');
@@ -474,7 +507,13 @@
     if (!m) return;
     if (n.gate && m.y > n.y && !gateOpen(n)) { n.nudge = now; gateHint(n); return; }
     if (n.task) n.task.classList.remove('lit');
-    if (n.fold) n.task.open = false;
+    // Hacia el desplegable de abajo se camina por el margen, a lo largo del abierto, que se cierra recién al llegar.
+    // Hacia arriba el relevo es en el mismo cuadro: la página nunca queda con los dos cerrados.
+    if (n.fold && m.fold && m.y > n.y) { const s = box(m.task.querySelector('summary')); m.y = s.y + s.h / 2; }
+    else {
+      if (n.fold) n.task.open = false;
+      if (m.fold) m.task.open = true;
+    }
     r.to = m; r.d = 0; P.face = m.x < n.x ? -1 : m.x > n.x ? 1 : P.face;
   }
   // Si pasa un rato sin que el jugador haga nada, el muñequito le pide lo que falta. Nunca interrumpe lo que corre
@@ -607,13 +646,13 @@
       return;
     }
     const mc = level.mc;
-    if (mc && !mc.state.checked && P.x + S / 2 > mc.x && P.x + S / 2 < mc.x + mc.w && P.y > mc.y - 4 && P.y < mc.y + 40) { mc.state.checked = true; once('Monte Carlo: all clear', 3000); say(level.table.x + level.table.w / 2 > P.x ? 'my destination →' : '← my destination', 5000); }
+    if (mc && !mc.state.checked && P.x + S / 2 > mc.x && P.x + S / 2 < mc.x + mc.w && P.y > mc.y - 4 && P.y < mc.y + 40) { mc.state.checked = true; say(level.table.x + level.table.w / 2 > P.x ? 'all clear. my destination →' : '← all clear. my destination', 5000); }
     const b = level.bucket, cx = P.x + S / 2;
     const inside = cx > b.x && cx < b.x + b.w && P.y + S > b.y - 2 && P.y < b.y + b.d + 20;
     if (!inside) b.since = 0; else if (!b.since && b.ready()) { b.since = now; once('in S3. Airflow, your turn'); }
     const inBucket = cx > b.x && cx < b.x + b.w && P.y + S > b.y - 2 && P.y < b.y + b.d + 20;
     P.form = inBucket ? 'file' : 'pk';
-    if (inBucket && P.y + S > b.y + b.d + 4) { P.ride = { d: 0 }; P.form = 'dot'; once('Airflow: extract and load'); }
+    if (inBucket && P.y + S > b.y + b.d + 4) { P.ride = { d: 0 }; P.form = 'dot'; }
 
     const m = level.table;
     if (!won && P.x + S > m.x - 6 && P.x < m.x + m.w + 6 && P.y + S > m.y - 10 && P.y < m.y + m.h) {
@@ -721,7 +760,7 @@
   function reset() {
     try { sessionStorage.removeItem(SAVE); } catch (e) {}
     document.querySelectorAll(TASKS).forEach(el => el.classList.remove('read', 'lit'));
-    won = false; endAt = 0; said.clear(); P.fast = false; document.body.classList.remove('ran'); if (note) note.hidden = true; labels = []; P.ride = null; P.rail = null; P.dive = null; P.form = 'pk'; P.vy = 0; P.on = null;
+    won = false; endAt = 0; said.clear(); P.fast = false; document.body.classList.remove('ran'); if (note) note.hidden = true; labels = []; queued = null; P.ride = null; P.rail = null; P.dive = null; P.form = 'pk'; P.vy = 0; P.on = null;
     keys = {}; mode = 'wait';
     document.body.classList.remove('playing'); pad.hidden = true;
     document.documentElement.style.scrollBehavior = '';
@@ -731,7 +770,7 @@
   // en el contacto, con un botón para jugar de nuevo.
   let note = null;
   function finish() {
-    endAt = 0; mode = 'done'; keys = {}; labels = [];
+    endAt = 0; mode = 'done'; keys = {}; labels = []; queued = null;
     document.body.classList.remove('playing'); document.body.classList.add('ran'); pad.hidden = true;
     document.documentElement.style.scrollBehavior = '';
     const read = [...document.querySelectorAll(TASKS)].filter(el => el.classList.contains('read')).length;

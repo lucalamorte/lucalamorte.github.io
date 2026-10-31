@@ -446,6 +446,7 @@ html { scrollbar-width: thin; scrollbar-color: rgba(255, 255, 255, .16) transpar
 .play-help { position: fixed; right: 18px; bottom: 18px; z-index: 24; display: flex; align-items: center; gap: 12px; padding: 8px 10px 8px 14px; border: 1px solid var(--border-strong); border-radius: 12px; background: rgba(11, 17, 32, .9); backdrop-filter: blur(8px); font-family: var(--mono); font-size: .7rem; color: var(--muted); opacity: 0; pointer-events: none; transform: translateY(8px); transition: opacity .3s, transform .3s; }
 .play-help.on { opacity: 1; pointer-events: auto; transform: none; }
 .play-help span { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
+.play-help .goal { color: var(--accent); }
 .play-help kbd { display: inline-grid; place-items: center; min-width: 22px; height: 22px; padding: 0 4px; border: 1px solid var(--border-strong); border-bottom-width: 2px; border-radius: 5px; color: var(--text-2); font: inherit; }
 .play-help .restart { height: 28px; padding: 0 10px; border: 1px solid var(--accent-line); border-radius: 8px; background: transparent; color: var(--accent); font: inherit; cursor: pointer; }
 .play-help .restart:hover { background: var(--accent-tint); }
@@ -474,11 +475,9 @@ html { scrollbar-width: thin; scrollbar-color: rgba(255, 255, 255, .16) transpar
 /* Certificaciones: el nombre con emisor y año a la izquierda, qué cubre y dónde se usó a la derecha. */
 .list.certs li { display: flex; justify-content: space-between; align-items: baseline; gap: 4px 24px; padding: 7px 0; }
 .list.certs .who { flex: none; }
-.edu-top { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 48px; }
-.edu-top .list-label { margin-top: 0; }
-.fold > .edu-top { margin-top: 26px; }
-.fold > .edu-top + .list-label { margin-top: 24px; }
-@media (max-width: 760px) { .list.certs li { flex-direction: column; gap: 0; } .edu-top { grid-template-columns: 1fr; gap: 20px; } }
+.fold .list-label { margin-top: 20px; }
+.fold > .list-label:first-of-type { margin-top: 26px; }
+@media (max-width: 760px) { .list.certs li { flex-direction: column; gap: 0; } }
 /* How I work: la lista queda fija y la explicación de cada regla se lee a la derecha, sobre su escena. */
 .pr-item .desc { display: none; }
 .scene-desc { margin: 0 0 14px !important; max-width: 460px; font-size: 1rem; line-height: 1.6; color: var(--text-2); }
