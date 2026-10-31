@@ -672,7 +672,10 @@
     }
     const mc = level.mc;
     // La caja solo se deja por Monte Carlo: pasar su borde de abajo es haber salido, a cualquier velocidad.
-    if (mc && !mc.state.checked && P.y > mc.y) { mc.state.checked = true; say('found my table, finally!!!', 5000); }
+    if (mc && !mc.state.checked && P.y > mc.y) mc.state.checked = true;
+    // La tabla recién se ve al avanzar un poco: ahí la encuentra, sin frenar.
+    const found = 'found my table, finally!!!';
+    if (mc && mc.state.checked && !said.has(found) && P.x > Math.min(mc.x + mc.w + 100, level.table.x - 40)) { said.add(found); say(found, 5000); }
     const b = level.bucket, cx = P.x + S / 2;
     const inside = cx > b.x && cx < b.x + b.w && P.y + S > b.y - 2 && P.y < b.y + b.d + 20;
     if (!inside) b.since = 0; else if (!b.since && b.ready()) { b.since = now; once('nice bucket. must be AWS'); }
