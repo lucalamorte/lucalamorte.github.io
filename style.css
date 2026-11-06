@@ -868,3 +868,9 @@ body.pk-floating .play-layer { z-index: -1; }
 body.pk-floating .pk-hint { z-index: -1; }
 /* El globito y el área de click de Little Bit viven en su propia capa: se desplazan suave, sin saltos de píxel. */
 .pk-hint, .pk-hit { will-change: translate, transform; }
+
+/* La flecha del centro de la barra de los artículos: baja de zona en zona, como la del inicio. */
+.article-end a.down { display: grid; place-items: center; width: 36px; height: 28px; border-radius: 14px; color: var(--text-2); }
+.article-end a.down:hover { color: var(--accent); background: var(--accent-tint); }
+.article-end a.down svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; animation: scroll-next-bob 1.8s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { .article-end a.down svg { animation: none; } }
