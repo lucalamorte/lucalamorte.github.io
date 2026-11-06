@@ -85,11 +85,23 @@
     <div class="step">Unified reporting layer in Power BI<small>the same numbers for every plant and team</small></div>
   </div>
 
+  <h2>One example: units of measure</h2>
+  <p>Some lines reported their output in square meters, others in kilograms, others in units. Adding them up gave a number that meant nothing. A square meter only becomes weight once the material is known, because every material has its own grammage: 10,000 m² of a 15 g/m² nonwoven is 150 kg, while the same area of a heavier material weighs much more.</p>
+  <div class="flow" aria-label="Units of measure, normalized">
+    <div class="step">Mixed units from the lines<small>m², kg and units, each plant with its own habit</small></div>
+    <div class="arrow"></div>
+    <div class="step code">One conversion standard<small>a grammage per material, so m² becomes kg the same way everywhere</small></div>
+    <div class="arrow"></div>
+    <div class="step code">Cleanup<small>units that did not apply to a line were removed, so every line reports in the units that make sense for it</small></div>
+    <div class="arrow"></div>
+    <div class="step">One unit for every plant<small>output compared in kilograms across 10 plants</small></div>
+  </div>
+
   <h2>What was done</h2>
   <ul>
     <li><strong>Rollout:</strong> real-time machine data and digital twins went live in 10 plants across 5 countries, one plant at a time, with each team trained to use them.</li>
     <li><strong>Integration:</strong> SAP and ERP data was replicated into Azure, so production and business data could be read together.</li>
-    <li><strong>Standardization:</strong> every plant agreed on one definition per metric, so Power BI shows the same numbers for all of them.</li>
+    <li><strong>Standardization:</strong> every plant agreed on one definition per metric and one unit of measure, with a conversion standard per material, so Power BI shows the same numbers for all of them.</li>
     <li><strong>Leadership:</strong> the rollout was led end to end, as the first point of contact for business and technical teams on every project.</li>
     <li><strong>Impact:</strong> $21.5M a year in ROI.</li>
   </ul>
