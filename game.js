@@ -44,7 +44,15 @@
   // Donde espera antes de empezar: debajo del texto de la portada, más grande y saltando. Primero se lee y
   // después invita; al tocarlo salta al título, donde arranca el juego.
   const BIG = 1.5;
-  const waitSpot = () => { const b = box($('.hero .intro > p:last-of-type')); return { x: b.x + 10, y: b.b + 52 }; };
+  // Esperando, se asoma por detrás del título: medio cuerpo escondido tras la "e" de "here", sobre la línea de las minúsculas.
+  const waitSpot = () => {
+    const cs = document.querySelectorAll('.hero h1 .ch'), c = cs.length > 2 ? cs[cs.length - 2] : $('.hero h1'), r = box(c);
+    // La línea de las minúsculas se mide con la fuente real: así el cuerpo queda justo detrás y no pisa ninguna letra.
+    const st = getComputedStyle(c); ctx.save(); ctx.font = `${st.fontWeight} ${st.fontSize} ${st.fontFamily}`;
+    const m = ctx.measureText('x'); ctx.restore();
+    const ledge = cs.length > 2 ? r.y + m.fontBoundingBoxAscent - m.actualBoundingBoxAscent + 1 : r.y + r.h * 0.4, x = cs.length > 2 ? r.x + r.w / 2 - S / 2 : r.x + r.w * 0.6;
+    return { x, y: ledge + S * BIG * 0.4 - S, ledge };
+  };
   // Un cartelito que flota sobre el muñequito o sobre una pieza.
   // Los diálogos siempre salen justo arriba del muñequito y lo siguen mientras se mueve.
   // De a un diálogo por vez: el nuevo aparece enseguida, en su momento, y el anterior se desvanece debajo.
@@ -423,11 +431,12 @@
     // La estela del muñequito cuando atraviesa el retrato.
     P.trail.forEach((t, k) => { ctx.globalAlpha = (k / P.trail.length) * 0.35; ctx.fillStyle = ACCENT; ctx.beginPath(); ctx.roundRect(t[0] + 4, t[1] + 4, S - 8, S - 8, 5); ctx.fill(); });
     ctx.globalAlpha = 1;
-    // Esperando, el muñequito está sobre el título, listo para arrancar. Al terminar queda solo el de la nota.
+    // Esperando, el muñequito se asoma por detrás del título, listo para arrancar. Al terminar queda solo el de la nota.
     if (mode === 'wait') {
       const ws = waitSpot(), hop = still ? 0 : (now % 1600 < 520 ? Math.sin((now % 1600) / 520 * Math.PI) * 12 : 0);
       P.face = -1;
-      ctx.save(); ctx.translate(ws.x + S / 2, ws.y + S - hop); ctx.scale(BIG, BIG); ctx.translate(-(ws.x + S / 2), -(ws.y + S));
+      ctx.save(); ctx.beginPath(); ctx.rect(ws.x - 80, ws.ledge - 160, S * BIG + 160, 160); ctx.clip();
+      ctx.translate(ws.x + S / 2, ws.y + S - hop); ctx.scale(BIG, BIG); ctx.translate(-(ws.x + S / 2), -(ws.y + S));
       drawPk(ws.x, ws.y, now); ctx.restore();
     } else if (mode !== 'done' && !endAt && seen(P.y)) {
       if (P.on && P.on.hidden && mode === 'play') {
@@ -559,7 +568,7 @@
   // En una compuerta cerrada, la pista: cuántas tareas faltan y para qué lado están.
   function gateHint(n) {
     const left = n.gate.filter(t => !t.done).length, go = nextOnRail(n);
-    const text = `${go ? `${ARROW[dirOf(n, go.first)]} ` : ''}${left} ${left > 1 ? 'tasks' : 'task'} left back there`;
+    const text = `${go ? `${ARROW[dirOf(n, go.first)]} ` : ''}${left} ${left > 1 ? 'cards' : 'card'} left back there`;
     if (!labels.some(l => l.text === text)) say(text, HOLD);
   }
   // En la portada habla poco: al frenar en el NULL y al pasarlo. Lo del borde queda para quien se quede quieto ahí.
