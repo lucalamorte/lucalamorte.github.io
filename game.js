@@ -133,7 +133,9 @@
       // Lo que la cámara muestra centrado mientras se anda por cada fila: la primera va con el título de la sección.
       let frame = null;
       [...byRow.values()].forEach((row, r) => {
-        const gy = row[0].c.y - 16;
+        // En escritorio el riel va bien separado del vidrio de las tarjetas (si no, parece su borde); en el celu, donde
+        // corre por el costado, queda pegado como antes.
+        const gy = row[0].c.y - (W < 760 ? 16 : 34);
         frame = [r ? gy - 20 : box(section.firstElementChild).y, Math.max(...row.map(q => q.c.b))];
         // En el celu va una tarjeta por fila: la tarea queda sobre el bus y ↓ pasa de una tarjeta a la siguiente.
         if (W < 760 && row.length === 1) {
