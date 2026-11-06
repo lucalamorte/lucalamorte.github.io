@@ -102,19 +102,6 @@
       const [mx, my] = at(.86, .7, .2, .74), step = small ? 18 : 24;
       [0, 1, 2].forEach(k => bright(mx + (k - 1) * step, my - (k - 1) * step * .42, 2.2 - k * .15));
     }
-    // La bandera argentina hecha de estrellas: filas celestes arriba y abajo, blancas en el medio y el sol,
-    // una estrella dorada, en el centro.
-    {
-      const [fx, fy] = at(.9, .3, .84, .44), cols = 9, rows = 6, gap = small ? 5 : 6.5;
-      for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
-        const x = fx + (c - (cols - 1) / 2) * gap, y = fy + (r - (rows - 1) / 2) * gap, white = r === 2 || r === 3;
-        if (white && c === 4) continue;
-        const tint = white ? '248,250,252' : '79,158,232', g = sk.createRadialGradient(x, y, 0, x, y, 3);
-        g.addColorStop(0, `rgba(${tint},1)`); g.addColorStop(.3, `rgba(${tint},.5)`); g.addColorStop(1, `rgba(${tint},0)`);
-        sk.fillStyle = g; sk.beginPath(); sk.arc(x, y, 3, 0, Math.PI * 2); sk.fill();
-      }
-      bright(fx, fy, 1.4, '246,180,14');
-    }
     // Un mate con la bombilla.
     figure(...at(.07, .78, .14, .9), small ? 18 : 24,
       [[[-.62, -.2], [-.72, .25], [-.55, .7], [-.2, .95], [.2, .95], [.55, .7], [.72, .25], [.62, -.2]],

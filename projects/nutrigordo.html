@@ -68,7 +68,7 @@
 
   <div class="facts">
     <div><b>28</b><span>typed actions the model can ask for</span></div>
-    <div><b>136</b><span>automated tests, run before every deploy</span></div>
+    <div><b>136</b><span>automated tests</span></div>
     <div><b>67</b><span>scenarios built from real conversations</span></div>
     <div><b>0</b><span>hardcoded lists of foods or words</span></div>
   </div>
@@ -86,11 +86,11 @@
     <div class="arrow"></div>
     <div class="step model">The model interprets the message<small>voice notes are transcribed first; the reply is a list of typed actions validated against schemas</small></div>
     <div class="arrow"></div>
-    <div class="step code">Code checks every action<small>dates, times, duplicates, undo and replacements; doubtful cases get a second, narrow judgement</small></div>
+    <div class="step code">Code checks every action<small>dates, times, duplicates, undo and replacements</small></div>
     <div class="arrow"></div>
     <div class="step model">Branded products are looked up on the web<small>sources ranked by reliability, values cached per user</small></div>
     <div class="arrow"></div>
-    <div class="step code">Each action is executed and saved<small>every change is recorded so it can be undone</small></div>
+    <div class="step code">Each action is executed and saved</div>
     <div class="arrow"></div>
     <div class="step">Reply with buttons<small>Undo, Save as is, answers to tap, report periods</small></div>
   </div>
@@ -102,7 +102,7 @@
     <li>Totals, averages, report periods and weekly habits are computed in code, never written by the model.</li>
     <li>Changes that delete or overwrite something go through a second, narrow judgement before they are applied.</li>
     <li>Every change made by a message can be undone with one tap.</li>
-    <li>No list of foods or keywords exists anywhere: rules are derived from each person's own history and from the order of what they said.</li>
+    <li>Rules are derived from each person's own history and from the order of what they said.</li>
   </ul>
 
   <h2>Failures that shaped it</h2>

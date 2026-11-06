@@ -88,17 +88,17 @@
   </ul>
 
   <h2 id="agent">An agent instead of a guess</h2>
-  <p>The assistant was rebuilt as a tool-calling agent. The model gets a set of tools and picks which ones to call. Asking what to review today reads the review queue, instead of matching words against flashcards.</p>
+  <p>The assistant was rebuilt as a tool-calling agent. Asking what to review today reads the review queue, instead of matching words against flashcards.</p>
   <div class="flow" aria-label="Agent flow">
     <div class="step">The user asks a question<small>inside a workspace or with a deck open</small></div>
     <div class="arrow"></div>
-    <div class="step code">The route builds the tool context from the verified session<small>user id, workspace and deck come from the session, never from the model</small></div>
+    <div class="step code">The route builds the tool context from the verified session<small>user id, workspace and deck</small></div>
     <div class="arrow"></div>
     <div class="step model">The model chooses tools<small>search study material, list decks, cards due for review, study progress, search documents</small></div>
     <div class="arrow"></div>
-    <div class="step code">Each tool queries Postgres with the user's own client<small>row-level security decides what comes back</small></div>
+    <div class="step code">Each tool queries Postgres with the user's own client<small>only the user’s own rows</small></div>
     <div class="arrow"></div>
-    <div class="step model">The model answers with what the tools returned<small>at most 4 rounds of tool calls</small></div>
+    <div class="step model">The model answers with what the tools returned</div>
   </div>
   <div class="legend"><span><i class="m"></i>language model</span><span><i class="c"></i>code</span><span><i></i>user</span></div>
 

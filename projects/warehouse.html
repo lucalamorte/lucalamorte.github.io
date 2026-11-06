@@ -56,29 +56,20 @@
     <svg class="art-logo icon" aria-hidden="true"><use href="#i-db"/></svg>
     <span class="eyebrow">GenAI · own product · in progress · 2026</span>
     <h1>Ask the warehouse</h1>
-    <p class="lede">A business question in plain English goes in, and the answer comes back from the company's own data. An agent on Snowflake Cortex decides whether the answer lives in a table or in a document. This is an early write-up of a product being built now.</p>
+    <p class="lede">A business question in plain English goes in, and the answer comes back from the company's own data. This is an early write-up of a product being built now.</p>
   </header>
-
-  <figure class="art-visual"><svg viewBox="0 0 720 200" role="img" aria-label="question to agent to Analyst to Search to answer."><rect x="14" y="66" width="116" height="52" rx="12" fill="rgba(94,234,212,0.05)" stroke="rgba(94,234,212,0.30)"/><text x="72" y="90" fill="#e2e8f0" font-family="JetBrains Mono, monospace" font-size="12" text-anchor="middle">question</text><text x="72" y="106" fill="#94a3b8" font-family="JetBrains Mono, monospace" font-size="10" text-anchor="middle">plain English</text><path d="M134 92 H154" stroke="#5eead4" stroke-width="1.5" stroke-dasharray="4 6" fill="none" class="sc-flow"/><rect x="158" y="66" width="116" height="52" rx="12" fill="rgba(94,234,212,0.09)" stroke="rgba(94,234,212,0.42)"/><text x="216" y="90" fill="#e2e8f0" font-family="JetBrains Mono, monospace" font-size="12" text-anchor="middle">agent</text><text x="216" y="106" fill="#94a3b8" font-family="JetBrains Mono, monospace" font-size="10" text-anchor="middle">Cortex Agents</text><path d="M278 92 H298" stroke="#5eead4" stroke-width="1.5" stroke-dasharray="4 6" fill="none" class="sc-flow"/><rect x="302" y="66" width="116" height="52" rx="12" fill="rgba(94,234,212,0.13)" stroke="rgba(94,234,212,0.54)"/><text x="360" y="90" fill="#e2e8f0" font-family="JetBrains Mono, monospace" font-size="12" text-anchor="middle">Analyst</text><text x="360" y="106" fill="#94a3b8" font-family="JetBrains Mono, monospace" font-size="10" text-anchor="middle">tables</text><path d="M422 92 H442" stroke="#5eead4" stroke-width="1.5" stroke-dasharray="4 6" fill="none" class="sc-flow"/><rect x="446" y="66" width="116" height="52" rx="12" fill="rgba(94,234,212,0.17)" stroke="rgba(94,234,212,0.66)"/><text x="504" y="90" fill="#e2e8f0" font-family="JetBrains Mono, monospace" font-size="12" text-anchor="middle">Search</text><text x="504" y="106" fill="#94a3b8" font-family="JetBrains Mono, monospace" font-size="10" text-anchor="middle">documents</text><path d="M566 92 H586" stroke="#5eead4" stroke-width="1.5" stroke-dasharray="4 6" fill="none" class="sc-flow"/><rect x="590" y="66" width="116" height="52" rx="12" fill="rgba(94,234,212,0.21)" stroke="rgba(94,234,212,0.78)"/><text x="648" y="90" fill="#e2e8f0" font-family="JetBrains Mono, monospace" font-size="12" text-anchor="middle">answer</text><text x="648" y="106" fill="#94a3b8" font-family="JetBrains Mono, monospace" font-size="10" text-anchor="middle">with its source</text><text x="360" y="172" fill="#5eead4" font-family="JetBrains Mono, monospace" font-size="11" text-anchor="middle">every answer cites the table or document it came from</text></svg></figure>
   <div class="built"><p>Built with</p><ul><li>Snowflake</li><li>Cortex Agents</li><li>Cortex Analyst</li><li>Cortex Search</li><li>Semantic model</li><li>Cortex Code</li></ul></div>
 
-  <div class="facts">
-    <div><b>2</b><span>tools the agent can call</span></div>
-    <div><b>1</b><span>semantic model as the source of truth</span></div>
-    <div><b>0</b><span>numbers written by the model</span></div>
-    <div><b>Early</b><span>stage, updated as it ships</span></div>
-  </div>
-
   <h2>The idea</h2>
-  <p>Most questions about a business are already answered somewhere in its warehouse or its documents. The hard part is knowing where. The agent reads the question, picks the right tool and returns the answer with the source it came from.</p>
+  <p>Most questions about a business are already answered somewhere in its warehouse or its documents. The hard part is knowing where.</p>
 
   <h2>How a question is answered</h2>
-  <div class="flow" aria-label="Agent flow"><div class="step">A question in plain English<small>which campaign won Q3?</small></div><div class="step model">The agent picks a tool<small>Cortex Agents decides between tables and documents</small></div><div class="step code">Cortex Analyst<small>turns the question into SQL over a semantic model</small></div><div class="step code">Cortex Search<small>finds the passages that answer it in documents</small></div><div class="step">The answer, with its source<small>the table or the document behind every number</small></div></div>
+  <div class="flow" aria-label="Agent flow"><div class="step">A question<small>which campaign won Q3?</small></div><div class="step model">The agent picks a tool<small>Cortex Agents decides between tables and documents</small></div><div class="step code">Cortex Analyst<small>turns the question into SQL over a semantic model</small></div><div class="step code">Cortex Search<small>finds the passages that answer it in documents</small></div><div class="step">The answer, with its source<small>the table or the document behind every number</small></div></div>
 
   <h2>Design rules</h2>
   <ul><li><strong>The model reads, the code decides:</strong> numbers come from SQL over the semantic model, never from the model's memory.</li><li><strong>One definition per metric:</strong> the semantic model is the only place where a metric is defined.</li><li><strong>Always cite:</strong> an answer without a source is not shown.</li></ul>
 
-  <p class="note">Built on sample data. Early write-up, updated as the product ships.</p>
+  <p class="note">Built on sample data.</p>
   <nav class="article-end" aria-label="More">
     <a href="../index.html#projects">← All projects</a>
     <a href="#top">↑ Back to top</a>
