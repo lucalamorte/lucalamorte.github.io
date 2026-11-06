@@ -878,3 +878,6 @@ body.pk-floating .pk-hint { z-index: -1; }
 /* Credenciales: cada nombre es su propio link, con la flechita al lado; el hover cae justo sobre la palabra. */
 .list.certs .cred::after { content: " ↗"; position: static; inset: auto; font-family: var(--mono); font-size: .78em; color: var(--accent); opacity: .7; }
 .list.certs .cred:hover::after, .list.certs .cred:focus-visible::after { opacity: 1; }
+
+/* Nada se sale por el costado: el lienzo del retrato y el del juego no agrandan la página en el celu. */
+html, body { overflow-x: clip; }

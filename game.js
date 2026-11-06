@@ -26,7 +26,7 @@
   // La misión, con las teclas para moverse, en un globo sobre el muñequito.
   const mission = document.createElement('div');
   mission.className = 'pk-say'; mission.setAttribute('role', 'status');
-  mission.innerHTML = `<p>I'm Little Bit! My home is the <code>contacts</code> table. Have you seen it?</p>${touch ? '<p class="go">Use the buttons below ↓</p>' : '<p class="go"><kbd>←</kbd><kbd>→</kbd> move <kbd>↑</kbd> jump</p>'}`;
+  mission.innerHTML = "<p>Help me find the <code>contacts</code> table!</p>";
   // El panel fijo con los controles y el botón para reiniciar; aparece cuando el juego ya empezó.
   const help = document.createElement('div');
   help.className = 'play-help';
@@ -40,7 +40,11 @@
   const P = { x: 0, y: 0, vx: 0, vy: 0, ground: false, on: null, face: 1, squash: 0, form: 'pk', ride: null, dropUntil: 0, trail: [] };
 
   const box = el => { const r = el.getBoundingClientRect(); return { x: r.left, y: r.top + scrollY, w: r.width, h: r.height, r: r.right, b: r.bottom + scrollY }; };
-  const home = () => { const b = box($('.hero h1')); return { x: b.r - S - 6, y: b.y + 4 - S }; };
+  const home = () => {
+    const h = $('.hero h1'), b = box(h), range = document.createRange(); range.selectNodeContents(h);
+    const rects = [...range.getClientRects()].filter(r => r.width), end = rects.length ? rects[rects.length - 1].right : b.r - scrollX;
+    return { x: Math.min(b.r, end + scrollX) - S - 6, y: b.y + 4 - S };
+  };
   // Donde espera antes de empezar: debajo del texto de la portada, más grande y saltando. Primero se lee y
   // después invita; al tocarlo salta al título, donde arranca el juego.
   const BIG = 1.5;
@@ -86,8 +90,11 @@
   // De a un diálogo por vez: el nuevo aparece enseguida, en su momento, y el anterior se desvanece debajo.
   const READ = 1500, LINGER = 7000, FADE = 320, POP = 320;
   let lastSaid = null;
-  const say = (text, ms = 2000) => {
-    const now = performance.now(), until = now + Math.max(ms, LINGER), shown = labels[labels.length - 1];
+  let tip = null;
+  const say = (line, ms = 2000) => {
+    const now = performance.now(), cue = /^([↑↓←→]) (.*)$/.exec(line), text = cue ? cue[2] : line;
+    if (cue) tip = { keys: [cue[1]], from: now + 250 };
+    const until = now + Math.max(ms, LINGER), shown = labels[labels.length - 1];
     if (shown && now < shown.until && shown.text === text) { shown.until = Math.max(shown.until, until); return; }
     labels = labels.filter(l => now < l.until).map(l => ({ ...l, until: Math.min(l.until, now + FADE) }));
     labels.push({ text, from: now, until }); lastSaid = text;
@@ -95,7 +102,7 @@
   // Lo que el muñequito va contando del recorrido: cada frase, una sola vez por partida.
   const said = new Set();
   // Lo que le pide algo al jugador queda en pantalla hasta que toque una tecla: así nadie se pierde la pista.
-  const HOLD = Infinity, letGo = () => { const now = performance.now(); labels.forEach(l => { if (l.until === HOLD) l.until = Math.max(now, l.from + READ); }); };
+  const HOLD = Infinity, letGo = () => { const now = performance.now(); if (tip && now >= tip.from) tip = null; labels.forEach(l => { if (l.until === HOLD) l.until = Math.max(now, l.from + READ); }); };
   // Cada frase del recorrido frena al muñequito lo justo para leerla: así nunca llega antes que lo que dice.
   // Mientras tanto, un anillo alrededor suyo muestra cuánto falta para que vuelva a moverse.
   const hold = ms => { lockFrom = performance.now(); lockUntil = Math.max(lockUntil, lockFrom + ms); };
@@ -174,28 +181,18 @@
       const edge = fig.r - fig.w * 0.25, title = ledge(edge, h1.y + 4, Math.min(W, colR + 44) - edge, { floor: true, hidden: true });
       // Caminando se llega al borde de la silueta y ahí se frena: para entrar a la cara hay que saltar.
       walls.push({ x: edge, y1: h1.y + 4 - 30, y2: h1.y + 4 });
-      // A mitad de camino, un NULL en el piso: el primer salto, y tiempo para que cada frase se lea en su momento.
-      const cw = 46, ch = 26, cx = (edge + home().x) / 2 - cw / 2, cy = h1.y + 4 - ch;
-      block = { x: cx, w: cw };
-      walls.push({ x: cx, y1: cy, y2: h1.y + 4 }, { x: cx + cw, y1: cy, y2: h1.y + 4 });
-      ledge(cx, cy, cw, { crate: true, floor: true });
-      things.push({ draw: () => {
-        ctx.strokeStyle = ACCENT; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.roundRect(cx, cy, cw, ch, 5); ctx.stroke();
-        text('NULL', cx + cw / 2, cy + 17, ACCENT, 'center');
-      } });
-      things.push({ draw: now => { if (P.on === title && P.x <= edge + 6) drawJump(edge + 12, h1.y - 44, now); } });
     } else {
       // En el celu el retrato queda arriba del título: se salta desde el título hacia la cara.
-      ledge(h1.x, h1.y + 4, h1.w, { hidden: true });
-      floor(h.b - 8);
+      ledge(-60, h1.y + 4, W + 120, { hidden: true, floor: true });
     }
-    // La cara: entrar ahí es la zambullida, que termina en la entrada del DAG.
-    if (fig) {
-      face = fig.b > h1.y
-        // Con el retrato al costado, todo lo que quede a la izquierda del título entra por la cara, salte por donde salte.
-        ? { jump: true, x1: -60, x2: fig.r - fig.w * 0.25 + 14, y1: h.y - 200, y2: fig.y + fig.h * 0.8, via: [fig.x + fig.w * 0.5, fig.y + fig.h * 0.38] }
-        // En el celu el contenido sigue abajo: al bajar del título empieza el viaje.
-        : { down: true, x1: -60, x2: W + 60, y1: h1.y + 30, y2: h.b + 40 };
+    // La entrada al juego es un portal MCP parado sobre el título, igual en la compu y en el celu: se camina
+    // hasta él y entra solo. El viaje pasa por la cara de Luca (las rayas se ondulan) y termina en el DAG.
+    {
+      const side = fig && fig.b > h1.y, gx = side ? fig.r - fig.w * 0.25 + 4 : h1.x + 2, gy = h1.y + 4, gw = 30;
+      face = { portal: true, mobile: !side, x1: gx, x2: gx + gw, y1: gy - 70, y2: gy + 8,
+        via: fig ? [fig.x + fig.w * 0.5, fig.y + fig.h * (side ? 0.38 : 0.45)] : null,
+        under: fig && !side ? [fig.x + fig.w * 0.12, fig.r - fig.w * 0.12] : null };
+      things.push({ draw: now => drawPortal(gx + gw / 2, gy, now) });
     }
 
     // El DAG arranca donde termina la zambullida, cruza la experiencia y los productos y desemboca en el bucket.
@@ -353,6 +350,18 @@
       text({ left: '←', right: '→', up: '↑', down: '↓' }[d], here.x + off[0], here.y + off[1], ACCENT, 'center', '14px "JetBrains Mono", monospace');
     });
   }
+  function drawPortal(cx, floorY, now) {
+    const cy = floorY - 27, rx = 13, ry = 26, t = now / 1000;
+    ctx.save();
+    const g = ctx.createRadialGradient(cx, cy, 2, cx, cy, ry);
+    g.addColorStop(0, 'rgba(94,234,212,.32)'); g.addColorStop(1, 'rgba(94,234,212,0)');
+    ctx.fillStyle = g; ctx.beginPath(); ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = ACCENT; ctx.lineWidth = 1.6; ctx.shadowColor = 'rgba(94,234,212,.8)'; ctx.shadowBlur = 10;
+    ctx.setLineDash([10, 6]); ctx.lineDashOffset = -t * 30; ctx.beginPath(); ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2); ctx.stroke(); ctx.setLineDash([]);
+    ctx.restore();
+    for (let k = 0; k < 3; k++) { const a = t * 2.2 + k * 2.1, tw = .5 + .5 * Math.sin(t * 5 + k); sparkle(cx + Math.cos(a) * rx * .55, cy + Math.sin(a) * ry * .6, 1.5 + tw * 1.8, .5 + .5 * tw, a); }
+    text('MCP', cx, floorY - 62, ACCENT, 'center', '600 10px "JetBrains Mono", monospace');
+  }
   function drawJump(x, y, now) { const k = Math.sin(now / 250) * 3; text('↑', x, y - k, ACCENT, 'center', '14px "JetBrains Mono", monospace'); }
   function drawGap(x, y, now) { const k = Math.sin(now / 250) * 3; text('↓', x, y + 4 + k, ACCENT, 'center', '14px "JetBrains Mono", monospace'); }
   function drawBucket(b, open, now, run, reads) {
@@ -418,19 +427,51 @@
   }
   // Pisos, cornisas y paredes son estrellas: casi invisibles de lejos y se encienden alrededor del muñequito
   // cuando camina, aterriza o se choca. Así el suelo existe sin ser una raya que corta la página.
+  // Pisos y paredes no se dibujan como rayas ni como puntos: aparecen como chispas. Donde el muñequito pisa, roza
+  // o aterriza, la línea suelta brillitos de cuatro puntas que crecen, titilan y se apagan subiendo un poco.
+  // Las cornisas que hay que ver de antes (no son piso) tienen además unas pocas estrellitas quietas que titilan.
+  let sparks = [], sparkAt = 0, wasGround = false;
+  function sparkle(x, y, r, a, spin) {
+    ctx.save(); ctx.globalAlpha = a; ctx.translate(x, y); ctx.rotate(spin);
+    ctx.shadowColor = 'rgba(94,234,212,.9)'; ctx.shadowBlur = r * 3; ctx.fillStyle = '#ecfeff';
+    ctx.beginPath(); ctx.moveTo(0, -r);
+    ctx.quadraticCurveTo(0, 0, r, 0); ctx.quadraticCurveTo(0, 0, 0, r); ctx.quadraticCurveTo(0, 0, -r, 0); ctx.quadraticCurveTo(0, 0, 0, -r);
+    ctx.fill(); ctx.restore();
+  }
+  function burst(x, y, n, spread) {
+    for (let k = 0; k < n; k++) sparks.push({ x: x + (Math.random() - .5) * spread, y: y - Math.random() * 3, vx: (Math.random() - .5) * 40, vy: -20 - Math.random() * 40, t: 0, life: .5 + Math.random() * .5, r: 2.5 + Math.random() * 3, spin: Math.random() });
+  }
   function starLine(x1, y1, x2, y2, base, now) {
-    const len = Math.hypot(x2 - x1, y2 - y1), n = Math.max(1, Math.round(len / 15)), cx = P.x + S / 2, cy = P.y + S / 2;
-    const a0 = ctx.globalAlpha;
-    for (let i = 0; i <= n; i++) {
-      const u = i / n, seed = Math.sin((x1 + i * 7.3) * 12.9898 + (y1 + i * 3.1) * 78.233) * 43758.5;
-      const j = (seed - Math.floor(seed)) - .5, x = x1 + (x2 - x1) * u + (y1 === y2 ? 0 : j * 2), y = y1 + (y2 - y1) * u + (y1 === y2 ? j * 2 : 0);
-      const near = Math.max(0, 1 - Math.hypot(x - cx, y - cy) / 150), glow = near * near * (3 - 2 * near);
-      const tw = .75 + .25 * Math.sin(now / 650 + i * 1.7), a = Math.max(base * tw, glow * .9);
-      if (a < .02) continue;
-      ctx.globalAlpha = a0 * a; ctx.fillStyle = glow > .25 ? ACCENT : '#cbd5e1';
-      ctx.beginPath(); ctx.arc(x, y, 1 + glow * 1.1, 0, Math.PI * 2); ctx.fill();
+    const fx = P.x + S / 2, fy = P.y + S, horiz = y1 === y2;
+    // El punto de la línea más cercano a los pies (piso) o al cuerpo (pared).
+    const px = horiz ? Math.max(x1, Math.min(x2, fx)) : x1, py = horiz ? y1 : Math.max(y1, Math.min(y2, P.y + S / 2));
+    const d = horiz ? Math.hypot(px - fx, py - fy) : Math.hypot(px - fx, py - (P.y + S / 2)) - S / 2;
+    const moving = Math.abs(P.vx || 0) > 20 || Math.abs(P.vy || 0) > 40;
+    if (d < 26 && mode === 'play' && Math.random() < (moving ? .55 : .12)) {
+      const spread = horiz ? 26 : 18;
+      sparks.push({ x: horiz ? px + (Math.random() - .5) * spread : px + (Math.random() - .5) * 4, y: horiz ? py - Math.random() * 2 : py + (Math.random() - .5) * spread,
+        vx: (Math.random() - .5) * 18, vy: -10 - Math.random() * 22, t: 0, life: .55 + Math.random() * .5, r: 2 + Math.random() * 2.6, spin: Math.random() });
     }
-    ctx.globalAlpha = a0;
+    if (!base) return;
+    // Cornisas: estrellitas quietas, espaciadas, que titilan cada una a su ritmo.
+    const len = Math.hypot(x2 - x1, y2 - y1), n = Math.max(1, Math.round(len / 34));
+    for (let k = 0; k <= n; k++) {
+      const u = k / n, tw = .5 + .5 * Math.sin(now / 520 + k * 2.3 + x1);
+      sparkle(x1 + (x2 - x1) * u, y1 + (y2 - y1) * u, 1.4 + tw * 1.6, ctx.globalAlpha * base * (.45 + .55 * tw), k);
+    }
+  }
+  function drawSparks(now) {
+    const dt = Math.min(.05, (now - (sparkAt || now)) / 1000); sparkAt = now;
+    // Al aterrizar, una lluvia de brillitos bajo los pies.
+    if (P.ground && !wasGround && mode === 'play') burst(P.x + S / 2, P.y + S, 9, S);
+    wasGround = !!P.ground;
+    sparks = sparks.filter(p => (p.t += dt) < p.life);
+    if (sparks.length > 140) sparks.splice(0, sparks.length - 140);
+    for (const p of sparks) {
+      p.x += p.vx * dt; p.y += p.vy * dt; p.vy *= .96;
+      const k = p.t / p.life, grow = Math.sin(Math.PI * k);
+      sparkle(p.x, p.y, p.r * (.4 + .6 * grow), grow * (.75 + .25 * Math.sin(now / 60 + p.spin * 9)), p.spin + k * 1.2);
+    }
   }
   function drawPlat(p, now) {
     if (p.crate) return;
@@ -444,7 +485,7 @@
       if (p.label && !p.built) snowflake(p.x + p.w - 18, p.y + 16, 5, p.t ? ACCENT : MUTED);
       return;
     }
-    starLine(p.x, p.y, p.x + p.w, p.y, p.floor ? .07 : p.solid ? .4 : .2, now);
+    starLine(p.x, p.y, p.x + p.w, p.y, p.floor ? 0 : p.solid ? .9 : .6, now);
   }
   function drawPk(x, y, now) {
     if (P.form === 'dot') { ctx.shadowColor = ACCENT; ctx.shadowBlur = 14; ctx.fillStyle = ACCENT; ctx.beginPath(); ctx.arc(x + S / 2, y + S / 2, 6, 0, Math.PI * 2); ctx.fill(); ctx.shadowBlur = 0; return; }
@@ -478,7 +519,7 @@
       ctx.save();
       if (unfolded.length) { ctx.beginPath(); ctx.rect(0, top - 40, W, Math.min(...unfolded) + 40 - top); ctx.clip(); }
       for (const t of level.things) t.draw(now);
-      for (const w of level.walls) { const y1 = Math.max(w.y1, top - 20), y2 = Math.min(w.y2, top + H + 20); if (y2 > y1) starLine(w.x, y1, w.x, y2, .05, now); }
+      for (const w of level.walls) { const y1 = Math.max(w.y1, top - 20), y2 = Math.min(w.y2, top + H + 20); if (y2 > y1) starLine(w.x, y1, w.x, y2, 0, now); }
       // Los bordes de la pantalla solo aparecen cuando se los toca.
       for (const x of [level.bounds.l, level.bounds.r]) starLine(x, top, x, top + H, 0, now);
       // Lo que queda lejos del muñequito se apaga, para que el texto de la página se lea tranquilo.
@@ -491,6 +532,7 @@
       ctx.restore();
     } else if (level && P.on && !P.on.floor && !P.on.hidden && !P.on.crate) drawPlat(P.on, now);
     // La estela del muñequito cuando atraviesa el retrato.
+    if (level) drawSparks(now);
     P.trail.forEach((t, k) => { ctx.globalAlpha = (k / P.trail.length) * 0.35; ctx.fillStyle = ACCENT; ctx.beginPath(); ctx.roundRect(t[0] + 4, t[1] + 4, S - 8, S - 8, 5); ctx.fill(); });
     ctx.globalAlpha = 1;
     // Esperando, el muñequito se asoma por detrás del título, listo para arrancar. Al terminar queda solo el de la nota.
@@ -527,6 +569,19 @@
       ctx.lineWidth = 2; ctx.lineCap = 'round';
       ctx.strokeStyle = 'rgba(148,163,184,.25)'; ctx.beginPath(); ctx.arc(P.x + S / 2, P.y + S / 2, S * 0.95, 0, Math.PI * 2); ctx.stroke();
       ctx.strokeStyle = ACCENT; ctx.beginPath(); ctx.arc(P.x + S / 2, P.y + S / 2, S * 0.95, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * k); ctx.stroke();
+    }
+    if (tip && now >= tip.from && Object.values(keys).some(Boolean)) tip = null;
+    if (tip && now >= tip.from && mode === 'play' && !P.rail && !P.dive) {
+      const k = Math.min(1, (now - tip.from) / 260), bob = Math.sin(now / 260) * 2.5, n = tip.keys.length, w = 22, gap = 6;
+      const tw = n * w + (n - 1) * gap, right = P.x + S + 12 + tw < W - 8, x0 = right ? P.x + S + 12 : P.x - 12 - tw, y0 = P.y + S / 2 - w / 2;
+      ctx.save(); ctx.globalAlpha = k; ctx.font = '600 13px "JetBrains Mono", monospace'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      tip.keys.forEach((key, i) => {
+        const dx = key === '←' ? -bob : key === '→' ? bob : 0, dy = key === '↑' ? -bob : key === '↓' ? bob : 0, x = x0 + i * (w + gap) + dx, y = y0 + dy;
+        ctx.fillStyle = 'rgba(11,17,32,.85)'; ctx.strokeStyle = 'rgba(94,234,212,.7)'; ctx.lineWidth = 1.2;
+        ctx.beginPath(); ctx.roundRect(x, y, w, w, 6); ctx.fill(); ctx.stroke();
+        ctx.fillStyle = ACCENT; ctx.fillText(key, x + w / 2, y + w / 2 + 1);
+      });
+      ctx.restore();
     }
     labels.forEach((l, k) => {
       const a = Math.min(1, (l.until - now) / FADE), rise = Math.max(0, Math.min(1, (now - l.from) / POP)), pop = 1 - (1 - rise) ** 3, half = ctx.measureText(l.text).width / 2 + 16;
@@ -655,15 +710,8 @@
     const text = `${go ? `${ARROW[dirOf(n, go.first)]} ` : ''}${left} ${left > 1 ? 'cards' : 'card'} left back there.`;
     if (!labels.some(l => l.text === text)) say(text, HOLD);
   }
-  // En la portada habla poco: al frenar en el NULL y al pasarlo. Lo del borde queda para quien se quede quieto ahí.
-  const faceLine = f => {
-    const b = level.block;
-    if (f.down) return "↑ Who's that handsome guy? My creator?";
-    if (!b || P.x + S / 2 < b.x) return "← Who's that handsome guy? My creator?";
-    // Solo pide saltar si el NULL todavía está adelante: parado encima o ya del otro lado, no dice nada.
-    const ahead = !b.cleared && P.on !== b && P.x >= b.x + b.w - 2;
-    return ahead && P.x - b.x - b.w < 70 ? '↑ A NULL in the way. Hop over it?' : null;
-  };
+  // En la portada dice una sola cosa antes de entrar: al acercarse al portal, que está junto a la cara.
+  const faceLine = f => Math.abs(P.x + S / 2 - (f.x1 + f.x2) / 2) < 150 ? "Who's that handsome guy? My creator?" : null;
   function request() {
     if (P.dive || P.ride || endAt) return null;
     if (P.rail) {
@@ -675,8 +723,7 @@
     }
     if (!P.ground || P.form === 'file' || (P.on && P.on.kind === 'model' && !P.on.built)) return null;
     const f = level.face, mc = level.mc, t = level.table;
-    if (f && f.down && P.y < level.entry.y) return '↓ The data must be down there.';
-    if (f && P.y < level.entry.y) return !f.jump || P.x <= f.x2 - 8 ? '↑ Feels like we should jump here.' : faceLine(f);
+    if (f && P.y < level.entry.y) return `${toward((f.x1 + f.x2) / 2)} A portal! Where does it go?`;
     return mc.state.checked ? `${toward(t.x)} Almost there, I can feel it.` : `${toward(mc.x + mc.w / 2)} The exit's over here.`;
   }
   let idleSince = 0;
@@ -767,9 +814,6 @@
     }
     const f = level.face;
     // Apenas se va la misión, el muñequito ya mira la cara: no espera a que el jugador se quede quieto.
-    // Una vez que pasó el NULL, la frase de saltarlo se va y no vuelve, aunque regrese por el mismo lado.
-    const nb = level.block;
-    if (nb && !nb.cleared && P.x + S < nb.x) { nb.cleared = true; labels.forEach(l => { if (l.text.includes('NULL')) l.until = Math.min(l.until, now); }); }
     if (f && control && P.ground && P.y < level.entry.y && now >= missionUntil) { const t = faceLine(f); if (t && !said.has(t)) { said.add(t); say(t, HOLD); } } // sin frenarlo: decirlo no lo deja quieto
     if (f && control && (!P.ground || !f.jump) && P.x + S / 2 > f.x1 && P.x + S / 2 < f.x2 && P.y + S / 2 > f.y1 && P.y + S / 2 < f.y2) {
       P.dive = divePath(f.via ? [f.via[0] - S / 2, f.via[1] - S / 2] : null, [level.entry.x - S / 2, level.entry.y - S / 2]); P.on = null; P.ground = false;
@@ -907,7 +951,7 @@
     try { sessionStorage.removeItem(SAVE); } catch (e) {}
     document.querySelectorAll(TASKS).forEach(el => el.classList.remove('read', 'lit'));
     won = false; endAt = 0; lastSaid = null; said.clear(); P.fast = false; document.body.classList.remove('ran'); if (note) note.hidden = true; labels = []; P.ride = null; P.rail = null; P.dive = null; P.form = 'pk'; P.vy = 0; P.on = null;
-    keys = {}; mode = 'wait'; paused = false;
+    keys = {}; mode = 'wait'; paused = false; tip = null;
     document.body.classList.remove('playing'); pad.hidden = true;
     document.documentElement.style.scrollBehavior = '';
     rebuild();
@@ -940,8 +984,8 @@
     intro = null; P.trail = []; if (window.__portraitPoke) window.__portraitPoke(null);
     const spot = home(); P.x = spot.x; P.y = spot.y; P.vy = 0; mode = 'idle';
     // Apenas aterriza ya se juega: cuenta la misión y muestra con qué se mueve.
-    // Unos segundos sin moverse para que la misión se lea: al salir ya cede el lugar a lo que dice frente al NULL.
-    start(); P.squash = 1; missionUntil = performance.now() + 9000; hold(2500);
+    // Unos segundos sin moverse para que la misión se lea: después aparecen las teclas para moverse.
+    start(); P.squash = 1; missionUntil = performance.now() + 3600; hold(2500); tip = { keys: ['←', '→'], from: performance.now() + 3600 };
     if (touch) { pad.classList.remove('pulse'); void pad.offsetWidth; pad.classList.add('pulse'); }
   }
   // Abrir el mail (o apretar una flecha mientras espera) hace la entrada; después solo retoma el juego.
@@ -949,22 +993,30 @@
 
   // La entrada: sale disparado del sobre, cruza el retrato de punta a punta moviendo las rayas y cae sobre
   // el título. El camino es una curva suave que pasa por unos puntos fijos (Catmull-Rom).
-  function along(points, t) {
-    const n = points.length - 1, i = Math.min(n - 1, Math.floor(t * n)), u = t * n - i;
+  function along(points, t, lens) {
+    const n = points.length - 1;
+    if (lens) { const total = lens[n], d = t * total; let j = 0; while (j < n - 1 && lens[j + 1] < d) j++; t = (j + (d - lens[j]) / ((lens[j + 1] - lens[j]) || 1)) / n; }
+    const i = Math.min(n - 1, Math.floor(t * n)), u = t * n - i;
     const p0 = points[Math.max(0, i - 1)], p1 = points[i], p2 = points[i + 1], p3 = points[Math.min(n, i + 2)];
     const f = (a, b, c, d) => 0.5 * (2 * b + (c - a) * u + (2 * a - 5 * b + 4 * c - d) * u * u + (3 * b - a - 3 * c + d) * u * u * u);
     return [f(p0[0], p1[0], p2[0], p3[0]), f(p0[1], p1[1], p2[1], p3[1])];
   }
   function runIntro(now) {
     if (now < intro.t0) return;
-    const k = Math.min(1, (now - intro.t0) / intro.ms), e = 1 - Math.pow(1 - k, 1.6);
-    const [x, y] = along(intro.points, e);
+    const k = Math.min(1, (now - intro.t0) / intro.ms), e = intro.lens ? k * k * (3 - 2 * k) : 1 - Math.pow(1 - k, 1.6);
+    const [x, y] = along(intro.points, e, intro.lens);
     const vx = x - P.x, vy = y - P.y;
     P.x = x; P.y = y; P.face = vx >= 0 ? 1 : -1;
     P.trail.push([x, y]); if (P.trail.length > 10) P.trail.shift();
     // Si arrancó lejos de la cara, la página sube con él (nunca baja) recién cuando está por salirse por arriba:
     // el vuelo empieza en el acto, sin centrar antes.
-    if (intro.follow) { const want = Math.max(0, y - innerHeight * .18); if (want < scrollY - .5) scrollTo({ top: want, behavior: 'instant' }); }
+    if (intro.follow) {
+      const want = Math.max(0, Math.min(scrollY, y - innerHeight * .35)), next = scrollY + (want - scrollY) * .3;
+      document.documentElement.style.scrollBehavior = 'auto';
+      if (next < scrollY - .5) scrollTo(0, Math.max(0, next));
+      // Nunca queda fuera de cuadro, ni en el primer cuadro del vuelo.
+      if (y - scrollY < 60) scrollTo(0, Math.max(0, y - 60));
+    }
     if (window.__portraitPoke && portrait) {
       const r = portrait.getBoundingClientRect(), sx = x + S / 2, sy = y + S / 2 - scrollY;
       if (sx > r.left - 20 && sx < r.right + 20 && sy > r.top - 20 && sy < r.bottom + 20) window.__portraitPoke(sx, sy, vx * 2.2, vy * 2.2);
@@ -985,7 +1037,9 @@
     const r = box(portrait), out = [ws.x, ws.y];
     P.x = out[0]; P.y = out[1];
     const points = [out, [out[0] - 20, out[1] - 160], [r.r - r.w * 0.12, r.y + r.h * 0.5], [r.x + r.w * 0.15, r.y + r.h * 0.42], [r.x + r.w * 0.5, r.y + r.h * 0.02], [spot.x, spot.y]];
-    intro = { t0: performance.now(), ms: away ? Math.min(3600, 2100 + (out[1] - r.y) * .5) : 2100, points, follow: away };
+    // Desde lejos: el recorrido se mide y cada tramo dura según su largo, a una velocidad que la vista puede seguir.
+    const lens = away ? points.reduce((acc, p, k) => (k ? [...acc, acc[k - 1] + Math.hypot(p[0] - points[k - 1][0], p[1] - points[k - 1][1])] : [0]), []) : null;
+    intro = { t0: performance.now(), ms: away ? Math.min(5200, 1600 + lens[lens.length - 1] / 1.5) : 2100, points, lens, follow: away };
     mode = 'intro';
   }
 
@@ -1084,7 +1138,7 @@
   document.addEventListener('visibilitychange', relayout);
 
   // Para probarlo desde afuera.
-  window.__pk = { level: () => level, activate, state: () => ({ dive: !!P.dive, mode, x: Math.round(P.x), y: Math.round(P.y), form: P.form, ride: !!P.ride, won, on: P.on && (P.on.kind || (P.on.floor ? 'floor' : 'ledge')), scrollY }), start, stop, keys: k => Object.assign(keys, k), place: (x, y) => { P.x = x; P.y = y; P.vy = 0; }, sim: ms => { let t = performance.now(); for (let k = 0; k < ms / 16; k++) { t += 16; step(0.016, t, mode === 'play'); if (mode === 'play') follow(0.016); } return window.__pk.state(); } };
+  window.__pk = { intro: () => intro && { ms: intro.ms, follow: intro.follow, points: intro.points.map(p => p.map(Math.round)) }, drift: () => ({ ...drift }),  level: () => level, activate, state: () => ({ dive: !!P.dive, mode, x: Math.round(P.x), y: Math.round(P.y), form: P.form, ride: !!P.ride, won, on: P.on && (P.on.kind || (P.on.floor ? 'floor' : 'ledge')), scrollY }), start, stop, keys: k => Object.assign(keys, k), place: (x, y) => { P.x = x; P.y = y; P.vy = 0; }, sim: ms => { let t = performance.now(); for (let k = 0; k < ms / 16; k++) { t += 16; step(0.016, t, mode === 'play'); if (mode === 'play') follow(0.016); } return window.__pk.state(); } };
 
   relayout();
   if (document.readyState === 'complete') restore(); else addEventListener('load', restore);

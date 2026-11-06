@@ -11,7 +11,8 @@
   const press = async (k, ms) => { ev('keydown', k); pk.sim(ms); await sleep(150); ev('keyup', k); pk.sim(100); await sleep(100); };
   const tasks = () => document.querySelectorAll('#experience .card.big, #projects .card, #more .fold');
   try { sessionStorage.clear(); } catch {}
-  pk.start(); pk.sim(3500); await sleep(300);
+  // Arranca parado en el título, a la derecha del portal, como después del vuelo de entrada.
+  pk.start(); { const f = pk.level().face; pk.place(f.x2 + 60, f.y2 - 8 - 24); } pk.sim(3500); await sleep(300);
   // En el DAG el camino se arma en orden: se va siempre hacia el vecino que viene después. Fuera del DAG
   // (bucket, Snowflake, la tabla) se prueban las flechas en ronda.
   const nodes = () => pk.level().nodes, here = () => { const st = pk.state(); return nodes().find(n => Math.hypot(n.x - (st.x + 12), n.y - (st.y + 12)) < 4); };
