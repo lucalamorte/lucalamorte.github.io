@@ -862,3 +862,9 @@ html.is-scrolling .nav:not(.scrolled) { -webkit-backdrop-filter: none; backdrop-
    un leve desplazamiento, que la placa de video mueve sin costo. */
 html.js .reveal .card, html.js .reveal .fold { filter: none; transition: opacity .8s var(--ease), transform .8s var(--ease); will-change: opacity, transform; }
 html.js .reveal.in .card, html.js .reveal.in .fold { will-change: auto; }
+/* La disolución de los hombros pasa a la capa grande del dibujo, medida para que el retrato se funda igual que antes
+   en su base y sus costados. Lo que el mouse empuja hacia afuera se desvanece de a poco, nunca contra un borde. */
+.portrait .portrait-ink {
+  -webkit-mask-image: linear-gradient(180deg, #000 68%, transparent 81%), linear-gradient(90deg, transparent 0, #000 26%, #000 74%, transparent 100%);
+  mask-image: linear-gradient(180deg, #000 68%, transparent 81%), linear-gradient(90deg, transparent 0, #000 26%, #000 74%, transparent 100%);
+  -webkit-mask-composite: source-in; mask-composite: intersect; }
