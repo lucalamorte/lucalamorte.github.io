@@ -147,11 +147,12 @@
         // y se baja por ese mismo costado a la fila siguiente, que se recorre al revés. No hay desvíos que saltear.
         const right = r % 2 === 1, sx = right ? rx : mx;
         const b = node(sx, gy, { frame, bus: r === 0 }); if (bus) link(bus, b); first = first || b;
-        let prev = b;
-        row.sort((u, v) => right ? v.c.x - u.c.x : u.c.x - v.c.x).forEach(({ el, c }) => {
-          const t = node(c.x + c.w / 2, gy, { task: el, need, t: 0, done: el.classList.contains('read'), frame });
-          link(prev, t); prev = t; tasks.push(t);
-        });
+        // Una sola parada por fila, en el medio: se leen todas sus tarjetas juntas (en el celu ya hay una por fila).
+        row.sort((u, v) => u.c.x - v.c.x);
+        const els = row.map(q => q.el), mid = (row[0].c.x + row[row.length - 1].c.r) / 2;
+        const t = node(mid, gy, { task: els[0], mates: els.slice(1), need: need * (1 + (els.length - 1) * .6), t: 0, done: els.every(el => el.classList.contains('read')), frame });
+        link(b, t); tasks.push(t);
+        let prev = t;
         // Sale por el otro costado: desde ahí baja a la fila siguiente.
         const out = node(right ? mx : rx, gy, { frame }); link(prev, out); bus = out;
       });
@@ -543,6 +544,8 @@
   // compuerta abierta sigue de largo; en una tarea se queda hasta que corre.
   const RAIL = 560;
   const onNode = n => { P.x = n.x - S / 2; P.y = n.y - S / 2; };
+  // Las tarjetas de una parada: una sola, o todas las de la fila cuando la parada las junta.
+  const cards = n => [n.task, ...(n.mates || [])];
   function railStep(dt, control, now) {
     const r = P.rail;
     // Primero se centra lo que hay que leer: hasta que la cámara llega, no arranca el viaje ni corre la tarea.
@@ -571,10 +574,10 @@
     if (n.fold && !n.done) { n.done = true; n.task.classList.add('read'); once(n.task.dataset.say || "ooh, reading time. ↓ when you're ready", HOLD); }
     if (n.task && !n.done) {
       if (!settled(n)) return;
-      n.task.classList.add('lit');
+      cards(n).forEach(el => el.classList.add('lit'));
       if (now < lockUntil) { n.t = n.need; return; }
       n.t += dt;
-      if (n.t >= n.need) { n.done = true; n.task.classList.add('read'); n.task.classList.remove('lit'); }
+      if (n.t >= n.need) { n.done = true; cards(n).forEach(el => { el.classList.add('read'); el.classList.remove('lit'); }); }
       return;
     }
     if (!control) return;
@@ -586,7 +589,7 @@
     const m = want && n.links.find(q => dirOf(n, q) === want);
     if (!m) return;
     if (n.gate && m.y > n.y && !gateOpen(n)) { n.nudge = now; gateHint(n); return; }
-    if (n.task) n.task.classList.remove('lit');
+    if (n.task) cards(n).forEach(el => el.classList.remove('lit'));
     // Entre desplegables es un acordeón: uno se pliega mientras el otro se abre, en los dos sentidos, sin que la
     // página quede nunca con los dos cerrados. La cámara espera quieta: si persiguiera las alturas a mitad de la
     // animación, saltaría.
