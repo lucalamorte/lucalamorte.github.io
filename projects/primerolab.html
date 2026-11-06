@@ -80,7 +80,7 @@
   <p>Flashcard generation used to cut every document at 6,000 characters and quietly drop the rest. For an 80-page PDF, about 95% of the material never reached the model, and nothing on screen said so. The study assistant had a similar problem. It ran a keyword search on every message and stuffed whatever matched into the prompt, even when the question had nothing to do with the material.</p>
 
   <h2>Retrieval over the whole document</h2>
-  <p>A bigger cut would only move the limit. So each document is split into overlapping chunks, every chunk is stored with its embedding in Postgres with pgvector, and only the passages closest to the request are retrieved. Now a long document does not fight the context window.</p>
+  <p>A bigger cut would only move the limit. So each document is split into overlapping chunks, every chunk is stored with its embedding in Postgres with pgvector, and only the passages closest to the request are retrieved.</p>
   <ul>
     <li>Chunks of about 1,200 characters with 150 of overlap, so an idea split at a boundary is not lost.</li>
     <li>An HNSW index for similarity search, with a documented fallback when the extension version does not support it.</li>
@@ -103,20 +103,19 @@
   <div class="legend"><span><i class="m"></i>language model</span><span><i class="c"></i>code</span><span><i></i>user</span></div>
 
   <h3>Security lives in the database</h3>
-  <p>Every tool queries through the request's own Supabase client, the one carrying the signed-in user's session, so row-level security decides what comes back. The model never supplies a user id and there is no parameter through which it could. A model that asked for someone else's decks would get its own, because that is the only query the database will answer. Tool arguments are clamped on the way in, since they are generated text and not validated input.</p>
+  <p>Every tool queries through the request's own Supabase client, the one carrying the signed-in user's session, so row-level security decides what comes back. The model never supplies a user id, and there is no parameter through which it could. Tool arguments are clamped on the way in, since they are generated text and not validated input.</p>
 
   <h3>Hard limits</h3>
   <ul>
     <li><strong>4 tool rounds at most,</strong> so a runaway loop cannot run up the model bill.</li>
     <li><strong>8 seconds per tool</strong> and <strong>6,000 characters per tool result</strong>, so one slow or huge answer cannot stall the conversation.</li>
-    <li>The loop mechanics (iteration guard, streamed tool-call fragments, argument clamping) are kept as pure functions so the parts that break silently can be tested.</li>
   </ul>
 
   <h2>Two providers, one call</h2>
-  <p>Gemini answers when the deployment is configured for it, and OpenAI answers otherwise or when Gemini fails. Every reply records which provider actually answered and why a fallback happened: a silent fallback looks exactly like a provider that was never enabled. Falling back instead of failing is what makes it safe to try a new model on production traffic.</p>
+  <p>Gemini answers when the deployment is configured for it, and OpenAI answers otherwise or when Gemini fails. Every reply records which provider answered and why, because a silent fallback looks exactly like a provider that was never enabled.</p>
 
   <h2>Spaced repetition</h2>
-  <p>Reviews are scheduled with SM-2, kept as pure functions with no database or framework dependency so the rules can be tested directly. SM-2 was chosen over FSRS on purpose: FSRS retains better but needs a model trained on review history that does not exist yet, and the history SM-2 produces is what would make that migration possible later.</p>
+  <p>Reviews are scheduled with SM-2, chosen over FSRS on purpose: FSRS retains better but needs a model trained on review history that does not exist yet. SM-2 produces that history.</p>
 
 
   <p class="note">Built and run by one engineer: product, data model, AI features, security and deploys.</p>
