@@ -36,7 +36,7 @@
   pad.innerHTML = '<button type="button" data-k="left" aria-label="Left">◀</button><button type="button" data-k="right" aria-label="Right">▶</button><button type="button" data-k="down" class="down" aria-label="Go down">▼</button><button type="button" data-k="jump" class="jump" aria-label="Jump">▲</button><button type="button" class="x" aria-label="Stop playing">✕</button><button type="button" class="restart re" aria-label="Restart the game">↺</button>';
   document.body.append(canvas, hit, hint, mission, help, pad);
 
-  let camFree = false, endAt = 0, fade = 1, mode = 'wait', missionUntil = 0, lockFrom = 0, lockUntil = 0, swapUntil = 0, swapping = null, W = 0, H = 0, level = null, keys = {}, last = 0, labels = [], expected = -1, intro = null, won = false;
+  let camFree = false, endAt = 0, fade = 1, mode = 'wait', missionUntil = 0, lockFrom = 0, lockUntil = 0, swapUntil = 0, swapping = null, queued = null, W = 0, H = 0, level = null, keys = {}, last = 0, labels = [], expected = -1, intro = null, won = false;
   const P = { x: 0, y: 0, vx: 0, vy: 0, ground: false, on: null, face: 1, squash: 0, form: 'pk', ride: null, dropUntil: 0, trail: [] };
 
   const box = el => { const r = el.getBoundingClientRect(); return { x: r.left, y: r.top + scrollY, w: r.width, h: r.height, r: r.right, b: r.bottom + scrollY }; };
@@ -105,6 +105,12 @@
       [...byRow.values()].forEach((row, r) => {
         const gy = row[0].c.y - 16;
         frame = [r ? gy - 20 : box(section.firstElementChild).y, Math.max(...row.map(q => q.c.b))];
+        // En el celu va una tarjeta por fila: la tarea queda sobre el bus y ↓ pasa de una tarjeta a la siguiente.
+        if (W < 760 && row.length === 1) {
+          const { el } = row[0], t = node(mx, gy, { task: el, need, t: 0, done: el.classList.contains('read'), frame, bus: true });
+          if (bus) link(bus, t); bus = t; first = first || t; tasks.push(t);
+          return;
+        }
         const b = node(mx, gy, { frame, bus: true }); if (bus) link(bus, b); bus = b; first = first || b;
         let prev = b;
         row.sort((u, v) => u.c.x - v.c.x).forEach(({ el, c }) => {
@@ -139,7 +145,7 @@
       things.push({ draw: now => { if (P.on === title && P.x <= edge + 6) drawJump(edge + 12, h1.y - 44, now); } });
     } else {
       // En el celu el retrato queda arriba del título: se salta desde el título hacia la cara.
-      ledge(h1.x, h1.y + 4, h1.w, { floor: true });
+      ledge(h1.x, h1.y + 4, h1.w, { hidden: true });
       floor(h.b - 8);
     }
     // La cara: entrar ahí es la zambullida, que termina en la entrada del DAG.
@@ -147,7 +153,8 @@
       face = fig.b > h1.y
         // Con el retrato al costado, todo lo que quede a la izquierda del título entra por la cara, salte por donde salte.
         ? { jump: true, x1: -60, x2: fig.r - fig.w * 0.25 + 14, y1: h.y - 200, y2: fig.y + fig.h * 0.8, via: [fig.x + fig.w * 0.5, fig.y + fig.h * 0.38] }
-        : { x1: fig.x + fig.w * 0.3, x2: fig.x + fig.w * 0.7, y1: fig.y + fig.h * 0.08, y2: fig.y + fig.h * 0.74 };
+        // En el celu el contenido sigue abajo: al bajar del título empieza el viaje.
+        : { down: true, x1: -60, x2: W + 60, y1: h1.y + 30, y2: h.b + 40 };
     }
 
     // El DAG arranca donde termina la zambullida, cruza la experiencia y los productos y desemboca en el bucket.
@@ -522,8 +529,10 @@
     }
     if (!control) return;
     // Al frenar en un nodo hay que soltar la tecla para seguir: un toque nunca cruza dos tramos.
-    if (r.fresh) { if (keys.left || keys.right || keys.jump || keys.down) return; r.fresh = false; }
-    const want = keys.left ? 'left' : keys.right ? 'right' : keys.jump ? 'up' : keys.down ? 'down' : null;
+    if (r.fresh && !queued) { if (keys.left || keys.right || keys.jump || keys.down) return; r.fresh = false; }
+    r.fresh = false;
+    const want = keys.left ? 'left' : keys.right ? 'right' : keys.jump ? 'up' : keys.down ? 'down' : queued;
+    queued = null;
     const m = want && n.links.find(q => dirOf(n, q) === want);
     if (!m) return;
     if (n.gate && m.y > n.y && !gateOpen(n)) { n.nudge = now; gateHint(n); return; }
@@ -574,6 +583,7 @@
   // En la portada habla poco: al frenar en el NULL y al pasarlo. Lo del borde queda para quien se quede quieto ahí.
   const faceLine = f => {
     const b = level.block;
+    if (f.down) return "↑ who's that handsome guy? my creator?";
     if (!b || P.x + S / 2 < b.x) return "← who's that handsome guy? my creator?";
     return P.x - b.x - b.w < 70 ? '↑ a NULL in the way. hop over it?' : null;
   };
@@ -588,6 +598,7 @@
     }
     if (!P.ground || P.form === 'file' || (P.on && P.on.kind === 'model' && !P.on.built)) return null;
     const f = level.face, mc = level.mc, t = level.table;
+    if (f && f.down && P.y < level.entry.y) return '↓ the data must be down there';
     if (f && P.y < level.entry.y) return !f.jump || P.x <= f.x2 - 8 ? '↑ feels like we should jump here' : faceLine(f);
     return mc.state.checked ? `${toward(t.x)} almost there, i can feel it` : `${toward(mc.x + mc.w / 2)} the exit's over here`;
   }
@@ -643,11 +654,13 @@
       if (prevX >= w.x && P.x < w.x) P.x = w.x;
     }
     P.x = Math.max(level.bounds.l, Math.min(level.bounds.r - S, P.x));
-    if (control && keys.jump && P.ground) { P.vy = -JUMP; P.ground = false; P.squash = -0.7; }
-    if (control && keys.down && P.ground && P.on && !P.on.floor) {
+    // Un salto o una bajada tocados mientras hablaba se cumplen apenas puede moverse.
+    if (control && (keys.jump || queued === 'up') && P.ground) { P.vy = -JUMP; P.ground = false; P.squash = -0.7; }
+    if (control && (keys.down || queued === 'down') && P.ground && P.on && !P.on.floor) {
       const p = P.on.main || P.on, done = p.ready ? p.ready() : p.need === undefined || p.t >= p.need;
       if (done) { P.dropUntil = now + 260; P.dropFrom = P.on; P.ground = false; keys.down = false; }
     }
+    if (control) queued = null;
     const prevBottom = P.y + S;
     P.vy = Math.min(P.vy + GRAVITY * dt, 560);
     P.y += P.vy * dt;
@@ -708,7 +721,10 @@
     const open = n && n.fold && n.task.open && box(n.task);
     if (!n || !(open || n.frame)) return null;
     const [y1, y2] = open ? [open.y, open.b] : n.frame, nav = 64, max = document.documentElement.scrollHeight - H;
-    return Math.max(0, Math.min(max, y2 - y1 + 40 < H - nav ? (y1 + y2) / 2 - (H + nav) / 2 : y1 - nav - 24));
+    const t = y2 - y1 + 40 < H - nav ? (y1 + y2) / 2 - (H + nav) / 2 : y1 - nav - 24;
+    // El cuadro manda, pero el nodo queda siempre a la vista, con lugar arriba para los globos y abajo para los botones.
+    const room = Math.max(nav + 90, Math.min(H * 0.3, 190)), floorRoom = W < 760 ? 150 : 90;
+    return Math.max(0, Math.min(max, Math.min(n.y - room, Math.max(n.y - (H - floorRoom), t))));
   }
   function follow(dt) {
     // Si se scrolleó a mano, la cámara no pelea: vuelve recién con la próxima tecla.
@@ -905,6 +921,8 @@
   }
 
   // ---------- controles ----------
+  // Un toque guardado mientras el muñequito habla: así ninguna tecla se pierde.
+  const DIR = { left: 'left', right: 'right', jump: 'up', down: 'down' };
   const KEY = { ArrowLeft: 'left', a: 'left', ArrowRight: 'right', d: 'right', ArrowUp: 'jump', w: 'jump', ' ': 'jump', ArrowDown: 'down', s: 'down' };
   addEventListener('keydown', event => {
     // Con un visor abierto (las capturas en grande), las teclas son del visor.
@@ -913,7 +931,7 @@
     if (mode === 'intro') { if (k) event.preventDefault(); return; }
     if (mode === 'play') {
       if (event.key === 'Escape') { stop(); return; }
-      if (k) { if (!event.repeat) letGo(); keys[k] = true; camFree = false; event.preventDefault(); missionUntil = Math.min(missionUntil, Math.max(performance.now(), lockUntil) + 800); }
+      if (k) { if (!event.repeat) { letGo(); queued = DIR[k] || null; } keys[k] = true; camFree = false; event.preventDefault(); missionUntil = Math.min(missionUntil, Math.max(performance.now(), lockUntil) + 800); }
       else if (['PageDown', 'PageUp', 'Home', 'End'].includes(event.key)) camFree = true;
       return;
     }
@@ -936,7 +954,7 @@
   addEventListener('scroll', () => { if (mode === 'play' && Math.abs(scrollY - expected) > 40) look(); }, { passive: true });
   pad.querySelectorAll('[data-k]').forEach(button => {
     const k = button.dataset.k;
-    const on = event => { event.preventDefault(); letGo(); keys[k] = true; camFree = false; missionUntil = Math.min(missionUntil, Math.max(performance.now(), lockUntil) + 800); button.setPointerCapture?.(event.pointerId); };
+    const on = event => { event.preventDefault(); letGo(); queued = DIR[k] || null; keys[k] = true; camFree = false; missionUntil = Math.min(missionUntil, Math.max(performance.now(), lockUntil) + 800); button.setPointerCapture?.(event.pointerId); };
     const off = () => { keys[k] = false; };
     button.addEventListener('pointerdown', on);
     ['pointerup', 'pointercancel', 'lostpointercapture'].forEach(type => button.addEventListener(type, off));
@@ -969,5 +987,7 @@
 
   relayout();
   if (document.readyState === 'complete') restore(); else addEventListener('load', restore);
+  // La prueba automática (selftest.ps1) entra con #selftest y recorre el juego sola.
+  if (location.hash === '#selftest') { const t = document.createElement('script'); t.src = 'selftest.js'; document.body.append(t); }
   last = performance.now(); requestAnimationFrame(frame);
 })();

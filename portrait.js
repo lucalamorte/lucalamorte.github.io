@@ -50,7 +50,15 @@
   }
   canvas.addEventListener('pointermove', track);
   canvas.addEventListener('pointerdown', track);
-  canvas.addEventListener('pointerleave', () => { pointer.active = false; pointer.vx = pointer.vy = 0; });
+  // Con el dedo el gesto termina enseguida: las rayas siguen reaccionando un instante, para que el toque se vea.
+  const release = event => {
+    const off = () => { pointer.active = false; pointer.vx = pointer.vy = 0; };
+    if (event.pointerType === 'mouse') off(); else setTimeout(() => { if (performance.now() - pointer.seen > 350) off(); }, 400);
+  };
+  canvas.addEventListener('pointerleave', release);
+  canvas.addEventListener('pointercancel', release);
+  // En el celu el dedo barre de costado sin que la página se mueva; hacia arriba o abajo sigue siendo scroll.
+  canvas.style.touchAction = 'pan-y';
 
   // ---------- game mode ----------
   let playing = false, started = 0, loadedCount = rows.length;
@@ -67,7 +75,7 @@
     say(`0 / ${rows.length} rows loaded. Sweep the cursor over the records to load them.`);
   }
   function stopGame(done) {
-    playing = false; canvas.style.touchAction = '';
+    playing = false; canvas.style.touchAction = 'pan-y';
     rows.forEach(row => { row.loaded = true; });
     say(done ? `Pipeline complete: ${rows.length} rows loaded in ${((performance.now() - started) / 1000).toFixed(1)} s.` : '');
     if (toggle) { toggle.setAttribute('aria-pressed', 'false'); toggle.classList.remove('on'); }
@@ -184,6 +192,7 @@
   let running = false;
   function wake() { if (!running) { running = true; requestAnimationFrame(frame); } }
   canvas.addEventListener('pointermove', wake);
+  canvas.addEventListener('pointerdown', wake);
   if (toggle) toggle.addEventListener('click', wake);
   // El muñequito del juego atraviesa el retrato: empuja las rayas igual que el cursor.
   window.__portraitPoke = (clientX, clientY, vx, vy) => {

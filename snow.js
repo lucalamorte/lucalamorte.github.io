@@ -10,7 +10,7 @@
   canvas.setAttribute('aria-hidden', 'true');
   document.body.prepend(canvas);
   const ctx = canvas.getContext('2d');
-  let width = 0, height = 0, flakes = [], agents = [];
+  let width = 0, height = 0, flakes = [], agents = [], stars = [];
 
   // Semilla fija: la nevada arranca igual en cada visita.
   let seed = 11;
@@ -22,7 +22,11 @@
     canvas.width = Math.round(width * dpr); canvas.height = Math.round(height * dpr);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     seed = 11;
-    const count = Math.round(width * height / (small ? 26000 : 15000));
+    const count = Math.round(width * height / (small ? 9000 : 15000));
+    // Las estrellas lejanas: puntitos quietos que titilan y se mueven más lento que la página, para dar profundidad.
+    stars = Array.from({ length: Math.round(width * height / (small ? 2600 : 3200)) }, () => ({
+      x: rand() * width, y: rand() * height, r: 0.35 + rand() * 0.75, a: 0.12 + rand() * 0.4, tw: 0.4 + rand() * 1.6, ph: rand() * 6.3, blue: rand() < 0.3,
+    }));
     flakes = Array.from({ length: count }, () => {
       const flake = rand() < 0.32;
       return {
@@ -84,7 +88,8 @@
     const docH = document.documentElement.scrollHeight;
     mask.width = Math.ceil(innerWidth * SCALE); mask.height = Math.ceil(docH * SCALE);
     mctx.setTransform(SCALE, 0, 0, SCALE, 0, 0);
-    mctx.fillStyle = mctx.shadowColor = '#000';
+    // Detrás del texto la nieve se aclara pero no desaparece: el espacio sigue siendo uno solo.
+    mctx.fillStyle = mctx.shadowColor = 'rgba(0,0,0,.55)';
     mctx.shadowBlur = SOFT * SCALE;
     for (const el of document.querySelectorAll(BLOCKS)) {
       const r = el.getBoundingClientRect();
@@ -130,6 +135,12 @@
     ctx.globalCompositeOperation = 'source-over';
     ctx.clearRect(0, 0, width, height);
     if (dt) drawComet(t, dt);
+    for (const s of stars) {
+      const y = ((s.y - scrollY * 0.12) % height + height) % height;
+      ctx.globalAlpha = s.a * (0.65 + 0.35 * Math.sin(t / 1000 * s.tw + s.ph));
+      ctx.fillStyle = s.blue ? '#a5b4fc' : '#e2e8f0'; ctx.fillRect(s.x, y, s.r * 2, s.r * 2);
+    }
+    ctx.globalAlpha = 1;
     drawAgents(t);
     ctx.lineCap = 'round';
     for (const f of flakes) {
