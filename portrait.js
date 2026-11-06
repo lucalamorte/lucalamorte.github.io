@@ -40,8 +40,10 @@
   // consigo, sin chocar nunca contra un borde.
   points.forEach(p => {
     const x = (p.c + .5) / DATA.cols, y = (p.r + .5) / DATA.grid.length;
-    const down = y < .8 ? 1 : Math.max(0, 1 - (y - .8) / .2), side = Math.min(1, x / .12, (1 - x) / .12);
-    p.fade = Math.max(0, down * side);
+    // Curva suave que llega a cero antes de la última fila: así la base no termina en una línea.
+    const soft = v => { const k = Math.max(0, Math.min(1, v)); return k * k * (3 - 2 * k); };
+    const down = soft((.97 - y) / .23), side = soft(Math.min(x, 1 - x) / .13);
+    p.fade = down * side;
   });
   const rows = [...new Set(points.map(p => p.r))].map(r => ({ r, x: 0, y: 0, vx: 0, vy: 0, loaded: true }));
   const rowOf = new Map(rows.map(row => [row.r, row]));
