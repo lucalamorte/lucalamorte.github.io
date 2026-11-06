@@ -638,7 +638,9 @@
     const b = level.block;
     if (f.down) return "↑ who's that handsome guy? my creator?";
     if (!b || P.x + S / 2 < b.x) return "← who's that handsome guy? my creator?";
-    return P.x - b.x - b.w < 70 ? '↑ a NULL in the way. hop over it?' : null;
+    // Solo pide saltar si el NULL todavía está adelante: parado encima o ya del otro lado, no dice nada.
+    const ahead = P.on !== b && P.x >= b.x + b.w - 2;
+    return ahead && P.x - b.x - b.w < 70 ? '↑ a NULL in the way. hop over it?' : null;
   };
   function request() {
     if (P.dive || P.ride || endAt) return null;
