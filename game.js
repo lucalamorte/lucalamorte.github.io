@@ -450,7 +450,9 @@
     P.trail.forEach((t, k) => { ctx.globalAlpha = (k / P.trail.length) * 0.35; ctx.fillStyle = ACCENT; ctx.beginPath(); ctx.roundRect(t[0] + 4, t[1] + 4, S - 8, S - 8, 5); ctx.fill(); });
     ctx.globalAlpha = 1;
     // Esperando, el muñequito se asoma por detrás del título, listo para arrancar. Al terminar queda solo el de la nota.
-    if (mode === 'wait' && peekFrom() !== null && now >= peekFrom()) {
+    // Esperando no se dibuja en ningún otro lado: hasta que se asoma, no está.
+    if (mode === 'wait' && !(peekFrom() !== null && now >= peekFrom())) { /* todavía escondido detrás del título */ }
+    else if (mode === 'wait') {
       // Sube desde detrás de las letras, y después cada tanto da un saltito para espiar.
       const rise = 1 - Math.min(1, (now - peekFrom()) / 650), up = (1 - (1 - rise) ** 3) * S * BIG;
       const ws = { ...waitSpot() }; ws.y += up;
