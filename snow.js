@@ -72,24 +72,19 @@
     for (const st of stars) { sk.globalAlpha = st.a * .8; sk.fillStyle = st.blue ? '#a5b4fc' : '#e2e8f0'; sk.fillRect(st.x, st.y, st.r * 2, st.r * 2); }
     twinkle = stars.filter(st => st.a > .44);
     // Referencias personales dibujadas como en una carta del cielo: trazo fino, estrellas brillantes en los
-    // vértices y el nombre debajo, para que se entienda qué es cada una. Se dibujan una sola vez en `sky`.
+    // vértices. Se dibujan una sola vez en `sky`.
     const bright = (x, y, r, halo = '165,180,252') => {
       const g = sk.createRadialGradient(x, y, 0, x, y, r * 4);
       g.addColorStop(0, 'rgba(241,245,249,.95)'); g.addColorStop(.25, `rgba(${halo},.35)`); g.addColorStop(1, `rgba(${halo},0)`);
       sk.globalAlpha = 1; sk.fillStyle = g; sk.beginPath(); sk.arc(x, y, r * 4, 0, Math.PI * 2); sk.fill();
     };
     const ink = (a = .26, c = '165,180,252') => { sk.globalAlpha = 1; sk.strokeStyle = `rgba(${c},${a})`; sk.lineWidth = 1; sk.lineJoin = sk.lineCap = 'round'; };
-    const label = (x, y, name) => {
-      sk.globalAlpha = 1; sk.font = `500 ${small ? 9 : 10}px "JetBrains Mono", ui-monospace, monospace`; sk.textAlign = 'center';
-      sk.fillStyle = 'rgba(148,163,184,.55)'; sk.fillText(name, x, y);
-    };
     // Un dibujo: una lista de trazos (cada uno, puntos en unidades) más las estrellas que se marcan.
-    const figure = (ox, oy, u, paths, marks, name, below = 1.4) => {
+    const figure = (ox, oy, u, paths, marks) => {
       ink(); sk.beginPath();
       for (const path of paths) path.forEach(([x, y], k) => k ? sk.lineTo(ox + x * u, oy + y * u) : sk.moveTo(ox + x * u, oy + y * u));
       sk.stroke();
       marks.forEach(([x, y, r = 1.5]) => bright(ox + x * u, oy + y * u, r));
-      label(ox, oy + below * u, name);
     };
     const ring = (cx, cy, r, n = 28) => Array.from({ length: n + 1 }, (_, k) => [cx + Math.cos(k / n * Math.PI * 2) * r, cy + Math.sin(k / n * Math.PI * 2) * r]);
     const at = (fx, fy, mx, my) => [width * (small ? mx : fx), height * (small ? my : fy)];
@@ -101,45 +96,41 @@
       ink(.18); sk.beginPath();
       for (const [a, b] of [[0, 1], [2, 3]]) { sk.moveTo(cx + st[a][0] * u, cy + st[a][1] * u); sk.lineTo(cx + st[b][0] * u, cy + st[b][1] * u); }
       sk.stroke(); st.forEach(([x, y, r]) => bright(cx + x * u, cy + y * u, r));
-      label(cx, cy + 1.55 * u, 'Cruz del Sur');
     }
     // Las Tres Marías: el cinturón de Orión, como se lo nombra en Argentina.
     {
       const [mx, my] = at(.86, .7, .2, .74), step = small ? 18 : 24;
       [0, 1, 2].forEach(k => bright(mx + (k - 1) * step, my - (k - 1) * step * .42, 2.2 - k * .15));
-      label(mx, my + (small ? 28 : 34), 'Tres Marías');
     }
-    // El Sol de Mayo de la bandera: rayos rectos y ondulados alternados, en dorado.
+    // La bandera argentina, chica y suave: celeste, blanca y celeste, con el sol en el medio.
     {
-      const [sx, sy] = at(.9, .3, .86, .44), R = small ? 15 : 19;
-      ink(.5, '253,224,71'); sk.beginPath();
-      for (let k = 0; k < 16; k++) {
-        const ang = k * Math.PI / 8, c = Math.cos(ang), sn = Math.sin(ang);
-        if (k % 2) { sk.moveTo(sx + c * 7, sy + sn * 7); sk.lineTo(sx + c * R, sy + sn * R); continue; }
-        for (let q = 0; q <= 6; q++) { const d = 7 + (R * .82 - 7) * q / 6, w = Math.sin(q * 1.6) * 1.4; const x = sx + c * d - sn * w, y = sy + sn * d + c * w; q ? sk.lineTo(x, y) : sk.moveTo(x, y); }
-      }
-      sk.stroke(); sk.beginPath(); sk.arc(sx, sy, 5, 0, Math.PI * 2); sk.stroke();
-      bright(sx, sy, 2.4, '253,224,71');
-      label(sx, sy + R + 16, 'Sol de Mayo');
+      const [fx, fy] = at(.9, .3, .84, .44), w = small ? 40 : 54, h = w * .62, x0 = fx - w / 2, y0 = fy - h / 2;
+      sk.save(); sk.globalAlpha = .55; sk.beginPath(); sk.roundRect(x0, y0, w, h, 2); sk.clip();
+      sk.fillStyle = '#74acdf'; sk.fillRect(x0, y0, w, h); sk.fillStyle = '#f8fafc'; sk.fillRect(x0, y0 + h / 3, w, h / 3);
+      sk.restore();
+      sk.globalAlpha = .7; sk.fillStyle = '#f6b40e'; sk.beginPath(); sk.arc(fx, fy, h * .1, 0, Math.PI * 2); sk.fill();
+      sk.strokeStyle = 'rgba(246,180,14,.7)'; sk.lineWidth = .8; sk.beginPath();
+      for (let k = 0; k < 16; k++) { const a = k * Math.PI / 8, r0 = h * .12, r1 = h * (k % 2 ? .15 : .18); sk.moveTo(fx + Math.cos(a) * r0, fy + Math.sin(a) * r0); sk.lineTo(fx + Math.cos(a) * r1, fy + Math.sin(a) * r1); }
+      sk.stroke(); sk.globalAlpha = 1;
     }
     // Un mate con la bombilla.
     figure(...at(.07, .78, .14, .9), small ? 18 : 24,
       [[[-.62, -.2], [-.72, .25], [-.55, .7], [-.2, .95], [.2, .95], [.55, .7], [.72, .25], [.62, -.2]],
        [[-.68, -.2], [.68, -.2]], [[.1, -.15], [.62, -1.05], [.8, -1.12]]],
-      [[-.62, -.2], [.62, -.2], [0, .95, 1.3], [.8, -1.12, 1.8]], 'Mate', 1.55);
+      [[-.62, -.2], [.62, -.2], [0, .95, 1.3], [.8, -1.12, 1.8]]);
     // Un caza TIE: dos alas hexagonales, el brazo y la cabina redonda.
     {
       const [tx, ty] = at(.74, .13, .6, .1), u = small ? 14 : 18;
       const wing = sx => [[sx, -1], [sx + .18 * Math.sign(sx), -.5], [sx + .18 * Math.sign(sx), .5], [sx, 1], [sx - .18 * Math.sign(sx), .5], [sx - .18 * Math.sign(sx), -.5], [sx, -1]];
       figure(tx, ty, u, [wing(-1.2), wing(1.2), [[-1.2, 0], [-.42, 0]], [[.42, 0], [1.2, 0]], ring(0, 0, .42)],
-        [[0, 0, 1.6], [-1.2, -1], [-1.2, 1], [1.2, -1], [1.2, 1]], 'TIE fighter', 1.75);
+        [[0, 0, 1.6], [-1.2, -1], [-1.2, 1], [1.2, -1], [1.2, 1]]);
     }
     // Un joystick: el contorno con las dos manijas, la cruz y los botones.
     {
       const [jx, jy] = at(.33, .1, .32, .06), u = small ? 16 : 22;
       const body = [[-.7, -.45], [.7, -.45], [1.05, -.3], [1.3, .35], [1.15, .62], [.85, .55], [.55, .25], [-.55, .25], [-.85, .55], [-1.15, .62], [-1.3, .35], [-1.05, -.3], [-.7, -.45]];
       figure(jx, jy, u, [body, [[-.85, -.08], [-.45, -.08]], [[-.65, -.28], [-.65, .12]]],
-        [[.5, -.15, 1.4], [.8, -.02, 1.4], [.5, .1, 1.1], [.8, -.28, 1.1]], 'Player 1', 1.3);
+        [[.5, -.15, 1.4], [.8, -.02, 1.4], [.5, .1, 1.1], [.8, -.28, 1.1]]);
     }
     flakes = Array.from({ length: count }, () => {
       const flake = rand() < 0.32;
