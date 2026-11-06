@@ -570,6 +570,12 @@ h2 { margin-bottom: 18px; }
 .card.big { display: flex; flex-direction: column; }
 .card.big .nums { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px 20px; }
 .card.big .more { margin-top: auto; }
+.flagship.solo { grid-template-columns: 1fr; }
+.card.next { max-width: 760px; }
+.card.next .plan { margin: 4px 0 18px; padding-left: 18px; color: var(--text-2); }
+.card.next .plan li { margin: 6px 0; }
+.card.next .plan li::marker { color: var(--accent); }
+h2.next-co { margin-top: 72px; }
 @media (max-width: 420px) { .card.big .nums { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 /* La línea de años y regiones de la experiencia, a tamaño de lectura. */
 .group.big { font-family: var(--sans); font-size: 1.15rem; color: var(--text-2); letter-spacing: 0; }
