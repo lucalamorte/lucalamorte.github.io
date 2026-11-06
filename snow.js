@@ -1,7 +1,7 @@
-// Fondo: una nevada tenue de datos. Puntitos (registros) y copos de seis puntas (Snowflake) que caen despacio
-// y se mecen; algunos en el color de acento. Cerca del cursor se apartan y brillan. Detrás de cada bloque de
-// texto se desvanecen con un borde suave, así la lectura queda limpia. Cada tanto cruza un cometa, y en los
-// márgenes hay constelaciones que son agentes: un centro con sus herramientas, y llamadas que van y vuelven.
+// Fondo: una noche en la montaña. Arriba, el cielo: estrellas que titilan, constelaciones que son agentes (un
+// centro con sus herramientas, y llamadas que van y vuelven) y cada tanto una estrella fugaz. Abajo, las sierras
+// nevadas. Por delante, la nevada de datos: puntitos (registros) y copos de seis puntas (Snowflake) que caen y se
+// mecen, algunos en el color de acento; cerca del cursor se apartan y brillan. Detrás del texto todo se aclara.
 (() => {
   const small = matchMedia('(max-width: 760px)').matches;
   const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -10,7 +10,9 @@
   canvas.setAttribute('aria-hidden', 'true');
   document.body.prepend(canvas);
   const ctx = canvas.getContext('2d');
-  let width = 0, height = 0, flakes = [], agents = [], stars = [];
+  let width = 0, height = 0, flakes = [], agents = [], stars = [], ridges = [];
+  // Cuánto acompaña el cielo al scroll: poco, porque está lejos.
+  const SKY = 0.22;
 
   // Semilla fija: la nevada arranca igual en cada visita.
   let seed = 11;
@@ -27,6 +29,16 @@
     stars = Array.from({ length: Math.round(width * height / (small ? 2600 : 3200)) }, () => ({
       x: rand() * width, y: rand() * height, r: 0.35 + rand() * 0.75, a: 0.12 + rand() * 0.4, tw: 0.4 + rand() * 1.6, ph: rand() * 6.3, blue: rand() < 0.3,
     }));
+    // Las sierras: dos cordones, el de atrás más alto y más claro, quietos al pie de la pantalla como una ventana.
+    ridges = [[0.2, 0.17, 0.45], [0.11, 0.1, 0.8]].map(([base, amp, f]) => {
+      const p1 = rand() * 6, p2 = rand() * 6, p3 = rand() * 6, pts = [];
+      for (let x = -20; x <= width + 20; x += 18) {
+        const u = x / Math.max(width, 1) * Math.PI * 2;
+        const h = Math.abs(Math.sin(u * f * 1.3 + p1)) * 0.55 + Math.sin(u * f * 3.1 + p2) * 0.25 + Math.sin(u * f * 7.7 + p3) * 0.08;
+        pts.push([x, height * (1 - base) - height * amp * Math.max(0, h) * (small ? 0.6 : 1)]);
+      }
+      return pts;
+    });
     flakes = Array.from({ length: count }, () => {
       const flake = rand() < 0.32;
       return {
@@ -39,8 +51,8 @@
     });
   }
 
-  // Las constelaciones viven en la página (se scrollean con ella), más o menos una cada pantalla y media,
-  // alternando márgenes. Cada una: un centro y 4 o 5 herramientas alrededor.
+  // Las constelaciones viven en el cielo: se mueven más lento que la página, como algo muy lejano. Más o menos
+  // una cada pantalla y media, alternando márgenes. Cada una: un centro y 4 o 5 herramientas alrededor.
   function buildAgents() {
     // Con la pestaña en segundo plano la ventana puede medir 0 de alto: se toma una pantalla común.
     const docH = document.documentElement.scrollHeight, n = Math.max(2, Math.round(docH / ((innerHeight || 800) * 1.5)));
@@ -48,7 +60,7 @@
     agents = Array.from({ length: n }, (_, k) => {
       const side = k % 2 ? 1 : 0, margin = Math.max(90, (width - 1200) / 2);
       const x = side ? width - margin * (0.35 + r() * 0.4) : margin * (0.35 + r() * 0.4);
-      const y = (k + 0.5 + (r() - 0.5) * 0.5) * docH / n;
+      const sky = (innerHeight || 800) * 0.7 + (docH - (innerHeight || 800)) * SKY, y = (k + 0.5 + (r() - 0.5) * 0.5) * sky / n;
       const count = 4 + Math.round(r());
       const tools = Array.from({ length: count }, (_, i) => {
         const a = (i / count) * Math.PI * 2 + r() * 0.8, d = 34 + r() * 30;
@@ -60,13 +72,13 @@
   function drawAgents(t) {
     ctx.lineWidth = 1;
     for (const g of agents) {
-      const gy = g.y - scrollY;
+      const off = scrollY * SKY, gy = g.y - off;
       if (gy < -120 || gy > height + 120) continue;
       ctx.strokeStyle = 'rgba(94,234,212,.14)'; ctx.beginPath();
-      for (const p of g.tools) { ctx.moveTo(g.x, gy); ctx.lineTo(p.x, p.y - scrollY); }
+      for (const p of g.tools) { ctx.moveTo(g.x, gy); ctx.lineTo(p.x, p.y - off); }
       ctx.stroke();
       ctx.fillStyle = 'rgba(203,213,225,.35)';
-      for (const p of g.tools) { ctx.beginPath(); ctx.arc(p.x, p.y - scrollY, 1.6, 0, Math.PI * 2); ctx.fill(); }
+      for (const p of g.tools) { ctx.beginPath(); ctx.arc(p.x, p.y - off, 1.6, 0, Math.PI * 2); ctx.fill(); }
       const glow = 0.45 + Math.sin(t / 900 + g.x) * 0.15;
       ctx.fillStyle = `rgba(94,234,212,${glow})`; ctx.beginPath(); ctx.arc(g.x, gy, 3, 0, Math.PI * 2); ctx.fill();
       // Una llamada: un pulso que sale del centro hacia una herramienta y vuelve.
@@ -113,7 +125,24 @@
     ctx.stroke();
   }
 
-  // El cometa: cada 15 a 30 segundos cruza en diagonal, de arriba a la derecha hacia abajo a la izquierda, con su estela.
+  // Las sierras nevadas: la cumbre con nieve que se apaga hacia abajo, y el pie que se funde con la noche.
+  function drawRidges() {
+    ridges.forEach((pts, k) => {
+      const top = Math.min(...pts.map(p => p[1]));
+      const g = ctx.createLinearGradient(0, top, 0, height);
+      g.addColorStop(0, k ? 'rgba(203,213,225,.16)' : 'rgba(203,213,225,.09)');
+      g.addColorStop(0.35, k ? 'rgba(30,41,59,.9)' : 'rgba(22,32,52,.75)');
+      g.addColorStop(1, k ? 'rgba(10,15,28,.98)' : 'rgba(12,18,32,.9)');
+      ctx.fillStyle = g; ctx.beginPath(); ctx.moveTo(pts[0][0], height);
+      for (const [x, y] of pts) ctx.lineTo(x, y);
+      ctx.lineTo(pts[pts.length - 1][0], height); ctx.closePath(); ctx.fill();
+      // El filo de la cumbre, apenas iluminado por la luz del cielo.
+      ctx.strokeStyle = k ? 'rgba(226,232,240,.22)' : 'rgba(226,232,240,.12)'; ctx.lineWidth = 1; ctx.beginPath();
+      pts.forEach(([x, y], i) => (i ? ctx.lineTo(x, y) : ctx.moveTo(x, y))); ctx.stroke();
+    });
+  }
+
+  // La estrella fugaz: cada 8 a 18 segundos cruza en diagonal, de arriba a la derecha hacia abajo a la izquierda, con su estela.
   let comet = null, nextComet = 6000;
   function drawComet(t, dt) {
     if (!comet && t > nextComet) {
@@ -128,7 +157,7 @@
     ctx.strokeStyle = tail; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.moveTo(comet.x, comet.y); ctx.lineTo(tx, ty); ctx.stroke();
     ctx.fillStyle = '#e6fffb'; ctx.shadowColor = 'rgba(94,234,212,.9)'; ctx.shadowBlur = 12;
     ctx.beginPath(); ctx.arc(comet.x, comet.y, 1.8, 0, Math.PI * 2); ctx.fill(); ctx.shadowBlur = 0;
-    if (comet.x < -len || comet.y > height + len) { comet = null; nextComet = t + 15000 + Math.random() * 15000; }
+    if (comet.x < -len || comet.y > height + len) { comet = null; nextComet = t + 8000 + Math.random() * 10000; }
   }
 
   function draw(t, dt) {
@@ -142,6 +171,7 @@
     }
     ctx.globalAlpha = 1;
     drawAgents(t);
+    drawRidges();
     ctx.lineCap = 'round';
     for (const f of flakes) {
       if (dt) {

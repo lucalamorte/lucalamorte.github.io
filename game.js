@@ -44,6 +44,11 @@
   // Donde espera antes de empezar: debajo del texto de la portada, más grande y saltando. Primero se lee y
   // después invita; al tocarlo salta al título, donde arranca el juego.
   const BIG = 1.5;
+  // Little Bit se asoma recién cuando el título terminó de escribirse y hubo un momento para leerlo.
+  let peekAt = null;
+  addEventListener('title-typed', () => { peekAt = performance.now() + 1400; });
+  // Sin animación de escritura (movimiento reducido) no hay nada que esperar.
+  const peekFrom = () => { const h = $('.hero h1'); return h && h.classList.contains('typing') ? peekAt : 0; };
   // Esperando, se asoma por detrás del título: medio cuerpo escondido tras la "e" de "here", sobre la línea de las minúsculas.
   const waitSpot = () => {
     const cs = document.querySelectorAll('.hero h1 .ch'), c = cs.length > 2 ? cs[cs.length - 2] : $('.hero h1'), r = box(c);
@@ -51,7 +56,7 @@
     const st = getComputedStyle(c); ctx.save(); ctx.font = `${st.fontWeight} ${st.fontSize} ${st.fontFamily}`;
     const m = ctx.measureText('x'); ctx.restore();
     const ledge = cs.length > 2 ? r.y + m.fontBoundingBoxAscent - m.actualBoundingBoxAscent + 1 : r.y + r.h * 0.4, x = cs.length > 2 ? r.x + r.w / 2 - S / 2 : r.x + r.w * 0.6;
-    return { x, y: ledge + S * BIG * 0.4 - S, ledge };
+    return { x, y: ledge + S * BIG * 0.3 - S, ledge };
   };
   // Un cartelito que flota sobre el muñequito o sobre una pieza.
   // Los diálogos siempre salen justo arriba del muñequito y lo siguen mientras se mueve.
@@ -439,12 +444,19 @@
     P.trail.forEach((t, k) => { ctx.globalAlpha = (k / P.trail.length) * 0.35; ctx.fillStyle = ACCENT; ctx.beginPath(); ctx.roundRect(t[0] + 4, t[1] + 4, S - 8, S - 8, 5); ctx.fill(); });
     ctx.globalAlpha = 1;
     // Esperando, el muñequito se asoma por detrás del título, listo para arrancar. Al terminar queda solo el de la nota.
-    if (mode === 'wait') {
-      const ws = waitSpot(), hop = still ? 0 : (now % 1600 < 520 ? Math.sin((now % 1600) / 520 * Math.PI) * 12 : 0);
+    if (mode === 'wait' && peekFrom() !== null && now >= peekFrom()) {
+      // Sube desde detrás de las letras, y después cada tanto da un saltito para espiar.
+      const rise = 1 - Math.min(1, (now - peekFrom()) / 650), up = (1 - (1 - rise) ** 3) * S * BIG;
+      const ws = { ...waitSpot() }; ws.y += up;
+      const hop = still ? 0 : (now % 1600 < 520 ? Math.sin((now % 1600) / 520 * Math.PI) * 12 : 0);
       P.face = -1;
       ctx.save(); ctx.beginPath(); ctx.rect(ws.x - 80, ws.ledge - 160, S * BIG + 160, 160); ctx.clip();
       ctx.translate(ws.x + S / 2, ws.y + S - hop); ctx.scale(BIG, BIG); ctx.translate(-(ws.x + S / 2), -(ws.y + S));
       drawPk(ws.x, ws.y, now); ctx.restore();
+      // El borde no es un corte seco: el cuerpo se funde hacia las letras, como si de verdad estuviera detrás.
+      ctx.save(); ctx.globalCompositeOperation = 'destination-out';
+      const fade = ctx.createLinearGradient(0, ws.ledge - 9, 0, ws.ledge); fade.addColorStop(0, 'rgba(0,0,0,0)'); fade.addColorStop(1, '#000');
+      ctx.fillStyle = fade; ctx.fillRect(ws.x - 80, ws.ledge - 9, S * BIG + 160, 10); ctx.restore();
     } else if (mode !== 'done' && !endAt && seen(P.y)) {
       if (P.on && P.on.hidden && mode === 'play') {
         const g2 = ctx.createLinearGradient(P.x - 30, 0, P.x + S + 30, 0);
@@ -900,12 +912,12 @@
     if (P.trail.length && mode !== 'intro') P.trail.shift();
     draw(now);
     // El botón invisible sobre el muñequito: para tocarlo en el celu o llegar con Tab.
-    const ws = waitSpot(), waiting = mode === 'wait', showHit = mode === 'idle' || waiting, big = S * BIG + 24;
+    const ws = waitSpot(), waiting = mode === 'wait', showHit = mode === 'idle' || (waiting && peekFrom() !== null && now >= peekFrom()), big = S * BIG + 24;
     hit.style.display = showHit ? '' : 'none';
     if (waiting) Object.assign(hit.style, { left: `${ws.x + S / 2 - big / 2}px`, top: `${ws.y + S + 6 - big}px`, width: `${big}px`, height: `${big}px` });
     else if (showHit) Object.assign(hit.style, { left: `${P.x - 10}px`, top: `${P.y - 10}px`, width: '44px', height: '44px' });
     // El globito mientras espera, y la misión sobre el muñequito al aterrizar.
-    hint.classList.toggle('on', waiting && ws.y > scrollY && ws.y < scrollY + H);
+    hint.classList.toggle('on', waiting && peekFrom() !== null && now >= peekFrom() + 900 && ws.y > scrollY && ws.y < scrollY + H);
     if (waiting) {
       // Al costado si entra; en pantallas angostas, arriba del muñequito.
       const side = ws.x + S * BIG + 230 < W;
