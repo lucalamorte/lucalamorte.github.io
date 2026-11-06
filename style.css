@@ -832,10 +832,10 @@ main > section:not(.hero):nth-of-type(even)::before { display: none; }
 /* Un reflejo sigue al cursor dentro del vidrio y la tarjeta se inclina apenas hacia él. Las posiciones las pone
    snow.js en --mx, --my, --rx y --ry; sin mouse (celular) no pasa nada. */
 .glass-live { transform: perspective(1100px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) translateY(var(--lift, 0px)); transition: transform .7s var(--ease), background .45s var(--ease); }
-.glass-live::before { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; opacity: 0; transition: opacity .5s var(--ease);
+.glass-live::before { content: ""; display: block; z-index: 0; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; opacity: 0; transition: opacity .5s var(--ease);
   background: radial-gradient(320px circle at var(--mx, 50%) var(--my, 0%), rgba(255, 255, 255, .09), transparent 65%); }
-.glass-live.lit::before { opacity: 1; }
-.glass-live.lit { --lift: -4px; }
+.glass-live.glint::before { opacity: 1; }
+.glass-live.glint { --lift: -4px; }
 .card.glass-live:hover { transform: perspective(1100px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) translateY(var(--lift, 0px)); }
 .playing .glass-live { --rx: 0deg !important; --ry: 0deg !important; }
 
@@ -847,5 +847,18 @@ html.js .reveal.in .card, html.js .reveal.in .fold { opacity: 1; transform: none
 html.js .reveal.in :is(.card, .fold):nth-child(2) { transition-delay: .08s; }
 html.js .reveal.in :is(.card, .fold):nth-child(3) { transition-delay: .16s; }
 html.js .reveal.in :is(.card, .fold):nth-child(4) { transition-delay: .24s; }
-html.js .reveal.in .glass-live { transform: perspective(1100px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) translateY(var(--lift, 0px)); }
+html.js .reveal.in .glass-live, html.js .reveal.in .glass-live:hover { transition-delay: 0s; transform: perspective(1100px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) translateY(var(--lift, 0px)); }
 @media (prefers-reduced-motion: reduce) { html.js .reveal .card, html.js .reveal .fold { opacity: 1; transform: none; filter: none; } .glass-live { --rx: 0deg !important; --ry: 0deg !important; } }
+/* El retrato se dibuja en una capa más grande que su cuadro, para que las rayas empujadas no se corten. */
+.portrait { position: relative; }
+.portrait-ink { position: absolute; z-index: 1; pointer-events: none; }
+.portrait .portrait-ink { max-width: none; margin: 0; aspect-ratio: auto; cursor: default; }
+/* Mientras se scrollea, el vidrio usa solo el desenfoque, que es liviano; la refracción vuelve apenas se detiene.
+   Así el scroll no pierde cuadros. */
+html.is-scrolling.lg-liquid :is(.nav, .play-help, .pad button, .scroll-next, .btn:not(.solid), .card, .fold summary, .agent-note, .art-visual, .facts div, .article-end) {
+  -webkit-backdrop-filter: blur(4px) saturate(170%); backdrop-filter: blur(4px) saturate(170%); }
+html.is-scrolling .nav:not(.scrolled) { -webkit-backdrop-filter: none; backdrop-filter: none; }
+/* La entrada no anima desenfoque: desenfocar vidrio mientras la página se mueve es lo más caro. Solo fundido y
+   un leve desplazamiento, que la placa de video mueve sin costo. */
+html.js .reveal .card, html.js .reveal .fold { filter: none; transition: opacity .8s var(--ease), transform .8s var(--ease); will-change: opacity, transform; }
+html.js .reveal.in .card, html.js .reveal.in .fold { will-change: auto; }
