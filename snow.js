@@ -5,6 +5,19 @@
 (() => {
   const small = matchMedia('(max-width: 760px)').matches;
   const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // El vidrio líquido: un ruido suave y lento desplaza lo que se ve a través de las tarjetas. Solo Chromium sabe
+  // usar un filtro SVG como fondo de un elemento; en el resto no se agrega nada y queda el vidrio limpio.
+  if (navigator.userAgentData && !still) {
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('width', '0'); svg.setAttribute('height', '0'); svg.setAttribute('aria-hidden', 'true');
+    svg.style.position = 'absolute';
+    svg.innerHTML = '<filter id="lg-refract" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB">'
+      + '<feTurbulence type="fractalNoise" baseFrequency="0.006 0.009" numOctaves="2" seed="7" result="n"/>'
+      + '<feGaussianBlur in="n" stdDeviation="3" result="s"/>'
+      + '<feDisplacementMap in="SourceGraphic" in2="s" scale="34" xChannelSelector="R" yChannelSelector="G"/></filter>';
+    document.body.append(svg);
+    document.documentElement.classList.add('lg-liquid');
+  }
   const canvas = document.createElement('canvas');
   canvas.className = 'pipelines';
   canvas.setAttribute('aria-hidden', 'true');

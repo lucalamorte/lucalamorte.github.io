@@ -767,3 +767,12 @@ main > section:not(.hero):nth-of-type(even)::before { display: none; }
 .agent-note { background: rgba(94, 234, 212, .06); }
 /* El nombre de la tabla se escribe como código: así se lee como una tabla de verdad, no como una frase. */
 .pk-say code, .play-help code { font-family: var(--mono); font-size: .9em; color: var(--accent); background: rgba(94, 234, 212, .1); padding: 1px 6px; border-radius: 5px; }
+
+/* ---------- liquid: sin canto, con refracción ---------- */
+/* Ningún borde ni brillo de canto. Lo "líquido" lo da la refracción: lo que está detrás se ondula al pasar por el
+   vidrio, como a través de agua. En Chrome y Edge se usa un filtro de distorsión (lo arma snow.js); en el resto
+   queda el vidrio limpio con desenfoque leve. */
+.card, .fold summary, .agent-note, .art-visual, .facts div, .article-end,
+.card:hover, .fold summary:hover, .fold[open] summary, .playing .fold:not([open]) summary:hover { box-shadow: none; }
+.lg-liquid :is(.card, .fold summary, .agent-note, .art-visual, .facts div, .article-end) {
+  -webkit-backdrop-filter: url(#lg-refract) blur(3px) saturate(170%); backdrop-filter: url(#lg-refract) blur(3px) saturate(170%); }
