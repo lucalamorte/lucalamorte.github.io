@@ -14,22 +14,27 @@ const prof = join(tmpdir(), `film-${Date.now()}`);
 const port = 9300 + Math.floor(Math.random() * 500);
 const proc = spawn(edge, ['--headless=new', '--disable-gpu', `--user-data-dir=${prof}`, `--remote-debugging-port=${port}`, '--window-size=390,844', 'about:blank'], { stdio: 'ignore' });
 const sleep = ms => new Promise(r => setTimeout(r, ms));
+// Si algo se cuelga (por ejemplo, el servidor no está), corta a los 110 s en vez de quedarse esperando.
+setTimeout(() => { console.log('timeout'); try { proc.kill(); } catch {} process.exit(1); }, 110000).unref();
 let tabs;
 for (let i = 0; i < 50; i++) { try { tabs = await (await fetch(`http://127.0.0.1:${port}/json`)).json(); if (tabs.length) break; } catch {} await sleep(200); }
 const page = tabs.find(t => t.type === 'page');
 const ws = new WebSocket(page.webSocketDebuggerUrl);
 await new Promise(r => ws.addEventListener('open', r));
 let id = 0; const pending = new Map();
-ws.addEventListener('message', e => { const m = JSON.parse(e.data); if (m.id && pending.has(m.id)) { pending.get(m.id)(m); pending.delete(m.id); } });
+ws.addEventListener('message', e => { const m = JSON.parse(e.data); if (m.method === 'Runtime.exceptionThrown') { const d = m.params.exceptionDetails; console.log('ERROR', d.exception?.description?.split(String.fromCharCode(10)).slice(0, 3).join(' | ') || d.text, d.lineNumber); } if (m.id && pending.has(m.id)) { pending.get(m.id)(m); pending.delete(m.id); } });
 const send = (method, params = {}) => new Promise(r => { const k = ++id; pending.set(k, r); ws.send(JSON.stringify({ id: k, method, params })); });
 await send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
 await send('Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints: 5 });
 await send('Emulation.setEmitTouchEventsForMouse', { enabled: true, configuration: 'mobile' });
 await send('Page.enable'); await send('Runtime.enable');
+// Sin esto la pestaña puede quedar 'oculta' y el navegador deja de animar.
+await send('Page.bringToFront'); await send('Emulation.setFocusEmulationEnabled', { enabled: true });
 await send('Page.navigate', { url });
 await sleep(1500);
 const log = [];
 for (const s of steps) {
+  if (process.env.FILM_DEBUG) console.error('step', JSON.stringify(s).slice(0, 80));
   if (s.wait) await sleep(s.wait);
   if (s.eval) { const r = await send('Runtime.evaluate', { expression: s.eval, awaitPromise: true, returnByValue: true }); log.push(`${s.eval.slice(0, 60)} => ${JSON.stringify(r.result?.result?.value ?? r.result?.exceptionDetails?.text)}`); }
   if (s.tap) {
@@ -38,6 +43,8 @@ for (const s of steps) {
     await sleep(s.hold || 80);
     await send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
   }
+  if (s.press) await send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x: s.press[0], y: s.press[1] }] });
+  if (s.release) await send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
   if (s.shot) { const r = await send('Page.captureScreenshot', { format: 'png' }); writeFileSync(join(out, `${s.shot}.png`), Buffer.from(r.result.data, 'base64')); }
 }
 console.log(log.join('\n'));

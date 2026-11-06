@@ -4,11 +4,19 @@
 <script>
   // Al volver de un artículo a una sección (index.html#experience) la página aparece ahí mismo: sin el
   // desplazamiento suave desde arriba. El suave vuelve apenas la página quedó en su lugar.
+  // Recargar siempre arranca en el inicio: si la dirección quedó con una sección (#experience), se limpia.
+  const nav = performance.getEntriesByType('navigation')[0];
+  if (nav && nav.type === 'reload') {
+    if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+    if (location.hash && location.hash !== '#selftest') history.replaceState(null, '', location.pathname + location.search);
+    addEventListener('load', () => scrollTo({ top: 0, behavior: 'instant' }));
+  }
+  // Con una sección en la dirección, se llega ahí y después se limpia, para que recargar no vuelva a saltar.
   if (location.hash && location.hash !== '#selftest') {
     const root = document.documentElement; root.style.scrollBehavior = 'auto';
     const jump = () => { const t = document.getElementById(location.hash.slice(1)); if (t && t.tagName !== 'DETAILS') t.scrollIntoView({ block: 'start', behavior: 'instant' }); };
     addEventListener('DOMContentLoaded', jump);
-    addEventListener('load', () => { jump(); requestAnimationFrame(() => requestAnimationFrame(() => root.style.scrollBehavior = '')); });
+    addEventListener('load', () => { jump(); history.replaceState(null, '', location.pathname + location.search); requestAnimationFrame(() => requestAnimationFrame(() => root.style.scrollBehavior = '')); });
   }
 </script>
 <meta charset="utf-8">
@@ -284,6 +292,7 @@
 <script src="portrait.js"></script>
 <script src="game.js"></script>
 <script src="snow.js"></script>
+<script src="cursor.js"></script>
 <script>
   // Pestañas de experiencia: una visible por vez, también con las flechas del teclado.
   const tabs = [...document.querySelectorAll('.tablist [role="tab"]')];

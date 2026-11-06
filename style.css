@@ -881,3 +881,18 @@ body.pk-floating .pk-hint { z-index: -1; }
 
 /* Nada se sale por el costado: el lienzo del retrato y el del juego no agrandan la página en el celu. */
 html, body { overflow-x: clip; }
+
+/* Los controles del juego en el celu van en una barra de vidrio: un toque que no cae justo en un botón
+   queda en la barra y nunca abre un link de abajo. */
+.pad { pointer-events: auto; padding-top: 14px; background: rgba(11, 17, 32, .3); -webkit-backdrop-filter: blur(14px) saturate(170%); backdrop-filter: blur(14px) saturate(170%); border-radius: 26px 26px 0 0; box-shadow: inset 0 1px 0 rgba(255, 255, 255, .08); }
+.pad .x, .pad .re { background: var(--lg); -webkit-backdrop-filter: blur(8px) saturate(170%); backdrop-filter: blur(8px) saturate(170%); }
+/* La nota final y el globo de la misión, con el mismo vidrio que el resto. */
+.agent-note, .pk-say { background: var(--lg) !important; box-shadow: var(--lg-shadow) !important; -webkit-backdrop-filter: blur(10px) saturate(170%); backdrop-filter: blur(10px) saturate(170%); border-color: transparent !important; }
+/* Cursor propio en pantallas con mouse: un círculo suave que sigue al puntero y crece sobre lo que se puede tocar. */
+@media (hover: hover) and (pointer: fine) {
+  html.soft-cursor, html.soft-cursor * { cursor: none !important; }
+  .cursor { position: fixed; left: 0; top: 0; z-index: 9999; width: 18px; height: 18px; margin: -9px 0 0 -9px; border-radius: 50%; background: rgba(241, 245, 249, .92); box-shadow: 0 3px 8px rgba(0, 0, 0, .35); pointer-events: none; transition: width .25s var(--ease), height .25s var(--ease), margin .25s var(--ease), background .25s var(--ease), opacity .2s; will-change: transform; }
+  .cursor.on-link { width: 38px; height: 38px; margin: -19px 0 0 -19px; background: rgba(241, 245, 249, .22); -webkit-backdrop-filter: blur(2px); backdrop-filter: blur(2px); box-shadow: 0 0 0 1px rgba(241, 245, 249, .5); }
+  .cursor.down { width: 14px; height: 14px; margin: -7px 0 0 -7px; }
+  .cursor.gone { opacity: 0; }
+}

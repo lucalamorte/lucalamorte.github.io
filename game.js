@@ -62,7 +62,19 @@
     if (!drift.since) drift.since = now;
     return true;
   };
+  let textBoxes = [], textAt = 0;
+  const TEXT = 'main h1, main h2, main h3, main .eyebrow, main .role, main .hero p, main section > p, main .next-co, main .pr-group';
   const moveDrift = dt => {
+    const now = performance.now();
+    if (now - textAt > 400) { textAt = now; textBoxes = [...document.querySelectorAll(TEXT)].filter(el => !el.closest('.card, .fold')).map(el => el.getBoundingClientRect()).filter(r => r.width && r.bottom > 0 && r.top < H); }
+    const w = S * BIG, pad = 18;
+    for (const r of textBoxes) {
+      if (drift.x + w < r.left - pad || drift.x > r.right + pad || drift.y + w < r.top - pad || drift.y > r.bottom + pad) continue;
+      // Se aleja por el lado más corto, con suavidad.
+      const up = drift.y + w - (r.top - pad), down = r.bottom + pad - drift.y;
+      drift.vy = up < down ? -Math.abs(drift.vy) : Math.abs(drift.vy);
+      drift.y += (up < down ? -1 : 1) * Math.min(60 * dt, Math.min(up, down));
+    }
     drift.x += drift.vx * dt; drift.y += drift.vy * dt; drift.a += drift.va * dt;
     const l = 24, r = W - S * BIG - 24, t = 90, b = H - S * BIG - 110;
     if (drift.x < l || drift.x > r) { drift.vx *= -1; drift.x = Math.max(l, Math.min(r, drift.x)); }
@@ -189,7 +201,7 @@
     // hasta él y entra solo. El viaje pasa por la cara de Luca (las rayas se ondulan) y termina en el DAG.
     {
       const side = fig && fig.b > h1.y, gx = side ? fig.r - fig.w * 0.25 + 4 : h1.x + 2, gy = h1.y + 4, gw = 30;
-      face = { portal: true, mobile: !side, x1: gx, x2: gx + gw, y1: gy - 70, y2: gy + 8,
+      face = { portal: true, mobile: !side, x1: -60, x2: gx + gw, y1: gy - 260, y2: gy + 8,
         via: fig ? [fig.x + fig.w * 0.5, fig.y + fig.h * (side ? 0.38 : 0.45)] : null,
         under: fig && !side ? [fig.x + fig.w * 0.12, fig.r - fig.w * 0.12] : null };
       things.push({ draw: now => drawPortal(gx + gw / 2, gy, now) });
@@ -425,12 +437,14 @@
     }
     if (rise > 0) { ctx.globalAlpha = rise; drawPk(t.x + t.w / 2 - S / 2, t.y - S - 6 * (1 - rise), now); ctx.globalAlpha = 1; }
   }
-  // Pisos, cornisas y paredes son estrellas: casi invisibles de lejos y se encienden alrededor del muñequito
-  // cuando camina, aterriza o se choca. Así el suelo existe sin ser una raya que corta la página.
-  // Pisos y paredes no se dibujan como rayas ni como puntos: aparecen como chispas. Donde el muñequito pisa, roza
-  // o aterriza, la línea suelta brillitos de cuatro puntas que crecen, titilan y se apagan subiendo un poco.
-  // Las cornisas que hay que ver de antes (no son piso) tienen además unas pocas estrellitas quietas que titilan.
-  let sparks = [], sparkAt = 0, wasGround = false;
+  // Una estrellita de cuatro puntas con brillo: de esto están hechos el piso, las paredes y el portal.
+  // La estela del puntito en el DAG: chispas que quedan atrás, crecen un poco y se apagan.
+  let trail = [], trailAt = 0;
+  function drawTrail(now) {
+    const dt = Math.min(.05, (now - (trailAt || now)) / 1000); trailAt = now;
+    trail = trail.filter(p => (p.t += dt) < p.life).slice(-90);
+    for (const p of trail) { p.x += p.vx * dt; p.y += p.vy * dt; const k = p.t / p.life, g = Math.sin(Math.PI * k); sparkle(p.x, p.y, p.r * (.5 + .5 * g), g, p.spin + k); }
+  }
   function sparkle(x, y, r, a, spin) {
     ctx.save(); ctx.globalAlpha = a; ctx.translate(x, y); ctx.rotate(spin);
     ctx.shadowColor = 'rgba(94,234,212,.9)'; ctx.shadowBlur = r * 3; ctx.fillStyle = '#ecfeff';
@@ -438,39 +452,25 @@
     ctx.quadraticCurveTo(0, 0, r, 0); ctx.quadraticCurveTo(0, 0, 0, r); ctx.quadraticCurveTo(0, 0, -r, 0); ctx.quadraticCurveTo(0, 0, 0, -r);
     ctx.fill(); ctx.restore();
   }
-  function burst(x, y, n, spread) {
-    for (let k = 0; k < n; k++) sparks.push({ x: x + (Math.random() - .5) * spread, y: y - Math.random() * 3, vx: (Math.random() - .5) * 40, vy: -20 - Math.random() * 40, t: 0, life: .5 + Math.random() * .5, r: 2.5 + Math.random() * 3, spin: Math.random() });
-  }
   function starLine(x1, y1, x2, y2, base, now) {
-    const fx = P.x + S / 2, fy = P.y + S, horiz = y1 === y2;
-    // El punto de la línea más cercano a los pies (piso) o al cuerpo (pared).
-    const px = horiz ? Math.max(x1, Math.min(x2, fx)) : x1, py = horiz ? y1 : Math.max(y1, Math.min(y2, P.y + S / 2));
-    const d = horiz ? Math.hypot(px - fx, py - fy) : Math.hypot(px - fx, py - (P.y + S / 2)) - S / 2;
-    const moving = Math.abs(P.vx || 0) > 20 || Math.abs(P.vy || 0) > 40;
-    if (d < 26 && mode === 'play' && Math.random() < (moving ? .55 : .12)) {
-      const spread = horiz ? 26 : 18;
-      sparks.push({ x: horiz ? px + (Math.random() - .5) * spread : px + (Math.random() - .5) * 4, y: horiz ? py - Math.random() * 2 : py + (Math.random() - .5) * spread,
-        vx: (Math.random() - .5) * 18, vy: -10 - Math.random() * 22, t: 0, life: .55 + Math.random() * .5, r: 2 + Math.random() * 2.6, spin: Math.random() });
+    const horiz = y1 === y2, fx = P.x + S / 2, fy = horiz ? P.y + S : P.y + S / 2, R = horiz ? 110 : 90, step = 11;
+    const len = Math.hypot(x2 - x1, y2 - y1), n = Math.max(1, Math.round(len / step)), a0 = ctx.globalAlpha;
+    // Solo los puntos de la línea cerca de él: el resto del piso no existe a la vista.
+    const along = horiz ? fx - x1 : fy - y1, from = Math.max(0, Math.floor((along - R) / step)), to = Math.min(n, Math.ceil((along + R) / step));
+    for (let i = from; i <= to; i++) {
+      const u = i / n, x = x1 + (x2 - x1) * u, y = y1 + (y2 - y1) * u;
+      const near = Math.max(0, 1 - Math.hypot(x - fx, y - fy) / R);
+      if (near <= 0 || mode !== 'play') continue;
+      const seed = Math.sin((x1 + i * 7.3) * 12.9898 + (y1 + i * 3.1) * 78.233) * 43758.5, rnd = seed - Math.floor(seed);
+      const g = near * near * (3 - 2 * near), far = (1 - g) * (1 - g) * 60, ang = rnd * Math.PI * 2;
+      const tw = .7 + .3 * Math.sin(now / 140 + i * 1.9);
+      sparkle(x + Math.cos(ang) * far, y + Math.sin(ang) * far - (horiz ? 1 : 0), (1 + g * 3.4) * tw, a0 * Math.min(1, g * 1.4), rnd * 3 + g);
     }
     if (!base) return;
-    // Cornisas: estrellitas quietas, espaciadas, que titilan cada una a su ritmo.
-    const len = Math.hypot(x2 - x1, y2 - y1), n = Math.max(1, Math.round(len / 34));
-    for (let k = 0; k <= n; k++) {
-      const u = k / n, tw = .5 + .5 * Math.sin(now / 520 + k * 2.3 + x1);
-      sparkle(x1 + (x2 - x1) * u, y1 + (y2 - y1) * u, 1.4 + tw * 1.6, ctx.globalAlpha * base * (.45 + .55 * tw), k);
-    }
-  }
-  function drawSparks(now) {
-    const dt = Math.min(.05, (now - (sparkAt || now)) / 1000); sparkAt = now;
-    // Al aterrizar, una lluvia de brillitos bajo los pies.
-    if (P.ground && !wasGround && mode === 'play') burst(P.x + S / 2, P.y + S, 9, S);
-    wasGround = !!P.ground;
-    sparks = sparks.filter(p => (p.t += dt) < p.life);
-    if (sparks.length > 140) sparks.splice(0, sparks.length - 140);
-    for (const p of sparks) {
-      p.x += p.vx * dt; p.y += p.vy * dt; p.vy *= .96;
-      const k = p.t / p.life, grow = Math.sin(Math.PI * k);
-      sparkle(p.x, p.y, p.r * (.4 + .6 * grow), grow * (.75 + .25 * Math.sin(now / 60 + p.spin * 9)), p.spin + k * 1.2);
+    // Cornisas que hay que ver de antes: unas pocas estrellitas quietas que titilan.
+    for (let k = 0; k <= Math.max(1, Math.round(len / 34)); k++) {
+      const m = Math.max(1, Math.round(len / 34)), u = k / m, tw = .5 + .5 * Math.sin(now / 520 + k * 2.3 + x1);
+      sparkle(x1 + (x2 - x1) * u, y1 + (y2 - y1) * u, 1.4 + tw * 1.6, a0 * base * (.45 + .55 * tw), k);
     }
   }
   function drawPlat(p, now) {
@@ -532,7 +532,7 @@
       ctx.restore();
     } else if (level && P.on && !P.on.floor && !P.on.hidden && !P.on.crate) drawPlat(P.on, now);
     // La estela del muñequito cuando atraviesa el retrato.
-    if (level) drawSparks(now);
+    if (level) drawTrail(now);
     P.trail.forEach((t, k) => { ctx.globalAlpha = (k / P.trail.length) * 0.35; ctx.fillStyle = ACCENT; ctx.beginPath(); ctx.roundRect(t[0] + 4, t[1] + 4, S - 8, S - 8, 5); ctx.fill(); });
     ctx.globalAlpha = 1;
     // Esperando, el muñequito se asoma por detrás del título, listo para arrancar. Al terminar queda solo el de la nota.
@@ -554,11 +554,6 @@
       ctx.translate(ws.x + S / 2, ws.y + S - hop); ctx.scale(BIG, BIG); ctx.translate(-(ws.x + S / 2), -(ws.y + S));
       drawPk(ws.x, ws.y, now); ctx.restore();
     } else if (mode !== 'done' && !endAt && seen(P.y)) {
-      if (P.on && P.on.hidden && mode === 'play') {
-        const g2 = ctx.createLinearGradient(P.x - 30, 0, P.x + S + 30, 0);
-        g2.addColorStop(0, 'rgba(94,234,212,0)'); g2.addColorStop(0.5, 'rgba(94,234,212,.75)'); g2.addColorStop(1, 'rgba(94,234,212,0)');
-        ctx.strokeStyle = g2; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(P.x - 30, P.on.y); ctx.lineTo(P.x + S + 30, P.on.y); ctx.stroke();
-      }
       drawPk(P.x, P.y, now);
     }
     labels = labels.filter(l => now < l.until);
@@ -632,6 +627,7 @@
       r.d += RAIL * dt;
       const len = Math.hypot(r.to.x - r.at.x, r.to.y - r.at.y), u = Math.min(1, r.d / (len || 1));
       P.x = r.at.x + (r.to.x - r.at.x) * u - S / 2; P.y = r.at.y + (r.to.y - r.at.y) * u - S / 2; P.form = 'dot';
+      if (Math.random() < .7) trail.push({ x: P.x + S / 2 + (Math.random() - .5) * 6, y: P.y + S / 2 + (Math.random() - .5) * 6, vx: (Math.random() - .5) * 24, vy: (Math.random() - .5) * 24, t: 0, life: .5 + Math.random() * .5, r: 1.6 + Math.random() * 2.2, spin: Math.random() * 3 });
       if (u < 1) return;
       const from = r.at, n = r.at = r.to; r.to = null; r.d = 0; onNode(n);
       if (n.exit) { P.rail = null; P.vy = 120; P.form = 'pk'; return; }
@@ -650,7 +646,7 @@
     if (n.fold && !n.task.open) n.task.open = true;
     if (n.fold && !n.done) { n.done = true; n.task.classList.add('read'); once(n.task.dataset.say || "Ooh, reading time! ↓ When you're ready.", HOLD); }
     if (n.task && !n.done) {
-      if (!settled(n)) return;
+      if (r.readyFor !== n) { if (!settled(n)) return; r.readyFor = n; }
       cards(n).forEach(el => el.classList.add('lit'));
       if (now < lockUntil) { n.t = n.need; return; }
       n.t += dt;
@@ -711,7 +707,7 @@
     if (!labels.some(l => l.text === text)) say(text, HOLD);
   }
   // En la portada dice una sola cosa antes de entrar: al acercarse al portal, que está junto a la cara.
-  const faceLine = f => Math.abs(P.x + S / 2 - (f.x1 + f.x2) / 2) < 150 ? "Who's that handsome guy? My creator?" : null;
+  const faceLine = f => Math.abs(P.x + S / 2 - (f.x2 - 15)) < 150 ? "Who's that handsome guy? My creator?" : null;
   function request() {
     if (P.dive || P.ride || endAt) return null;
     if (P.rail) {
@@ -723,7 +719,7 @@
     }
     if (!P.ground || P.form === 'file' || (P.on && P.on.kind === 'model' && !P.on.built)) return null;
     const f = level.face, mc = level.mc, t = level.table;
-    if (f && P.y < level.entry.y) return `${toward((f.x1 + f.x2) / 2)} A portal! Where does it go?`;
+    if (f && P.y < level.entry.y) { tip = { keys: [toward(f.x2 - 15)], from: performance.now() }; return null; }
     return mc.state.checked ? `${toward(t.x)} Almost there, I can feel it.` : `${toward(mc.x + mc.w / 2)} The exit's over here.`;
   }
   let idleSince = 0;
@@ -814,7 +810,7 @@
     }
     const f = level.face;
     // Apenas se va la misión, el muñequito ya mira la cara: no espera a que el jugador se quede quieto.
-    if (f && control && P.ground && P.y < level.entry.y && now >= missionUntil) { const t = faceLine(f); if (t && !said.has(t)) { said.add(t); say(t, HOLD); } } // sin frenarlo: decirlo no lo deja quieto
+    if (f && control && P.ground && P.y < level.entry.y && now >= missionUntil) { const t = faceLine(f); if (t) once(t, 4000); } // sin frenarlo: decirlo no lo deja quieto
     if (f && control && (!P.ground || !f.jump) && P.x + S / 2 > f.x1 && P.x + S / 2 < f.x2 && P.y + S / 2 > f.y1 && P.y + S / 2 < f.y2) {
       P.dive = divePath(f.via ? [f.via[0] - S / 2, f.via[1] - S / 2] : null, [level.entry.x - S / 2, level.entry.y - S / 2]); P.on = null; P.ground = false;
       return;
@@ -1138,7 +1134,7 @@
   document.addEventListener('visibilitychange', relayout);
 
   // Para probarlo desde afuera.
-  window.__pk = { intro: () => intro && { ms: intro.ms, follow: intro.follow, points: intro.points.map(p => p.map(Math.round)) }, drift: () => ({ ...drift }),  level: () => level, activate, state: () => ({ dive: !!P.dive, mode, x: Math.round(P.x), y: Math.round(P.y), form: P.form, ride: !!P.ride, won, on: P.on && (P.on.kind || (P.on.floor ? 'floor' : 'ledge')), scrollY }), start, stop, keys: k => Object.assign(keys, k), place: (x, y) => { P.x = x; P.y = y; P.vy = 0; }, sim: ms => { let t = performance.now(); for (let k = 0; k < ms / 16; k++) { t += 16; step(0.016, t, mode === 'play'); if (mode === 'play') follow(0.016); } return window.__pk.state(); } };
+  window.__pk = { intro: () => intro && { ms: intro.ms, follow: intro.follow, points: intro.points.map(p => p.map(Math.round)) }, drift: () => ({ ...drift }),  level: () => level, activate, state: () => ({ lock: Math.round(lockUntil - performance.now()), keys: Object.keys(keys).filter(k => keys[k]).join(), labels: labels.map(l => l.text.slice(0, 20)).join('|'), dive: !!P.dive, mode, x: Math.round(P.x), y: Math.round(P.y), form: P.form, ride: !!P.ride, won, on: P.on && (P.on.kind || (P.on.floor ? 'floor' : 'ledge')), scrollY }), start, stop, keys: k => Object.assign(keys, k), place: (x, y) => { P.x = x; P.y = y; P.vy = 0; }, sim: ms => { let t = performance.now(); for (let k = 0; k < ms / 16; k++) { t += 16; step(0.016, t, mode === 'play'); if (mode === 'play') follow(0.016); } return window.__pk.state(); } };
 
   relayout();
   if (document.readyState === 'complete') restore(); else addEventListener('load', restore);

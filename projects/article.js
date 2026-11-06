@@ -29,3 +29,12 @@
   addEventListener('resize', sync);
   sync();
 })();
+
+// Volver al inicio desde un artículo: si se llegó desde el inicio, se vuelve atrás en el historial, así la página
+// (y el juego, si estaba jugando) queda exactamente donde estaba.
+(() => {
+  let fromHome = false;
+  try { const r = new URL(document.referrer); fromHome = r.origin === location.origin && /(\/|index\.html)$/.test(r.pathname); } catch {}
+  if (!fromHome || history.length < 2) return;
+  document.querySelectorAll('a[href^="../index.html"]').forEach(a => a.addEventListener('click', e => { e.preventDefault(); history.back(); }));
+})();
