@@ -765,3 +765,5 @@ main > section:not(.hero):nth-of-type(even)::before { display: none; }
 .card:hover, .fold summary:hover, .fold[open] summary { background: var(--lg-hover); box-shadow: inset 1px 1px 0 rgba(255, 255, 255, .28), inset -1px -1px 0 rgba(255, 255, 255, .07); }
 .playing .fold:not([open]) summary:hover { background: var(--lg); box-shadow: var(--lg-shadow); }
 .agent-note { background: rgba(94, 234, 212, .06); }
+/* El nombre de la tabla se escribe como código: así se lee como una tabla de verdad, no como una frase. */
+.pk-say code, .play-help code { font-family: var(--mono); font-size: .9em; color: var(--accent); background: rgba(94, 234, 212, .1); padding: 1px 6px; border-radius: 5px; }

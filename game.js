@@ -26,11 +26,11 @@
   // La misión, con las teclas para moverse, en un globo sobre el muñequito.
   const mission = document.createElement('div');
   mission.className = 'pk-say'; mission.setAttribute('role', 'status');
-  mission.innerHTML = `<p>I'm looking for the contacts table. Have you seen it?</p>${touch ? '<p class="go">use the buttons below ↓</p>' : '<p class="go"><kbd>←</kbd><kbd>→</kbd> move <kbd>↑</kbd> jump</p>'}`;
+  mission.innerHTML = `<p>I'm looking for the <code>contacts</code> table. Have you seen it?</p>${touch ? '<p class="go">use the buttons below ↓</p>' : '<p class="go"><kbd>←</kbd><kbd>→</kbd> move <kbd>↑</kbd> jump</p>'}`;
   // El panel fijo con los controles y el botón para reiniciar; aparece cuando el juego ya empezó.
   const help = document.createElement('div');
   help.className = 'play-help';
-  help.innerHTML = '<span class="goal">goal: get me to the contacts table</span><span><kbd>←</kbd><kbd>→</kbd> move</span><span><kbd>↑</kbd> jump</span><span><kbd>↓</kbd> down</span><button type="button" class="restart">↺ restart</button><button type="button" class="exit">✕ exit</button>';
+  help.innerHTML = '<span class="goal">goal: get me to the <code>contacts</code> table</span><span><kbd>←</kbd><kbd>→</kbd> move</span><span><kbd>↑</kbd> jump</span><span><kbd>↓</kbd> down</span><button type="button" class="restart">↺ restart</button><button type="button" class="exit">✕ exit</button>';
   const pad = document.createElement('div');
   pad.className = 'pad'; pad.hidden = true;
   pad.innerHTML = '<button type="button" data-k="left" aria-label="Left">◀</button><button type="button" data-k="right" aria-label="Right">▶</button><button type="button" data-k="down" class="down" aria-label="Go down">▼</button><button type="button" data-k="jump" class="jump" aria-label="Jump">▲</button><button type="button" class="x" aria-label="Stop playing">✕</button><button type="button" class="restart re" aria-label="Restart the game">↺</button>';
@@ -266,7 +266,7 @@
         ctx.shadowColor = 'rgba(94,234,212,.55)'; ctx.shadowBlur = 10; ctx.fillStyle = INK; ctx.lineWidth = 1.5; ctx.lineJoin = 'round';
         ctx.beginPath(); ctx.moveTo(sx + 5, sy); ctx.lineTo(sx + sw, sy); ctx.lineTo(sx + sw + tip, sy + sh / 2); ctx.lineTo(sx + sw, sy + sh); ctx.lineTo(sx + 5, sy + sh); ctx.arcTo(sx, sy + sh, sx, sy + sh - 5, 5); ctx.lineTo(sx, sy + 5); ctx.arcTo(sx, sy, sx + 5, sy, 5); ctx.closePath(); ctx.fill(); ctx.stroke();
         ctx.shadowBlur = 0; ctx.lineJoin = 'miter';
-        text('contacts table', mid + 2, sy + 17, ACCENT, 'center');
+        text('contacts', mid + 2, sy + 17, ACCENT, 'center');
       } });
     }
     ledge(table.x, table.y, tw, { hidden: true });
