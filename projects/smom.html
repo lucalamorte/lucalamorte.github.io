@@ -118,7 +118,14 @@
 <script src="../snow.js"></script>
 <script>
   // Cada caso de estudio arranca desde su título, aunque el navegador recuerde dónde había quedado la lectura.
-  if (!location.hash) { history.scrollRestoration = 'manual'; scrollTo(0, 0); addEventListener('load', () => scrollTo(0, 0)); }
+  // Cada artículo abre en el título: sin restaurar la posición anterior, sin animar la subida y de nuevo al
+  // terminar de cargar y al volver con atrás o adelante, por si el navegador movió la página en el medio.
+  if (!location.hash || location.hash === '#top') {
+    if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+    // scrollIntoView también mueve el marco que la contiene, si la página se muestra dentro de otra.
+    const top = () => { const go = () => { scrollTo({ top: 0, left: 0, behavior: 'instant' }); (document.getElementById('top') || document.body).scrollIntoView({ block: 'start', behavior: 'instant' }); }; go(); requestAnimationFrame(go); };
+    top(); addEventListener('DOMContentLoaded', top); addEventListener('load', top); addEventListener('pageshow', top);
+  }
 </script>
 </body>
 </html>
