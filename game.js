@@ -48,7 +48,13 @@
   let peekAt = null;
   addEventListener('title-typed', () => { peekAt = performance.now() + 1400; });
   // Sin animación de escritura (movimiento reducido) no hay nada que esperar.
-  const peekFrom = () => { const h = $('.hero h1'); return h && h.classList.contains('typing') ? peekAt : 0; };
+  // Si el título se terminó de escribir antes de que este archivo escuchara el aviso, se toma de la clase.
+  const peekFrom = () => {
+    const h = $('.hero h1');
+    if (!h || !h.classList.contains('typing')) return 0;
+    if (peekAt === null && h.classList.contains('typed')) peekAt = performance.now();
+    return peekAt;
+  };
   // Esperando, se asoma por detrás del título: medio cuerpo escondido tras la "e" de "here", sobre la línea de las minúsculas.
   const waitSpot = () => {
     const cs = document.querySelectorAll('.hero h1 .ch'), c = cs.length > 2 ? cs[cs.length - 2] : $('.hero h1'), r = box(c);

@@ -1,7 +1,7 @@
-// Fondo: una noche en la montaña. Arriba, el cielo: estrellas que titilan, constelaciones que son agentes (un
-// centro con sus herramientas, y llamadas que van y vuelven) y cada tanto una estrella fugaz. Abajo, las sierras
-// nevadas. Por delante, la nevada de datos: puntitos (registros) y copos de seis puntas (Snowflake) que caen y se
-// mecen, algunos en el color de acento; cerca del cursor se apartan y brillan. Detrás del texto todo se aclara.
+// Fondo: el cielo de una noche que nieva. Estrellas que titilan, constelaciones que son agentes (un centro con sus
+// herramientas, y llamadas que van y vuelven) y cada tanto una estrella fugaz. Por delante, la nevada de datos:
+// puntitos (registros) y copos de seis puntas (Snowflake) que caen y se mecen, algunos en el color de acento;
+// cerca del cursor se apartan y brillan. Detrás del texto la nieve se aclara.
 (() => {
   const small = matchMedia('(max-width: 760px)').matches;
   const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -10,7 +10,7 @@
   canvas.setAttribute('aria-hidden', 'true');
   document.body.prepend(canvas);
   const ctx = canvas.getContext('2d');
-  let width = 0, height = 0, flakes = [], agents = [], stars = [], ridges = [];
+  let width = 0, height = 0, flakes = [], agents = [], stars = [];
   // Cuánto acompaña el cielo al scroll: poco, porque está lejos.
   const SKY = 0.22;
 
@@ -29,16 +29,6 @@
     stars = Array.from({ length: Math.round(width * height / (small ? 2600 : 3200)) }, () => ({
       x: rand() * width, y: rand() * height, r: 0.35 + rand() * 0.75, a: 0.12 + rand() * 0.4, tw: 0.4 + rand() * 1.6, ph: rand() * 6.3, blue: rand() < 0.3,
     }));
-    // Las sierras: dos cordones, el de atrás más alto y más claro, quietos al pie de la pantalla como una ventana.
-    ridges = [[0.2, 0.17, 0.45], [0.11, 0.1, 0.8]].map(([base, amp, f]) => {
-      const p1 = rand() * 6, p2 = rand() * 6, p3 = rand() * 6, pts = [];
-      for (let x = -20; x <= width + 20; x += 18) {
-        const u = x / Math.max(width, 1) * Math.PI * 2;
-        const h = Math.abs(Math.sin(u * f * 1.3 + p1)) * 0.55 + Math.sin(u * f * 3.1 + p2) * 0.25 + Math.sin(u * f * 7.7 + p3) * 0.08;
-        pts.push([x, height * (1 - base) - height * amp * Math.max(0, h) * (small ? 0.6 : 1)]);
-      }
-      return pts;
-    });
     flakes = Array.from({ length: count }, () => {
       const flake = rand() < 0.32;
       return {
@@ -125,23 +115,6 @@
     ctx.stroke();
   }
 
-  // Las sierras nevadas: la cumbre con nieve que se apaga hacia abajo, y el pie que se funde con la noche.
-  function drawRidges() {
-    ridges.forEach((pts, k) => {
-      const top = Math.min(...pts.map(p => p[1]));
-      const g = ctx.createLinearGradient(0, top, 0, height);
-      g.addColorStop(0, k ? 'rgba(203,213,225,.16)' : 'rgba(203,213,225,.09)');
-      g.addColorStop(0.35, k ? 'rgba(30,41,59,.9)' : 'rgba(22,32,52,.75)');
-      g.addColorStop(1, k ? 'rgba(10,15,28,.98)' : 'rgba(12,18,32,.9)');
-      ctx.fillStyle = g; ctx.beginPath(); ctx.moveTo(pts[0][0], height);
-      for (const [x, y] of pts) ctx.lineTo(x, y);
-      ctx.lineTo(pts[pts.length - 1][0], height); ctx.closePath(); ctx.fill();
-      // El filo de la cumbre, apenas iluminado por la luz del cielo.
-      ctx.strokeStyle = k ? 'rgba(226,232,240,.22)' : 'rgba(226,232,240,.12)'; ctx.lineWidth = 1; ctx.beginPath();
-      pts.forEach(([x, y], i) => (i ? ctx.lineTo(x, y) : ctx.moveTo(x, y))); ctx.stroke();
-    });
-  }
-
   // La estrella fugaz: cada 8 a 18 segundos cruza en diagonal, de arriba a la derecha hacia abajo a la izquierda, con su estela.
   let comet = null, nextComet = 6000;
   function drawComet(t, dt) {
@@ -163,15 +136,6 @@
   function draw(t, dt) {
     ctx.globalCompositeOperation = 'source-over';
     ctx.clearRect(0, 0, width, height);
-    if (dt) drawComet(t, dt);
-    for (const s of stars) {
-      const y = ((s.y - scrollY * 0.12) % height + height) % height;
-      ctx.globalAlpha = s.a * (0.65 + 0.35 * Math.sin(t / 1000 * s.tw + s.ph));
-      ctx.fillStyle = s.blue ? '#a5b4fc' : '#e2e8f0'; ctx.fillRect(s.x, y, s.r * 2, s.r * 2);
-    }
-    ctx.globalAlpha = 1;
-    drawAgents(t);
-    drawRidges();
     ctx.lineCap = 'round';
     for (const f of flakes) {
       if (dt) {
@@ -191,10 +155,22 @@
       if (f.flake) { ctx.strokeStyle = color; ctx.lineWidth = 1.1; snowflake(x, y, f.r * (1 + near * 0.4), f.phase + t / 1000 * f.spin); }
       else { ctx.fillStyle = color; ctx.beginPath(); ctx.arc(x, y, f.r, 0, Math.PI * 2); ctx.fill(); }
     }
+    // Solo la nieve se aclara detrás del texto. El cielo se pinta después, por detrás de todo y entero: si la
+    // máscara lo tocara, quedarían rectángulos oscuros recortados sobre las estrellas.
     if (mask.width && mask.height) {
       ctx.globalCompositeOperation = 'destination-out';
       ctx.drawImage(mask, 0, scrollY * SCALE, width * SCALE, height * SCALE, 0, 0, width, height);
     }
+    ctx.globalCompositeOperation = 'destination-over';
+    if (dt) drawComet(t, dt);
+    drawAgents(t);
+    for (const s of stars) {
+      const y = ((s.y - scrollY * 0.12) % height + height) % height;
+      ctx.globalAlpha = s.a * (0.65 + 0.35 * Math.sin(t / 1000 * s.tw + s.ph));
+      ctx.fillStyle = s.blue ? '#a5b4fc' : '#e2e8f0'; ctx.fillRect(s.x, y, s.r * 2, s.r * 2);
+    }
+    ctx.globalAlpha = 1;
+    ctx.globalCompositeOperation = 'source-over';
   }
 
   let last = 0;
