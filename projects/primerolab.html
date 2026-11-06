@@ -107,7 +107,7 @@
 
   <h3>Hard limits</h3>
   <ul>
-    <li><strong>4 tool rounds at most,</strong> because a loop with no limit is a bill with no limit.</li>
+    <li><strong>4 tool rounds at most,</strong> so a runaway loop cannot run up the model bill.</li>
     <li><strong>8 seconds per tool</strong> and <strong>6,000 characters per tool result</strong>, so one slow or huge answer cannot stall the conversation.</li>
     <li>The loop mechanics (iteration guard, streamed tool-call fragments, argument clamping) are kept as pure functions so the parts that break silently can be tested.</li>
   </ul>

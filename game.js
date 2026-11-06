@@ -20,7 +20,7 @@
   canvas.className = 'play-layer'; canvas.setAttribute('aria-hidden', 'true');
   const ctx = canvas.getContext('2d');
   const hit = document.createElement('button');
-  hit.type = 'button'; hit.className = 'pk-hit'; hit.setAttribute('aria-label', 'Start the journey: play the portfolio as a game');
+  hit.type = 'button'; hit.className = 'pk-hit'; hit.setAttribute('aria-label', 'Play the portfolio as a game');
   const hint = document.createElement('span');
   hint.className = 'pk-hint'; hint.textContent = touch ? "Hi, I'm Little Bit. Tap me!" : "Hi, I'm Little Bit. Click me!"; hint.classList.add('side');
   // La misión, con las teclas para moverse, en un globo sobre el muñequito.
