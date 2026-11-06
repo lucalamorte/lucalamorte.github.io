@@ -44,7 +44,7 @@
   // Donde espera antes de empezar: debajo del texto de la portada, más grande y saltando. Primero se lee y
   // después invita; al tocarlo salta al título, donde arranca el juego.
   const BIG = 1.5;
-  const waitSpot = () => { const b = box($('.hero .tools')); return { x: b.x + 10, y: b.b + 34 }; };
+  const waitSpot = () => { const b = box($('.hero .intro > p:last-of-type')); return { x: b.x + 10, y: b.b + 52 }; };
   // Un cartelito que flota sobre el muñequito o sobre una pieza.
   // Los diálogos siempre salen justo arriba del muñequito y lo siguen mientras se mueve.
   // De a un diálogo por vez: el nuevo aparece enseguida, en su momento, y el anterior se desvanece debajo.
