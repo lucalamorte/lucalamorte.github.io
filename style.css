@@ -874,3 +874,7 @@ body.pk-floating .pk-hint { z-index: -1; }
 .article-end a.down:hover { color: var(--accent); background: var(--accent-tint); }
 .article-end a.down svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; animation: scroll-next-bob 1.8s ease-in-out infinite; }
 @media (prefers-reduced-motion: reduce) { .article-end a.down svg { animation: none; } }
+
+/* Credenciales: cada nombre es su propio link, con la flechita al lado; el hover cae justo sobre la palabra. */
+.list.certs .cred::after { content: " ↗"; position: static; inset: auto; font-family: var(--mono); font-size: .78em; color: var(--accent); opacity: .7; }
+.list.certs .cred:hover::after, .list.certs .cred:focus-visible::after { opacity: 1; }
