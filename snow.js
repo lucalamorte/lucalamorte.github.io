@@ -102,16 +102,18 @@
       const [mx, my] = at(.86, .7, .2, .74), step = small ? 18 : 24;
       [0, 1, 2].forEach(k => bright(mx + (k - 1) * step, my - (k - 1) * step * .42, 2.2 - k * .15));
     }
-    // La bandera argentina, chica y suave: celeste, blanca y celeste, con el sol en el medio.
+    // La bandera argentina hecha de estrellas: filas celestes arriba y abajo, blancas en el medio y el sol,
+    // una estrella dorada, en el centro.
     {
-      const [fx, fy] = at(.9, .3, .84, .44), w = small ? 40 : 54, h = w * .62, x0 = fx - w / 2, y0 = fy - h / 2;
-      sk.save(); sk.globalAlpha = .55; sk.beginPath(); sk.roundRect(x0, y0, w, h, 2); sk.clip();
-      sk.fillStyle = '#74acdf'; sk.fillRect(x0, y0, w, h); sk.fillStyle = '#f8fafc'; sk.fillRect(x0, y0 + h / 3, w, h / 3);
-      sk.restore();
-      sk.globalAlpha = .7; sk.fillStyle = '#f6b40e'; sk.beginPath(); sk.arc(fx, fy, h * .1, 0, Math.PI * 2); sk.fill();
-      sk.strokeStyle = 'rgba(246,180,14,.7)'; sk.lineWidth = .8; sk.beginPath();
-      for (let k = 0; k < 16; k++) { const a = k * Math.PI / 8, r0 = h * .12, r1 = h * (k % 2 ? .15 : .18); sk.moveTo(fx + Math.cos(a) * r0, fy + Math.sin(a) * r0); sk.lineTo(fx + Math.cos(a) * r1, fy + Math.sin(a) * r1); }
-      sk.stroke(); sk.globalAlpha = 1;
+      const [fx, fy] = at(.9, .3, .84, .44), cols = 9, rows = 6, gap = small ? 8 : 11;
+      for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
+        const x = fx + (c - (cols - 1) / 2) * gap, y = fy + (r - (rows - 1) / 2) * gap, white = r === 2 || r === 3;
+        if (white && c === 4) continue;
+        const tint = white ? '248,250,252' : '79,158,232', g = sk.createRadialGradient(x, y, 0, x, y, 4.5);
+        g.addColorStop(0, `rgba(${tint},1)`); g.addColorStop(.3, `rgba(${tint},.5)`); g.addColorStop(1, `rgba(${tint},0)`);
+        sk.fillStyle = g; sk.beginPath(); sk.arc(x, y, 4.5, 0, Math.PI * 2); sk.fill();
+      }
+      bright(fx, fy, 2.2, '246,180,14');
     }
     // Un mate con la bombilla.
     figure(...at(.07, .78, .14, .9), small ? 18 : 24,
