@@ -55,14 +55,15 @@
     if (peekAt === null && h.classList.contains('typed')) peekAt = performance.now();
     return peekAt;
   };
-  // Esperando, se asoma por detrás del título: medio cuerpo escondido tras la "e" de "here", sobre la línea de las minúsculas.
+  // Esperando, sube desde detrás del título y queda parado entero sobre la "e" de "here": el corte solo existe
+  // mientras sube, así nunca parece metido en una caja.
   const waitSpot = () => {
     const cs = document.querySelectorAll('.hero h1 .ch'), c = cs.length > 2 ? cs[cs.length - 2] : $('.hero h1'), r = box(c);
     // La línea de las minúsculas se mide con la fuente real: así el cuerpo queda justo detrás y no pisa ninguna letra.
     const st = getComputedStyle(c); ctx.save(); ctx.font = `${st.fontWeight} ${st.fontSize} ${st.fontFamily}`;
     const m = ctx.measureText('x'); ctx.restore();
     const ledge = cs.length > 2 ? r.y + m.fontBoundingBoxAscent - m.actualBoundingBoxAscent + 1 : r.y + r.h * 0.4, x = cs.length > 2 ? r.x + r.w / 2 - S / 2 : r.x + r.w * 0.6;
-    return { x, y: ledge + S * BIG * 0.3 - S, ledge };
+    return { x, y: ledge - S, ledge };
   };
   // Un cartelito que flota sobre el muñequito o sobre una pieza.
   // Los diálogos siempre salen justo arriba del muñequito y lo siguen mientras se mueve.
@@ -461,10 +462,6 @@
       ctx.save(); ctx.beginPath(); ctx.rect(ws.x - 80, ws.ledge - 160, S * BIG + 160, 160); ctx.clip();
       ctx.translate(ws.x + S / 2, ws.y + S - hop); ctx.scale(BIG, BIG); ctx.translate(-(ws.x + S / 2), -(ws.y + S));
       drawPk(ws.x, ws.y, now); ctx.restore();
-      // El borde no es un corte seco: el cuerpo se funde hacia las letras, como si de verdad estuviera detrás.
-      ctx.save(); ctx.globalCompositeOperation = 'destination-out';
-      const fade = ctx.createLinearGradient(0, ws.ledge - 9, 0, ws.ledge); fade.addColorStop(0, 'rgba(0,0,0,0)'); fade.addColorStop(1, '#000');
-      ctx.fillStyle = fade; ctx.fillRect(ws.x - 80, ws.ledge - 9, S * BIG + 160, 10); ctx.restore();
     } else if (mode !== 'done' && !endAt && seen(P.y)) {
       if (P.on && P.on.hidden && mode === 'play') {
         const g2 = ctx.createLinearGradient(P.x - 30, 0, P.x + S + 30, 0);
