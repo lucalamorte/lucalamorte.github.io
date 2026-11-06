@@ -12,7 +12,16 @@
   const tasks = () => document.querySelectorAll('#experience .card.big, #projects .card, #more .fold');
   try { sessionStorage.clear(); } catch {}
   pk.start(); pk.sim(3500); await sleep(300);
-  for (let i = 0; i < 120 && !pk.state().won; i++) { await press(['right', 'right', 'left', 'left', 'down'][i % 5], 3000); await sleep(300); pk.sim(3000); }
+  // En el DAG el camino se arma en orden: se va siempre hacia el vecino que viene después. Fuera del DAG
+  // (bucket, Snowflake, la tabla) se prueban las flechas en ronda.
+  const nodes = () => pk.level().nodes, here = () => { const st = pk.state(); return nodes().find(n => Math.hypot(n.x - (st.x + 12), n.y - (st.y + 12)) < 4); };
+  const dirTo = (a, b) => Math.abs(b.x - a.x) > Math.abs(b.y - a.y) ? (b.x > a.x ? 'right' : 'left') : (b.y > a.y ? 'down' : 'up');
+  code.up = 'ArrowUp';
+  for (let i = 0; i < 160 && !pk.state().won; i++) {
+    const n = here(), list = nodes();
+    const next = n && n.links.filter(m => list.indexOf(m) > list.indexOf(n)).sort((u, v) => list.indexOf(u) - list.indexOf(v))[0];
+    await press(next ? dirTo(n, next) : ['right', 'right', 'left', 'left', 'down'][i % 5], 3000); await sleep(300); pk.sim(3000);
+  }
   if (!pk.state().won) { ev('keydown', 'right'); for (let i = 0; i < 40 && !pk.state().won; i++) { pk.sim(500); await sleep(30); } ev('keyup', 'right'); }
   const read = [...tasks()].filter(el => el.classList.contains('read')).length, total = tasks().length, won = pk.state().won;
   const ok = won && read === total && !errors.length;

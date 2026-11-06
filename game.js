@@ -26,7 +26,7 @@
   // La misión, con las teclas para moverse, en un globo sobre el muñequito.
   const mission = document.createElement('div');
   mission.className = 'pk-say'; mission.setAttribute('role', 'status');
-  mission.innerHTML = `<p>Thanks for finding me! I'm looking for the <code>contacts</code> table. Have you seen it?</p>${touch ? '<p class="go">use the buttons below ↓</p>' : '<p class="go"><kbd>←</kbd><kbd>→</kbd> move <kbd>↑</kbd> jump</p>'}`;
+  mission.innerHTML = `<p>Thanks for finding me! My home is the <code>contacts</code> table. Have you seen it?</p>${touch ? '<p class="go">use the buttons below ↓</p>' : '<p class="go"><kbd>←</kbd><kbd>→</kbd> move <kbd>↑</kbd> jump</p>'}`;
   // El panel fijo con los controles y el botón para reiniciar; aparece cuando el juego ya empezó.
   const help = document.createElement('div');
   help.className = 'play-help';
@@ -146,7 +146,8 @@
         // Un solo camino, en serpentina: la fila se recorre entera de un costado al otro, pasando por cada tarjeta,
         // y se baja por ese mismo costado a la fila siguiente, que se recorre al revés. No hay desvíos que saltear.
         const right = r % 2 === 1, sx = right ? rx : mx;
-        const b = node(sx, gy, { frame, bus: r === 0 }); if (bus) link(bus, b); first = first || b;
+        // La esquina donde entra cada fila no es una parada: el camino sigue de largo hasta la tarjeta.
+        const b = node(sx, gy, { frame, start: r === 0 }); if (bus) link(bus, b); first = first || b;
         // Una sola parada por fila, en el medio: se leen todas sus tarjetas juntas (en el celu ya hay una por fila).
         row.sort((u, v) => u.c.x - v.c.x);
         const els = row.map(q => q.el), mid = (row[0].c.x + row[row.length - 1].c.r) / 2;
@@ -394,7 +395,7 @@
     ctx.globalAlpha = 1 - morph;
     ctx.strokeStyle = 'rgba(148,163,184,.25)'; ctx.lineWidth = 1;
     for (let k = 1; k < 4; k++) { ctx.beginPath(); ctx.moveTo(t.x, t.y + row * k); ctx.lineTo(t.x + t.w, t.y + row * k); ctx.stroke(); }
-    text('id   from        status', t.x + 8, t.y + row - 5, MUTED);
+    text('id   name        status', t.x + 8, t.y + row - 5, MUTED);
     ctx.fillStyle = 'rgba(148,163,184,.18)';
     for (const k of [1, 2]) { ctx.fillRect(t.x + 8, t.y + row * k + 7, 14, 4); ctx.fillRect(t.x + 34, t.y + row * k + 7, 60, 4); ctx.fillRect(t.x + 122, t.y + row * k + 7, 30, 4); }
     const ly = t.y + row * 3;
@@ -426,7 +427,8 @@
       if (p.label && !p.built) snowflake(p.x + p.w - 18, p.y + 16, 5, p.t ? ACCENT : MUTED);
       return;
     }
-    if (p.floor) { ctx.strokeStyle = FAINT; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(p.x + p.w, p.y); ctx.stroke(); return; }
+    // Los pisos no se dibujan: una línea de lado a lado de la pantalla se lee como un borde roto de la página.
+    if (p.floor) return;
     ctx.strokeStyle = p.solid ? LINE : 'rgba(94,234,212,.15)'; ctx.lineWidth = 2; ctx.setLineDash([8, 6]);
     ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(p.x + p.w, p.y); ctx.stroke(); ctx.setLineDash([]);
   }
@@ -561,7 +563,7 @@
       if (n.exit) { P.rail = null; P.vy = 120; return; }
       // Si la tarea trae frase, un solo anillo cubre las dos cosas: la frase y la lectura.
       if (n.task && !n.fold && n.task.dataset.say) { once(n.task.dataset.say); if (!n.done) hold(n.need * 1000 + 500); }
-      if (n.bus && from.gate && from.y < n.y) once('i ❤️ dbt. raw in, clean out');
+      if ((n.bus || n.start) && from.gate && from.y < n.y) once('i ❤️ dbt. raw in, clean out');
       if (n.task && !n.done) { r.fresh = !!n.fold; return; }
       if (n.gate && from.y < n.y && !gateOpen(n)) gateHint(n);
       const ahead = n.links.filter(m => m !== from);
@@ -960,7 +962,7 @@
     const floating = drifting(now);
     if (floating && !still) moveDrift(dt);
     const ws = floating ? { x: drift.x + S * BIG / 2 - S / 2, y: scrollY + drift.y + S * BIG - S } : waitSpot(), waiting = mode === 'wait', showHit = mode === 'idle' || (waiting && peekFrom() !== null && now >= peekFrom()), big = S * BIG + 24;
-    hint.textContent = floating ? (touch ? "help! i'm lost. tap me" : "help! i'm lost. click me") : (touch ? "hi, i'm Little Bit. tap me" : "hi, i'm Little Bit. click me");
+    hint.textContent = floating ? (touch ? "help! i'm Little Bit, a lost record. tap me" : "help! i'm Little Bit, a lost record. click me") : (touch ? "hi, i'm Little Bit. tap me" : "hi, i'm Little Bit. click me");
     document.body.classList.toggle('pk-floating', floating);
     hit.style.display = showHit ? '' : 'none';
     // Se mueven con translate (fracciones de píxel en la placa de video), no con left/top, que saltan de a un píxel.
