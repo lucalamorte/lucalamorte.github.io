@@ -406,11 +406,22 @@
   // los productos, que no entran en una pantalla, tienen una más por cada fila de tarjetas después de la primera,
   // y cada desplegable abierto es la suya.
   const sections = [...document.querySelectorAll('main > section')], next = document.querySelector('.scroll-next');
-  const stops = () => sections.flatMap(section => {
-    const cards = [...section.querySelectorAll('.projects .card')], top = card => Math.round(card.getBoundingClientRect().top);
-    const rows = [...new Set(cards.map(top))].slice(1).map(y => cards.filter(card => top(card) === y));
-    return [section, ...rows, ...[...section.querySelectorAll('details.fold[open]')].map(fold => [fold])];
-  });
+  // Paradas de la flecha: cada sección, cada empresa dentro de la experiencia (de su título a sus tarjetas), cada
+  // fila de tarjetas que no sea la primera y cada desplegable abierto. Ordenadas por dónde caen, sin repetir lugar.
+  const stops = () => {
+    const all = sections.flatMap(section => {
+      const cards = [...section.querySelectorAll('.projects .card, .flagship .card')], top = card => Math.round(card.getBoundingClientRect().top);
+      const rows = [...new Set(cards.map(top))].slice(1).map(y => cards.filter(card => top(card) === y));
+      const companies = [...section.querySelectorAll(':scope > h2')].slice(1).map(h => {
+        const block = [h];
+        for (let n = h.nextElementSibling; n && n.tagName !== 'H2'; n = n.nextElementSibling) block.push(n);
+        return block;
+      });
+      return [section, ...companies, ...rows, ...[...section.querySelectorAll('details.fold[open]')].map(fold => [fold])];
+    });
+    return all.map(stop => ({ stop, at: stopAt(stop) })).sort((u, v) => u.at - v.at)
+      .filter((s, k, list) => !k || s.at - list[k - 1].at > innerHeight * 0.25).map(s => s.stop);
+  };
   const stopAt = stop => (Array.isArray(stop) ? aim(stop[0], stop[stop.length - 1]) : aim(stop.firstElementChild, stop.lastElementChild));
   const upcoming = () => stops().find(stop => stopAt(stop) > scrollY + 40);
   const sync = () => { const s = upcoming(); next.hidden = !s; if (s) next.href = '#' + (Array.isArray(s) ? s[0].closest('section') : s).id; };
