@@ -963,16 +963,17 @@
     hint.textContent = floating ? (touch ? "help! i'm lost. tap me" : "help! i'm lost. click me") : (touch ? "hi, i'm Little Bit. tap me" : "hi, i'm Little Bit. click me");
     document.body.classList.toggle('pk-floating', floating);
     hit.style.display = showHit ? '' : 'none';
-    if (waiting) Object.assign(hit.style, { left: `${ws.x + S / 2 - big / 2}px`, top: `${ws.y + S + 6 - big}px`, width: `${big}px`, height: `${big}px` });
-    else if (showHit) Object.assign(hit.style, { left: `${P.x - 10}px`, top: `${P.y - 10}px`, width: '44px', height: '44px' });
+    // Se mueven con translate (fracciones de píxel en la placa de video), no con left/top, que saltan de a un píxel.
+    if (waiting) Object.assign(hit.style, { left: '0px', top: '0px', translate: `${ws.x + S / 2 - big / 2}px ${ws.y + S + 6 - big}px`, width: `${big}px`, height: `${big}px` });
+    else if (showHit) Object.assign(hit.style, { left: '0px', top: '0px', translate: `${P.x - 10}px ${P.y - 10}px`, width: '44px', height: '44px' });
     // El globito mientras espera, y la misión sobre el muñequito al aterrizar.
     hint.classList.toggle('on', waiting && peekFrom() !== null && now >= peekFrom() + 900 && (floating ? now - drift.since > 900 : ws.y > scrollY && ws.y < scrollY + H));
     if (waiting) {
       // Al costado si entra; en pantallas angostas, arriba del muñequito.
       const side = ws.x + S * BIG + 230 < W && !(floating && ws.x > W / 2);
       hint.classList.toggle('side', side);
-      hint.style.left = `${side ? ws.x + S / 2 + S * BIG / 2 + 14 : Math.min(W - 70, ws.x + S / 2)}px`;
-      hint.style.top = `${side ? ws.y + S - S * BIG / 2 : ws.y + S - S * BIG - 14}px`;
+      hint.style.left = '0px'; hint.style.top = '0px';
+      hint.style.translate = `${side ? ws.x + S / 2 + S * BIG / 2 + 14 : Math.min(W - 70, ws.x + S / 2)}px ${side ? ws.y + S - S * BIG / 2 : ws.y + S - S * BIG - 14}px`;
     }
     help.classList.toggle('on', !!level && (mode === 'play' || mode === 'idle'));
     const talk = mode === 'play' && now < missionUntil;

@@ -866,3 +866,5 @@ html.js .reveal.in .card, html.js .reveal.in .fold { will-change: auto; }
 body.pk-floating .play-layer { z-index: -1; }
 /* El globito de ayuda también flota por detrás de la página, junto con Little Bit: nunca tapa lo que se lee. */
 body.pk-floating .pk-hint { z-index: -1; }
+/* El globito y el área de click de Little Bit viven en su propia capa: se desplazan suave, sin saltos de píxel. */
+.pk-hint, .pk-hit { will-change: translate, transform; }
