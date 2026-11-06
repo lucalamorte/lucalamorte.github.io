@@ -433,7 +433,8 @@
     ctx.globalAlpha = a0;
   }
   function drawPlat(p, now) {
-    if (p.hidden || p.crate) return;
+    if (p.crate) return;
+    if (p.hidden) { starLine(p.x, p.y, p.x + p.w, p.y, 0, now); return; }
     if (p.kind === 'model') {
       if (p.built) { text(`✓ ${p.label ? p.label() : p.name}`, p.x + 12, p.y + 18, ACCENT); return; }
       ctx.fillStyle = 'rgba(148,163,184,.1)'; ctx.strokeStyle = MUTED; ctx.lineWidth = 1.5;
@@ -660,7 +661,7 @@
     if (f.down) return "↑ Who's that handsome guy? My creator?";
     if (!b || P.x + S / 2 < b.x) return "← Who's that handsome guy? My creator?";
     // Solo pide saltar si el NULL todavía está adelante: parado encima o ya del otro lado, no dice nada.
-    const ahead = P.on !== b && P.x >= b.x + b.w - 2;
+    const ahead = !b.cleared && P.on !== b && P.x >= b.x + b.w - 2;
     return ahead && P.x - b.x - b.w < 70 ? '↑ A NULL in the way. Hop over it?' : null;
   };
   function request() {
@@ -766,7 +767,10 @@
     }
     const f = level.face;
     // Apenas se va la misión, el muñequito ya mira la cara: no espera a que el jugador se quede quieto.
-    if (f && control && P.ground && P.y < level.entry.y && now >= missionUntil && faceLine(f)) once(faceLine(f), HOLD);
+    // Una vez que pasó el NULL, la frase de saltarlo se va y no vuelve, aunque regrese por el mismo lado.
+    const nb = level.block;
+    if (nb && !nb.cleared && P.x + S < nb.x) { nb.cleared = true; labels.forEach(l => { if (l.text.includes('NULL')) l.until = Math.min(l.until, now); }); }
+    if (f && control && P.ground && P.y < level.entry.y && now >= missionUntil) { const t = faceLine(f); if (t && !said.has(t)) { said.add(t); say(t, HOLD); } } // sin frenarlo: decirlo no lo deja quieto
     if (f && control && (!P.ground || !f.jump) && P.x + S / 2 > f.x1 && P.x + S / 2 < f.x2 && P.y + S / 2 > f.y1 && P.y + S / 2 < f.y2) {
       P.dive = divePath(f.via ? [f.via[0] - S / 2, f.via[1] - S / 2] : null, [level.entry.x - S / 2, level.entry.y - S / 2]); P.on = null; P.ground = false;
       return;
@@ -953,8 +957,9 @@
     const vx = x - P.x, vy = y - P.y;
     P.x = x; P.y = y; P.face = vx >= 0 ? 1 : -1;
     P.trail.push([x, y]); if (P.trail.length > 10) P.trail.shift();
-    // Si arrancó lejos de la cara, la página sube con él (nunca baja) para que se vea todo el vuelo.
-    if (intro.follow) { const want = Math.max(0, y + S / 2 - innerHeight * .45); if (want < scrollY - .5) scrollTo({ top: want, behavior: 'instant' }); }
+    // Si arrancó lejos de la cara, la página sube con él (nunca baja) recién cuando está por salirse por arriba:
+    // el vuelo empieza en el acto, sin centrar antes.
+    if (intro.follow) { const want = Math.max(0, y - innerHeight * .18); if (want < scrollY - .5) scrollTo({ top: want, behavior: 'instant' }); }
     if (window.__portraitPoke && portrait) {
       const r = portrait.getBoundingClientRect(), sx = x + S / 2, sy = y + S / 2 - scrollY;
       if (sx > r.left - 20 && sx < r.right + 20 && sy > r.top - 20 && sy < r.bottom + 20) window.__portraitPoke(sx, sy, vx * 2.2, vy * 2.2);
