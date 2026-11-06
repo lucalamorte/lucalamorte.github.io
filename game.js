@@ -1,6 +1,6 @@
 // El portfolio como nivel. El muñequito espera debajo del texto de la portada; al tocarlo da una vuelta por el
 // retrato y cae sobre el título. Desde ahí se salta a la cara de Luca: la zambullida lo deja en un DAG que recorre
-// la experiencia, los productos y "how I think" (cada tarjeta es una tarea que corre mientras se lee, los
+// la experiencia, los productos y "more about me" (cada tarjeta es una tarea que corre mientras se lee, los
 // desplegables se abren solos, y una compuerta all_success cierra cada sección). El DAG desemboca en el bucket de S3, Airflow lo carga a Snowflake,
 // el warehouse se prende, dbt construye stage, integration y consumption, y Monte Carlo lo revisa a la salida.
 // Al final el dato entra como fila en una tabla, la tabla se vuelve reporte y del reporte sale el agente; ahí el
@@ -145,7 +145,7 @@
     // El DAG arranca donde termina la zambullida, cruza la experiencia y los productos y desemboca en el bucket.
     const work = dag([...document.querySelectorAll('#experience .card.big')], null, 2.2);
     const built = dag([...document.querySelectorAll('#projects .card')], work.gate, 1.6);
-    // "how I think": cada desplegable es una tarea sobre el bus. Al llegar se abre y queda abierto el tiempo que
+    // "more about me": cada desplegable es una tarea sobre el bus. Al llegar se abre y queda abierto el tiempo que
     // se quiera; se cierra recién cuando el muñequito sigue.
     const folds = [...document.querySelectorAll(FOLDS)], foldTasks = [];
     let prev = built.gate;
@@ -161,7 +161,7 @@
     things.push({ draw: now => drawDag(nodes, now) });
     const reads = { get done() { return tasks.filter(n => n.done).length; }, total: tasks.length };
 
-    // Al final de "how I think" está el bucket de S3: el DAG desemboca ahí.
+    // Al final de "more about me" está el bucket de S3: el DAG desemboca ahí.
     const pr = box($('#more'));
     const fy = pr.b - 6, bw = 84, bx = Math.max(colL + 30, 24);
     floor(fy, [[bx, bw]]);
