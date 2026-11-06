@@ -26,7 +26,7 @@
   // La misión, con las teclas para moverse, en un globo sobre el muñequito.
   const mission = document.createElement('div');
   mission.className = 'pk-say'; mission.setAttribute('role', 'status');
-  mission.innerHTML = `<p>Thanks for finding me! My home is the <code>contacts</code> table. Have you seen it?</p>${touch ? '<p class="go">Use the buttons below ↓</p>' : '<p class="go"><kbd>←</kbd><kbd>→</kbd> move <kbd>↑</kbd> jump</p>'}`;
+  mission.innerHTML = `<p>I'm Little Bit! My home is the <code>contacts</code> table. Have you seen it?</p>${touch ? '<p class="go">Use the buttons below ↓</p>' : '<p class="go"><kbd>←</kbd><kbd>→</kbd> move <kbd>↑</kbd> jump</p>'}`;
   // El panel fijo con los controles y el botón para reiniciar; aparece cuando el juego ya empezó.
   const help = document.createElement('div');
   help.className = 'play-help';
@@ -552,7 +552,15 @@
     const r = P.rail;
     // Primero se centra lo que hay que leer: hasta que la cámara llega, no arranca el viaje ni corre la tarea.
     // La tecla igual se toma: el muñequito elige la arista y sale cuando la cámara está lista.
-    const settled = n => { if (now < swapUntil) return true; const t = frameTarget(n); return t === null || Math.abs(scrollY - t) <= 6; };
+    // Espera a que la cámara llegue antes de avanzar, pero nunca para siempre: si el jugador scrolleó con el dedo
+    // (la cámara quedó libre) o el celu no deja llegar al lugar exacto, a los 0,9 s sigue igual.
+    const settled = n => {
+      if (camFree || now < swapUntil) return true;
+      const t = frameTarget(n); if (t === null || Math.abs(scrollY - t) <= 6) { r.waitFrom = 0; return true; }
+      if (!r.waitFrom) r.waitFrom = now;
+      if (now - r.waitFrom > 900) { r.waitFrom = 0; return true; }
+      return false;
+    };
     if (r.to) {
       if (r.d === 0 && !settled(r.to)) return;
       r.d += RAIL * dt;
