@@ -43,7 +43,7 @@
   canvas.setAttribute('aria-hidden', 'true');
   document.body.prepend(canvas);
   const ctx = canvas.getContext('2d');
-  let width = 0, height = 0, flakes = [], agents = [], stars = [], twinkle = [];
+  let width = 0, height = 0, flakes = [], agents = [], stars = [], twinkle = [], zones = [];
   const sky = document.createElement('canvas');
   // Cuánto acompaña el cielo al scroll: poco, porque está lejos.
   const SKY = 0.22;
@@ -87,7 +87,8 @@
       marks.forEach(([x, y, r = 1.5]) => bright(ox + x * u, oy + y * u, r));
     };
     const ring = (cx, cy, r, n = 28) => Array.from({ length: n + 1 }, (_, k) => [cx + Math.cos(k / n * Math.PI * 2) * r, cy + Math.sin(k / n * Math.PI * 2) * r]);
-    const at = (fx, fy, mx, my) => [width * (small ? mx : fx), height * (small ? my : fy)];
+    zones = [];
+    const at = (fx, fy, mx, my, r = small ? 40 : 56) => { const p = [width * (small ? mx : fx), height * (small ? my : fy)]; zones.push({ x: p[0], y: p[1], r }); return p; };
 
     // La Cruz del Sur: sus cinco estrellas en la forma real.
     {
@@ -159,11 +160,25 @@
       return { x, y, tools, call: null, next: 2000 + r() * 6000 };
     });
   }
+  // Las referencias del cielo se mueven con el fondo y los agentes con otra velocidad: cuando un agente pasa
+  // cerca de una, se desvanece, así nunca quedan pegados.
+  function apart(x, y) {
+    const off = ((scrollY * 0.12) % height + height) % height;
+    let k = 1;
+    for (const z of zones) {
+      const zy = ((z.y - off) % height + height) % height, d = Math.hypot(x - z.x, y - zy) - z.r - 40;
+      k = Math.min(k, Math.max(0, Math.min(1, d / 50)));
+    }
+    return k * k * (3 - 2 * k);
+  }
   function drawAgents(t) {
     ctx.lineWidth = 1;
     for (const g of agents) {
       const off = scrollY * SKY, gy = g.y - off;
       if (gy < -120 || gy > height + 120) continue;
+      const fade = apart(g.x, gy);
+      if (!fade) continue;
+      ctx.globalAlpha = fade;
       ctx.strokeStyle = 'rgba(94,234,212,.14)'; ctx.beginPath();
       for (const p of g.tools) { ctx.moveTo(g.x, gy); ctx.lineTo(p.x, p.y - off); }
       ctx.stroke();
@@ -175,10 +190,11 @@
       if (!g.call && t > g.next) g.call = { to: g.tools[Math.floor(Math.random() * g.tools.length)], t0: t };
       if (g.call) {
         const u = (t - g.call.t0) / 1400;
-        if (u >= 1) { g.call = null; g.next = t + 3000 + Math.random() * 7000; continue; }
+        if (u >= 1) { g.call = null; g.next = t + 3000 + Math.random() * 7000; ctx.globalAlpha = 1; continue; }
         const k = u < 0.5 ? u * 2 : 2 - u * 2, p = g.call.to;
         ctx.fillStyle = 'rgba(94,234,212,.9)'; ctx.beginPath(); ctx.arc(g.x + (p.x - g.x) * k, gy + (p.y - g.y) * k, 1.8, 0, Math.PI * 2); ctx.fill();
       }
+      ctx.globalAlpha = 1;
     }
   }
 
