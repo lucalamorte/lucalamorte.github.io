@@ -825,3 +825,27 @@ main > section:not(.hero):nth-of-type(even)::before { display: none; }
 .fold summary .fold-title { grid-column: 1; }
 .fold summary .fold-hint { grid-column: 1; grid-row: 2; }
 .fold summary::after { grid-column: 2; grid-row: 1 / span 2; margin-left: 0; }
+/* IBM ocupa el mismo ancho que la fila de Kimberly-Clark: las dos empresas quedan alineadas. */
+.card.next { max-width: none; }
+
+/* ---------- el vidrio responde ---------- */
+/* Un reflejo sigue al cursor dentro del vidrio y la tarjeta se inclina apenas hacia él. Las posiciones las pone
+   snow.js en --mx, --my, --rx y --ry; sin mouse (celular) no pasa nada. */
+.glass-live { transform: perspective(1100px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) translateY(var(--lift, 0px)); transition: transform .7s var(--ease), background .45s var(--ease); }
+.glass-live::before { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; opacity: 0; transition: opacity .5s var(--ease);
+  background: radial-gradient(320px circle at var(--mx, 50%) var(--my, 0%), rgba(255, 255, 255, .09), transparent 65%); }
+.glass-live.lit::before { opacity: 1; }
+.glass-live.lit { --lift: -4px; }
+.card.glass-live:hover { transform: perspective(1100px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) translateY(var(--lift, 0px)); }
+.playing .glass-live { --rx: 0deg !important; --ry: 0deg !important; }
+
+/* ---------- entrada ---------- */
+/* Al llegar a una sección, cada tarjeta se materializa desde un desenfoque, una detrás de la otra. */
+html.js .reveal .card, html.js .reveal .fold { opacity: 0; transform: translateY(22px) scale(.985); filter: blur(8px);
+  transition: opacity .9s var(--ease), transform .9s var(--ease), filter .9s var(--ease); }
+html.js .reveal.in .card, html.js .reveal.in .fold { opacity: 1; transform: none; filter: none; }
+html.js .reveal.in :is(.card, .fold):nth-child(2) { transition-delay: .08s; }
+html.js .reveal.in :is(.card, .fold):nth-child(3) { transition-delay: .16s; }
+html.js .reveal.in :is(.card, .fold):nth-child(4) { transition-delay: .24s; }
+html.js .reveal.in .glass-live { transform: perspective(1100px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) translateY(var(--lift, 0px)); }
+@media (prefers-reduced-motion: reduce) { html.js .reveal .card, html.js .reveal .fold { opacity: 1; transform: none; filter: none; } .glass-live { --rx: 0deg !important; --ry: 0deg !important; } }

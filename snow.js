@@ -21,6 +21,19 @@
   // El menú se vuelve vidrio recién cuando la página pasa por debajo.
   const nav = document.querySelector('.nav');
   if (nav) { const glass = () => nav.classList.toggle('scrolled', scrollY > 8); addEventListener('scroll', glass, { passive: true }); glass(); }
+  // El vidrio responde al mouse: un reflejo que lo sigue y una inclinación chiquita hacia él.
+  if (matchMedia('(hover: hover)').matches && !still) {
+    document.querySelectorAll('.card, .agent-note, .art-visual').forEach(el => {
+      el.classList.add('glass-live');
+      el.addEventListener('pointermove', event => {
+        const r = el.getBoundingClientRect(), x = (event.clientX - r.left) / r.width, y = (event.clientY - r.top) / r.height;
+        el.style.setProperty('--mx', `${x * 100}%`); el.style.setProperty('--my', `${y * 100}%`);
+        el.style.setProperty('--ry', `${(x - 0.5) * 3}deg`); el.style.setProperty('--rx', `${(0.5 - y) * 3}deg`);
+        el.classList.add('lit');
+      });
+      el.addEventListener('pointerleave', () => { el.classList.remove('lit'); el.style.setProperty('--rx', '0deg'); el.style.setProperty('--ry', '0deg'); });
+    });
+  }
   const canvas = document.createElement('canvas');
   canvas.className = 'pipelines';
   canvas.setAttribute('aria-hidden', 'true');
