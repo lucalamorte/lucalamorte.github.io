@@ -487,7 +487,7 @@ html { scrollbar-width: thin; scrollbar-color: rgba(255, 255, 255, .16) transpar
 main { max-width: 1240px; }
 .hero { min-height: calc(100vh - 64px); grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); }
 .portrait canvas { max-width: 620px; }
-.hero h1 { font-size: clamp(2.8rem, 6vw, 5.2rem); }
+.hero h1 { font-size: clamp(2.5rem, 4.6vw, 4rem); }
 .hero .intro p { max-width: 520px; }
 /* Los números, grandes y a lo ancho, con la línea de arriba como en las tarjetas. */
 /* Cada producto con su animación arriba. */
@@ -612,16 +612,15 @@ h2.next-co { margin-top: 72px; }
 .slides .slide { flex: 0 0 100%; display: grid; place-items: center; scroll-snap-align: start; }
 .slides .slide svg { width: 100%; height: auto; }
 .slides .slide img { display: block; width: 100%; height: 100%; object-fit: cover; border-radius: 12px; outline: 1px solid var(--border); outline-offset: -1px; }
-.slides button.prev, .slides button.fwd { position: absolute; top: calc(50% - 22px); display: grid; place-items: center; width: 34px; height: 34px; border: 1px solid var(--border-strong); border-radius: 50%; background: rgba(11, 17, 32, .8); color: var(--text); cursor: pointer; transition: border-color .2s, color .2s; }
-.slides button.prev { left: 8px; } .slides button.fwd { right: 8px; }
+.slides .ctrl { display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 8px; }
+.slides button.prev, .slides button.fwd { display: grid; place-items: center; width: 28px; height: 28px; padding: 0; border: 0; border-radius: 50%; background: none; color: var(--muted); cursor: pointer; transition: color .2s; }
 .slides button svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
-.slides button.prev:hover, .slides button.fwd:hover { border-color: var(--accent); color: var(--accent); }
+.slides button.prev:hover, .slides button.fwd:hover { color: var(--accent); }
 .slides button[disabled] { visibility: hidden; }
-.slides .dots { display: flex; justify-content: center; gap: 6px; margin-top: 10px; }
+.slides .dots { display: flex; justify-content: center; gap: 6px; }
 .slides .dots button { width: 16px; height: 3px; padding: 0; border: 0; border-radius: 2px; background: var(--border-strong); cursor: pointer; transition: width .2s, background .2s; }
 .slides .dots button.on { width: 26px; background: var(--accent); }
-/* Que el carrusel se note: flechas siempre visibles y contador en la esquina. */
-.slides .count { position: absolute; top: 8px; right: 8px; padding: 2px 8px; border-radius: 999px; background: rgba(11, 17, 32, .8); border: 1px solid var(--border-strong); font-family: var(--mono); font-size: .68rem; color: var(--text-2); pointer-events: none; }
+.slides .count { display: none;  position: absolute; top: 8px; right: 8px; padding: 2px 8px; border-radius: 999px; background: rgba(11, 17, 32, .8); border: 1px solid var(--border-strong); font-family: var(--mono); font-size: .68rem; color: var(--text-2); pointer-events: none; }
 /* Lo que deja el juego al terminar: la nota del agente en el contacto y cada tarjeta leída marcada. */
 .agent-note { display: flex; align-items: center; gap: 14px; max-width: 560px; margin: 32px auto 0; padding: 14px 16px; border: 1px solid var(--accent-line); border-radius: 16px; background: rgba(94, 234, 212, .06); text-align: left; animation: note-in .5s ease; }
 .agent-note[hidden] { display: none; }

@@ -455,6 +455,8 @@
   document.querySelectorAll('.slides').forEach(box => {
     const track = box.querySelector('.track'), slides = [...track.children], dots = box.querySelector('.dots');
     const prev = box.querySelector('.prev'), fwd = box.querySelector('.fwd');
+    // Las flechas van abajo, a los costados de los puntitos: así no tapan el dibujo ni la captura.
+    const ctrl = document.createElement('div'); ctrl.className = 'ctrl'; dots.before(ctrl); ctrl.append(prev, dots, fwd);
     const at = k => slides[k].offsetLeft - slides[0].offsetLeft;
     const go = k => track.scrollTo({ left: at(Math.max(0, Math.min(slides.length - 1, k))) });
     const marks = slides.map((_, k) => {
