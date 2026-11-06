@@ -861,7 +861,7 @@
     P.rail = back ? { at: back, to: null, d: 0 } : null;
     if (P.rail) onNode(P.rail.at);
   }
-  addEventListener('pagehide', () => { const snap = mode === 'wait' || mode === 'intro' ? null : snapshot(); try { if (snap) sessionStorage.setItem(SAVE, JSON.stringify(snap)); } catch (e) {} });
+  addEventListener('pagehide', () => { const snap = (mode === 'wait' && !paused) || mode === 'intro' ? null : snapshot(); try { if (snap) sessionStorage.setItem(SAVE, JSON.stringify(snap)); } catch (e) {} });
   function restore() {
     let snap = null;
     try { snap = JSON.parse(sessionStorage.getItem(SAVE) || 'null'); } catch (e) {}
@@ -888,12 +888,17 @@
     rebuild();
     if (snap) apply(snap);
     // Si el muñequito quedó lejos de lo que estás mirando, no se mueve él: la cámara va a buscarlo.
-    mode = 'play'; keys = {}; camFree = false; expected = scrollY;
+    mode = 'play'; paused = false; keys = {}; camFree = false; expected = scrollY;
     document.body.classList.add('playing'); pad.hidden = !touch; hint.classList.remove('on');
   }
+  // Salir del juego no lo deja quieto donde estaba: vuelve a flotar por la pantalla y guarda la partida.
+  // Tocarlo de nuevo retoma desde el mismo lugar.
+  let paused = false;
   function stop() {
     if (mode !== 'play') return;
-    mode = 'idle'; keys = {};
+    mode = 'wait'; paused = true; keys = {}; labels = [];
+    drift.ready = true; drift.since = 0;
+    drift.x = Math.max(24, Math.min(W - S * BIG - 24, P.x)); drift.y = Math.max(90, Math.min(H - S * BIG - 110, P.y - scrollY));
     document.documentElement.style.scrollBehavior = '';
     document.body.classList.remove('playing'); pad.hidden = true;
   }
@@ -902,7 +907,7 @@
     try { sessionStorage.removeItem(SAVE); } catch (e) {}
     document.querySelectorAll(TASKS).forEach(el => el.classList.remove('read', 'lit'));
     won = false; endAt = 0; lastSaid = null; said.clear(); P.fast = false; document.body.classList.remove('ran'); if (note) note.hidden = true; labels = []; P.ride = null; P.rail = null; P.dive = null; P.form = 'pk'; P.vy = 0; P.on = null;
-    keys = {}; mode = 'wait';
+    keys = {}; mode = 'wait'; paused = false;
     document.body.classList.remove('playing'); pad.hidden = true;
     document.documentElement.style.scrollBehavior = '';
     rebuild();
@@ -940,7 +945,7 @@
     if (touch) { pad.classList.remove('pulse'); void pad.offsetWidth; pad.classList.add('pulse'); }
   }
   // Abrir el mail (o apretar una flecha mientras espera) hace la entrada; después solo retoma el juego.
-  const activate = () => { if (mode === 'done') reset(); if (mode === 'wait') beginIntro(); else if (mode !== 'intro') start(); };
+  const activate = () => { if (mode === 'done') reset(); if (mode === 'wait') { if (paused) start(); else beginIntro(); } else if (mode !== 'intro') start(); };
 
   // La entrada: sale disparado del sobre, cruza el retrato de punta a punta moviendo las rayas y cae sobre
   // el título. El camino es una curva suave que pasa por unos puntos fijos (Catmull-Rom).
