@@ -71,49 +71,76 @@
     sk.clearRect(0, 0, width, height);
     for (const st of stars) { sk.globalAlpha = st.a * .8; sk.fillStyle = st.blue ? '#a5b4fc' : '#e2e8f0'; sk.fillRect(st.x, st.y, st.r * 2, st.r * 2); }
     twinkle = stars.filter(st => st.a > .44);
-    // La Cruz del Sur, el guiño a Argentina: sus cinco estrellas en la forma real, un poco más brillantes y sin
-    // rótulo. Arriba a la izquierda, lejos del texto.
-    const cx = width * (small ? .8 : .12), cy = height * .24, u = small ? 30 : 46;
-    const cross = [[.05, -1, 2.6], [0, 1, 3], [-.6, .12, 2.4], [.52, -.22, 2], [.28, .38, 1.3]];
-    // Las dos rectas de la cruz, apenas marcadas, como en las cartas del cielo: así se reconoce la forma.
-    sk.globalAlpha = 1; sk.strokeStyle = 'rgba(165,180,252,.1)'; sk.lineWidth = 1; sk.beginPath();
-    for (const [i, j] of [[0, 1], [2, 3]]) { sk.moveTo(cx + cross[i][0] * u, cy + cross[i][1] * u); sk.lineTo(cx + cross[j][0] * u, cy + cross[j][1] * u); }
-    sk.stroke(); sk.setLineDash([]);
-    // Una estrella brillante: núcleo blanco y un halo suave del color que se le pida.
+    // Referencias personales dibujadas como en una carta del cielo: trazo fino, estrellas brillantes en los
+    // vértices y el nombre debajo, para que se entienda qué es cada una. Se dibujan una sola vez en `sky`.
     const bright = (x, y, r, halo = '165,180,252') => {
       const g = sk.createRadialGradient(x, y, 0, x, y, r * 4);
       g.addColorStop(0, 'rgba(241,245,249,.95)'); g.addColorStop(.25, `rgba(${halo},.35)`); g.addColorStop(1, `rgba(${halo},0)`);
       sk.globalAlpha = 1; sk.fillStyle = g; sk.beginPath(); sk.arc(x, y, r * 4, 0, Math.PI * 2); sk.fill();
     };
-    cross.forEach(([dx, dy, r]) => bright(cx + dx * u, cy + dy * u, r));
-    // Las Tres Marías: el cinturón de Orión como se lo nombra en Argentina, tres estrellas en diagonal.
-    const mx3 = width * (small ? .2 : .86), my3 = height * (small ? .72 : .66), step = small ? 18 : 24;
-    [0, 1, 2].forEach(k => bright(mx3 + k * step, my3 - k * step * .42, 2.2 - k * .15));
-    // El Sol de Mayo, apenas insinuado: una estrella cálida con rayos finos, rectos y ondulados alternados.
-    const sx = width * (small ? .86 : .9), sy = height * (small ? .42 : .3);
-    sk.strokeStyle = 'rgba(253,224,71,.32)'; sk.lineWidth = 1; sk.beginPath();
-    for (let k = 0; k < 16; k++) { const ang = k * Math.PI / 8, rr = k % 2 ? 9 : 13; sk.moveTo(sx + Math.cos(ang) * 4, sy + Math.sin(ang) * 4); sk.lineTo(sx + Math.cos(ang) * rr, sy + Math.sin(ang) * rr); }
-    sk.stroke();
-    bright(sx, sy, 2.2, '253,224,71');
-    // Constelaciones con dibujo, como en una carta del cielo: puntos brillantes unidos por líneas finas.
-    const figure = (ox, oy, u, pts, lines, r = 1.5) => {
-      sk.strokeStyle = 'rgba(165,180,252,.1)'; sk.lineWidth = 1; sk.beginPath();
-      for (const path of lines) path.forEach((k, i) => { const [x, y] = pts[k]; i ? sk.lineTo(ox + x * u, oy + y * u) : sk.moveTo(ox + x * u, oy + y * u); });
-      sk.stroke(); sk.setLineDash([]);
-      pts.forEach(([x, y], k) => bright(ox + x * u, oy + y * u, k === 0 ? r * 1.3 : r));
+    const ink = (a = .26, c = '165,180,252') => { sk.globalAlpha = 1; sk.strokeStyle = `rgba(${c},${a})`; sk.lineWidth = 1; sk.lineJoin = sk.lineCap = 'round'; };
+    const label = (x, y, name) => {
+      sk.globalAlpha = 1; sk.font = `500 ${small ? 9 : 10}px "JetBrains Mono", ui-monospace, monospace`; sk.textAlign = 'center';
+      sk.fillStyle = 'rgba(148,163,184,.55)'; sk.fillText(name, x, y);
     };
-    // Un mate: la calabaza y la bombilla.
-    figure(width * (small ? .12 : .07), height * (small ? .9 : .8), small ? 16 : 22,
-      [[.55, -.85], [.15, -.05], [-.5, .1], [-.58, .6], [-.2, .97], [.25, .97], [.58, .6], [.5, .1]],
-      [[0, 1], [2, 3, 4, 5, 6, 7, 2]]);
-    // Un caza TIE: las dos alas y la cabina en el medio.
-    figure(width * (small ? .62 : .76), height * (small ? .1 : .13), small ? 12 : 16,
-      [[0, 0], [-1, -.85], [-1, .85], [1, -.85], [1, .85], [-1, 0], [1, 0]],
-      [[1, 2], [3, 4], [5, 0, 6]], 1.3);
-    // Un joystick: el contorno, la cruz y dos botones.
-    figure(width * (small ? .3 : .34), height * (small ? .06 : .1), small ? 14 : 20,
-      [[-.6, -.05], [.55, -.12], [.75, .05], [-1, -.3], [-.5, -.45], [.5, -.45], [1, -.3], [1.15, .4], [.8, .55], [.45, .2], [-.45, .2], [-.8, .55], [-1.15, .4]],
-      [[3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 3]], 1.2);
+    // Un dibujo: una lista de trazos (cada uno, puntos en unidades) más las estrellas que se marcan.
+    const figure = (ox, oy, u, paths, marks, name, below = 1.4) => {
+      ink(); sk.beginPath();
+      for (const path of paths) path.forEach(([x, y], k) => k ? sk.lineTo(ox + x * u, oy + y * u) : sk.moveTo(ox + x * u, oy + y * u));
+      sk.stroke();
+      marks.forEach(([x, y, r = 1.5]) => bright(ox + x * u, oy + y * u, r));
+      label(ox, oy + below * u, name);
+    };
+    const ring = (cx, cy, r, n = 28) => Array.from({ length: n + 1 }, (_, k) => [cx + Math.cos(k / n * Math.PI * 2) * r, cy + Math.sin(k / n * Math.PI * 2) * r]);
+    const at = (fx, fy, mx, my) => [width * (small ? mx : fx), height * (small ? my : fy)];
+
+    // La Cruz del Sur: sus cinco estrellas en la forma real.
+    {
+      const [cx, cy] = at(.1, .24, .82, .22), u = small ? 30 : 44;
+      const st = [[.05, -1, 2.6], [0, 1, 3], [-.6, .12, 2.4], [.52, -.22, 2], [.28, .38, 1.3]];
+      ink(.18); sk.beginPath();
+      for (const [a, b] of [[0, 1], [2, 3]]) { sk.moveTo(cx + st[a][0] * u, cy + st[a][1] * u); sk.lineTo(cx + st[b][0] * u, cy + st[b][1] * u); }
+      sk.stroke(); st.forEach(([x, y, r]) => bright(cx + x * u, cy + y * u, r));
+      label(cx, cy + 1.55 * u, 'Cruz del Sur');
+    }
+    // Las Tres Marías: el cinturón de Orión, como se lo nombra en Argentina.
+    {
+      const [mx, my] = at(.86, .7, .2, .74), step = small ? 18 : 24;
+      [0, 1, 2].forEach(k => bright(mx + (k - 1) * step, my - (k - 1) * step * .42, 2.2 - k * .15));
+      label(mx, my + (small ? 28 : 34), 'Tres Marías');
+    }
+    // El Sol de Mayo de la bandera: rayos rectos y ondulados alternados, en dorado.
+    {
+      const [sx, sy] = at(.9, .3, .86, .44), R = small ? 15 : 19;
+      ink(.5, '253,224,71'); sk.beginPath();
+      for (let k = 0; k < 16; k++) {
+        const ang = k * Math.PI / 8, c = Math.cos(ang), sn = Math.sin(ang);
+        if (k % 2) { sk.moveTo(sx + c * 7, sy + sn * 7); sk.lineTo(sx + c * R, sy + sn * R); continue; }
+        for (let q = 0; q <= 6; q++) { const d = 7 + (R * .82 - 7) * q / 6, w = Math.sin(q * 1.6) * 1.4; const x = sx + c * d - sn * w, y = sy + sn * d + c * w; q ? sk.lineTo(x, y) : sk.moveTo(x, y); }
+      }
+      sk.stroke(); sk.beginPath(); sk.arc(sx, sy, 5, 0, Math.PI * 2); sk.stroke();
+      bright(sx, sy, 2.4, '253,224,71');
+      label(sx, sy + R + 16, 'Sol de Mayo');
+    }
+    // Un mate con la bombilla.
+    figure(...at(.07, .78, .14, .9), small ? 18 : 24,
+      [[[-.62, -.2], [-.72, .25], [-.55, .7], [-.2, .95], [.2, .95], [.55, .7], [.72, .25], [.62, -.2]],
+       [[-.68, -.2], [.68, -.2]], [[.1, -.15], [.62, -1.05], [.8, -1.12]]],
+      [[-.62, -.2], [.62, -.2], [0, .95, 1.3], [.8, -1.12, 1.8]], 'Mate', 1.55);
+    // Un caza TIE: dos alas hexagonales, el brazo y la cabina redonda.
+    {
+      const [tx, ty] = at(.74, .13, .6, .1), u = small ? 14 : 18;
+      const wing = sx => [[sx, -1], [sx + .18 * Math.sign(sx), -.5], [sx + .18 * Math.sign(sx), .5], [sx, 1], [sx - .18 * Math.sign(sx), .5], [sx - .18 * Math.sign(sx), -.5], [sx, -1]];
+      figure(tx, ty, u, [wing(-1.2), wing(1.2), [[-1.2, 0], [-.42, 0]], [[.42, 0], [1.2, 0]], ring(0, 0, .42)],
+        [[0, 0, 1.6], [-1.2, -1], [-1.2, 1], [1.2, -1], [1.2, 1]], 'TIE fighter', 1.75);
+    }
+    // Un joystick: el contorno con las dos manijas, la cruz y los botones.
+    {
+      const [jx, jy] = at(.33, .1, .32, .06), u = small ? 16 : 22;
+      const body = [[-.7, -.45], [.7, -.45], [1.05, -.3], [1.3, .35], [1.15, .62], [.85, .55], [.55, .25], [-.55, .25], [-.85, .55], [-1.15, .62], [-1.3, .35], [-1.05, -.3], [-.7, -.45]];
+      figure(jx, jy, u, [body, [[-.85, -.08], [-.45, -.08]], [[-.65, -.28], [-.65, .12]]],
+        [[.5, -.15, 1.4], [.8, -.02, 1.4], [.5, .1, 1.1], [.8, -.28, 1.1]], 'Player 1', 1.3);
+    }
     flakes = Array.from({ length: count }, () => {
       const flake = rand() < 0.32;
       return {
@@ -211,10 +238,17 @@
     comet.x += comet.vx * dt; comet.y += comet.vy * dt;
     const len = 160, sp = Math.hypot(comet.vx, comet.vy), tx = comet.x - comet.vx / sp * len, ty = comet.y - comet.vy / sp * len;
     const tail = ctx.createLinearGradient(comet.x, comet.y, tx, ty);
-    // Una de cada tres estrellas fugaces deja la estela celeste, blanca y celeste de la bandera.
-    if (comet.flag) { tail.addColorStop(0, 'rgba(116,172,223,.9)'); tail.addColorStop(.4, 'rgba(116,172,223,.75)'); tail.addColorStop(.5, 'rgba(255,255,255,.8)'); tail.addColorStop(.6, 'rgba(116,172,223,.6)'); tail.addColorStop(1, 'rgba(116,172,223,0)'); }
-    else { tail.addColorStop(0, 'rgba(94,234,212,.85)'); tail.addColorStop(1, 'rgba(94,234,212,0)'); }
-    ctx.strokeStyle = tail; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.moveTo(comet.x, comet.y); ctx.lineTo(tx, ty); ctx.stroke();
+    tail.addColorStop(0, 'rgba(94,234,212,.85)'); tail.addColorStop(1, 'rgba(94,234,212,0)');
+    // Una de cada tres estrellas fugaces es la bandera: tres franjas paralelas, celeste, blanca y celeste.
+    if (comet.flag) {
+      const nx = -comet.vy / sp, ny = comet.vx / sp;
+      [[-2.4, '116,172,223'], [0, '255,255,255'], [2.4, '116,172,223']].forEach(([o, c]) => {
+        const g = ctx.createLinearGradient(comet.x, comet.y, tx, ty); g.addColorStop(0, `rgba(${c},.9)`); g.addColorStop(1, `rgba(${c},0)`);
+        ctx.strokeStyle = g; ctx.lineWidth = 2.2; ctx.beginPath(); ctx.moveTo(comet.x + nx * o, comet.y + ny * o); ctx.lineTo(tx + nx * o, ty + ny * o); ctx.stroke();
+      });
+    } else {
+      ctx.strokeStyle = tail; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.moveTo(comet.x, comet.y); ctx.lineTo(tx, ty); ctx.stroke();
+    }
     ctx.fillStyle = '#e6fffb'; ctx.shadowColor = 'rgba(94,234,212,.9)'; ctx.shadowBlur = 12;
     ctx.beginPath(); ctx.arc(comet.x, comet.y, 1.8, 0, Math.PI * 2); ctx.fill(); ctx.shadowBlur = 0;
     if (comet.x < -len || comet.y > height + len) { comet = null; nextComet = t + 8000 + Math.random() * 10000; }

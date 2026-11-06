@@ -85,6 +85,20 @@
     <div class="step">Activation through Hightouch<small>audiences synced out of the warehouse into the marketing platforms</small></div>
   </div>
 
+  <h2>One person, end to end</h2>
+  <p>A mother buys Huggies at a retailer, downloads a coupon on her phone and signs up for the newsletter with her email. Three systems see three strangers. This is how they become one profile and one audience. Table names are illustrative.</p>
+  <div class="flow" aria-label="One person, end to end">
+    <div class="step">Three raw records<small>a retailer purchase file in S3, a coupon app event, a newsletter signup</small></div>
+    <div class="arrow"></div>
+    <div class="step code"><code>stg_purchases</code> · <code>stg_coupon_events</code> · <code>stg_signups</code><small>cleaned and typed; emails and phones normalized and hashed</small></div>
+    <div class="arrow"></div>
+    <div class="step code"><code>int_identity_graph</code><small>the hashed email and the device ID are matched, so the three records get one <code>consumer_id</code></small></div>
+    <div class="arrow"></div>
+    <div class="step code"><code>dim_consumer</code> · <code>fct_consumer_events</code><small>one row per person; every purchase, download and signup as an event with its date and brand</small></div>
+    <div class="arrow"></div>
+    <div class="step">Audience: Huggies buyers, last 30 days, opted in<small>a query over the two tables, synced to the ad platforms every day</small></div>
+  </div>
+
   <h2>What was built</h2>
   <ul>
     <li><strong>Ingestion:</strong> ELT pipelines bring 12+ sources (AWS S3 files and APIs) in with Python and SageMaker, scheduled in Azure Data Factory and Control-M.</li>
