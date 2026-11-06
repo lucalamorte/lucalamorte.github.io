@@ -125,6 +125,8 @@
     // El bus de la primera fila de cada sección es su parada: ahí se frena y la cámara muestra el título con esa fila.
     const dag = (els, from, need) => {
       const section = els[0].closest('section'), tasks = [], byRow = new Map();
+      // El costado derecho del camino: justo afuera de las tarjetas, sin salirse de la pantalla.
+      const rx = Math.min(W - S / 2 - 4, Math.max(...els.map(el => box(el).r)) + 26);
       let first = null;
       els.forEach(el => { const c = box(el), key = Math.round(c.y); byRow.set(key, [...(byRow.get(key) || []), { el, c }]); });
       let bus = from;
@@ -139,14 +141,21 @@
           if (bus) link(bus, t); bus = t; first = first || t; tasks.push(t);
           return;
         }
-        const b = node(mx, gy, { frame, bus: true }); if (bus) link(bus, b); bus = b; first = first || b;
+        // Un solo camino, en serpentina: la fila se recorre entera de un costado al otro, pasando por cada tarjeta,
+        // y se baja por ese mismo costado a la fila siguiente, que se recorre al revés. No hay desvíos que saltear.
+        const right = r % 2 === 1, sx = right ? rx : mx;
+        const b = node(sx, gy, { frame, bus: r === 0 }); if (bus) link(bus, b); first = first || b;
         let prev = b;
-        row.sort((u, v) => u.c.x - v.c.x).forEach(({ el, c }) => {
+        row.sort((u, v) => right ? v.c.x - u.c.x : u.c.x - v.c.x).forEach(({ el, c }) => {
           const t = node(c.x + c.w / 2, gy, { task: el, need, t: 0, done: el.classList.contains('read'), frame });
           link(prev, t); prev = t; tasks.push(t);
         });
+        // Sale por el otro costado: desde ahí baja a la fila siguiente.
+        const out = node(right ? mx : rx, gy, { frame }); link(prev, out); bus = out;
       });
       const bottom = Math.max(...els.map(el => box(el).b));
+      // Si la última fila terminó a la derecha, el camino vuelve por debajo de las tarjetas hasta la compuerta.
+      if (bus && bus.x !== mx) { const back = node(bus.x, bottom + 26, { frame }); link(bus, back); bus = back; }
       const gate = node(mx, bottom + 26, { gate: tasks, frame });
       link(bus, gate);
       return { first, gate };
