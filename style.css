@@ -753,3 +753,15 @@ main > section:not(.hero):nth-of-type(even)::before { display: none; }
   .article > h2 + * { margin-top: 64px; }
   .article > h2 ~ p, .article > h2 ~ ul { max-width: 78ch; }
 }
+
+/* ---------- liquid glass, minimalista ---------- */
+/* Como el de Apple: vidrio casi transparente, un desenfoque leve para que lo de atrás se siga viendo, y solo el
+   brillo del canto donde entra la luz. Sin sombras afuera ni degradés adentro. */
+:root { --lg: rgba(255, 255, 255, .035); --lg-hover: rgba(255, 255, 255, .065);
+  --lg-shadow: inset 1px 1px 0 rgba(255, 255, 255, .2), inset -1px -1px 0 rgba(255, 255, 255, .05); }
+.card, .fold summary, .agent-note, .art-visual, .facts div, .article-end {
+  background: var(--lg); box-shadow: var(--lg-shadow);
+  -webkit-backdrop-filter: blur(8px) saturate(170%); backdrop-filter: blur(8px) saturate(170%); }
+.card:hover, .fold summary:hover, .fold[open] summary { background: var(--lg-hover); box-shadow: inset 1px 1px 0 rgba(255, 255, 255, .28), inset -1px -1px 0 rgba(255, 255, 255, .07); }
+.playing .fold:not([open]) summary:hover { background: var(--lg); box-shadow: var(--lg-shadow); }
+.agent-note { background: rgba(94, 234, 212, .06); }
