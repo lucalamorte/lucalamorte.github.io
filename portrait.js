@@ -202,35 +202,7 @@
     pointer.vx = vx; pointer.vy = vy; pointer.active = true; pointer.seen = performance.now();
     wake();
   };
-  // Profundidad, como el reloj de la pantalla bloqueada: la hora de Buenos Aires en vidrio, detrás de la cabeza.
-  // Una máscara hecha con la misma silueta de las rayas la tapa donde está la cabeza, así queda por detrás.
-  const depth = document.createElement('div');
-  depth.className = 'depth'; depth.setAttribute('aria-hidden', 'true');
-  depth.innerHTML = '<span class="where">Buenos Aires</span><span class="clock"></span>';
-  canvas.before(depth);
-  const clock = depth.querySelector('.clock');
-  const tick = () => { clock.textContent = new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'America/Argentina/Buenos_Aires' }).format(new Date()); };
-  tick(); setInterval(tick, 15000);
-  // La caja del reloj es más grande que el retrato (sobresale arriba y a los costados): así los números quedan
-  // por encima de la cabeza y la cabeza tapa solo su base, como en el teléfono.
-  const OUT = { x: .25, top: .22, w: 1.5, h: 1.22 };
-  const shape = document.createElement('canvas'), N = 8, side = DATA.cols * N;
-  shape.width = side * OUT.w; shape.height = side * OUT.h;
-  const sctx = shape.getContext('2d');
-  sctx.fillStyle = '#000'; sctx.fillRect(0, 0, shape.width, shape.height);
-  sctx.globalCompositeOperation = 'destination-out'; sctx.filter = `blur(${N * .6}px)`;
-  DATA.grid.forEach((line, r) => [...line].forEach((ch, c) => { if (ch !== '.') sctx.fillRect(side * OUT.x + c * N - N * .4, side * OUT.top + r * N - N * .4, N * 1.8, N * 1.8); }));
-  const mask = `url(${shape.toDataURL()})`;
-  depth.style.webkitMaskImage = depth.style.maskImage = mask;
-  const placeDepth = () => {
-    Object.assign(depth.style, { left: `${canvas.offsetLeft - size * OUT.x}px`, top: `${canvas.offsetTop - size * OUT.top}px`, width: `${size * OUT.w}px`, height: `${size * OUT.h}px` });
-    clock.style.fontSize = `${size * .27}px`;
-  };
-  addEventListener('portrait-formed', () => depth.classList.add('on'), { once: true });
-  if (still) depth.classList.add('on');
-
-  window.addEventListener('resize', () => { resize(); placeDepth(); wake(); });
+  window.addEventListener('resize', () => { resize(); wake(); });
   resize();
-  placeDepth();
   wake();
 })();
