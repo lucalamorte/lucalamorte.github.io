@@ -170,7 +170,7 @@
     if (fig && fig.b > h1.y) {
       // Con el retrato al costado, el título llega hasta la cara: caminando a la izquierda se entra de frente.
       // Los hombros cierran por debajo, así que no hay otra forma de bajar.
-      const edge = fig.r - fig.w * 0.25, title = ledge(edge, h1.y + 4, Math.min(W, colR + 44) - edge, { floor: true });
+      const edge = fig.r - fig.w * 0.25, title = ledge(edge, h1.y + 4, Math.min(W, colR + 44) - edge, { floor: true, hidden: true });
       // Caminando se llega al borde de la silueta y ahí se frena: para entrar a la cara hay que saltar.
       walls.push({ x: edge, y1: h1.y + 4 - 30, y2: h1.y + 4 });
       // A mitad de camino, un NULL en el piso: el primer salto, y tiempo para que cada frase se lea en su momento.
