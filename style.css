@@ -656,10 +656,9 @@ h2.next-co { margin-top: 72px; }
   .lb-prev, .lb-next { top: auto; bottom: 64px; }
   .lightbox figcaption { bottom: 20px; font-size: .82rem; }
 }
-/* Credenciales: los nombres largos bajan de línea, y las que tienen link se ven siempre: una línea fina bajo el
-   nombre y "view credential ↗" al lado del año. Al pasar, la misma línea y el texto toman el color. */
-.list.certs .cred { white-space: normal; text-decoration: underline solid var(--accent-line); text-underline-offset: 5px; text-decoration-thickness: 1px; transition: color .2s, text-decoration-color .2s; }
-.list.certs .cred:hover, .list.certs .cred:focus-visible { text-decoration-color: var(--accent); }
+/* Credenciales: los nombres largos bajan de línea, y las que tienen link lo dicen una sola vez, con
+   "view credential ↗" al lado del año. Sin subrayados: al pasar, el nombre toma el color. */
+.list.certs .cred { white-space: normal; text-decoration: none; transition: color .2s; }
 .list.certs .who { display: flex; flex-wrap: wrap; gap: 0 12px; }
 .list.certs li .meta { opacity: 1 !important; transform: none !important; }
 .list.certs .who .go { opacity: .75; transform: none; }
