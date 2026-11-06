@@ -18,6 +18,9 @@
     document.body.append(svg);
     document.documentElement.classList.add('lg-liquid');
   }
+  // El menú se vuelve vidrio recién cuando la página pasa por debajo.
+  const nav = document.querySelector('.nav');
+  if (nav) { const glass = () => nav.classList.toggle('scrolled', scrollY > 8); addEventListener('scroll', glass, { passive: true }); glass(); }
   const canvas = document.createElement('canvas');
   canvas.className = 'pipelines';
   canvas.setAttribute('aria-hidden', 'true');

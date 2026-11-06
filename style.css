@@ -776,3 +776,33 @@ main > section:not(.hero):nth-of-type(even)::before { display: none; }
 .card:hover, .fold summary:hover, .fold[open] summary, .playing .fold:not([open]) summary:hover { box-shadow: none; }
 .lg-liquid :is(.card, .fold summary, .agent-note, .art-visual, .facts div, .article-end) {
   -webkit-backdrop-filter: url(#lg-refract) blur(3px) saturate(170%); backdrop-filter: url(#lg-refract) blur(3px) saturate(170%); }
+
+/* ---------- el mismo vidrio en todo lo que flota ---------- */
+/* El menú, los botones, la flecha de abajo y los controles del juego usan el vidrio de la barra de los artículos:
+   lo que pasa por detrás se desenfoca y se ondula. Sin bordes. */
+:root { --ease: cubic-bezier(.22, 1, .36, 1); }
+.nav, .play-help, .pad button, .scroll-next, .btn:not(.solid) { border-color: transparent !important; }
+.lg-liquid :is(.nav, .play-help, .pad button, .scroll-next, .btn:not(.solid)) {
+  -webkit-backdrop-filter: url(#lg-refract) blur(3px) saturate(170%); backdrop-filter: url(#lg-refract) blur(3px) saturate(170%); }
+.play-help, .pad button, .scroll-next, .btn:not(.solid) { background: var(--lg); }
+/* El menú es aire mientras estás arriba de todo y se vuelve vidrio apenas la página empieza a pasar por debajo. */
+.nav { background: transparent; transition: background .5s var(--ease), -webkit-backdrop-filter .5s var(--ease), backdrop-filter .5s var(--ease); }
+.nav:not(.scrolled) { -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
+.nav.scrolled { background: var(--lg); }
+
+/* ---------- movimiento ---------- */
+/* Todo se mueve con la misma curva: arranca rápido y se apoya suave, sin rebotes. */
+.card { transition: background .45s var(--ease), transform .6s var(--ease); }
+.card:hover { transform: translateY(-4px); }
+.btn { transition: background .35s var(--ease), color .35s var(--ease), transform .45s var(--ease); }
+.btn:hover { transform: translateY(-2px); }
+.btn:not(.solid):hover { background: var(--lg-hover); }
+.scroll-next { transition: color .3s var(--ease), background .3s var(--ease), transform .45s var(--ease); }
+.scroll-next:hover { background: var(--lg-hover); transform: translateX(-50%) translateY(-2px); }
+.pad button { transition: background .25s var(--ease), transform .25s var(--ease); }
+.pad button:active { transform: scale(.94); }
+.fold summary { transition: background .45s var(--ease); }
+@media (prefers-reduced-motion: reduce) { .card:hover, .btn:hover, .scroll-next:hover { transform: none; } .scroll-next:hover { transform: translateX(-50%); } }
+/* El botón principal del contacto sigue lleno de color: el vidrio es para lo secundario. */
+.contact .btn:not(.ghost), .lg-liquid .contact .btn:not(.ghost) { background: var(--accent); -webkit-backdrop-filter: none; backdrop-filter: none; }
+.contact .btn:not(.ghost):hover { background: #8ef0e0; }
