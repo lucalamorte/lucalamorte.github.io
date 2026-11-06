@@ -862,3 +862,7 @@ html.js .reveal.in .card, html.js .reveal.in .fold { will-change: auto; }
    borde. La disolución de los hombros la hace cada raya (portrait.js), así que esta capa no lleva máscara. */
 .portrait { position: relative; }
 .portrait .portrait-ink { position: absolute; z-index: 1; pointer-events: none; max-width: none; margin: 0; aspect-ratio: auto; cursor: default; -webkit-mask-image: none; mask-image: none; }
+/* Mientras flota, el lienzo del juego queda detrás de la página: Little Bit pasa por detrás del texto y del vidrio. */
+body.pk-floating .play-layer { z-index: -1; }
+/* El globito de ayuda también flota por detrás de la página, junto con Little Bit: nunca tapa lo que se lee. */
+body.pk-floating .pk-hint { z-index: -1; }

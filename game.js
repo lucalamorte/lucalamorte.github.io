@@ -26,7 +26,7 @@
   // La misión, con las teclas para moverse, en un globo sobre el muñequito.
   const mission = document.createElement('div');
   mission.className = 'pk-say'; mission.setAttribute('role', 'status');
-  mission.innerHTML = `<p>I'm looking for the <code>contacts</code> table. Have you seen it?</p>${touch ? '<p class="go">use the buttons below ↓</p>' : '<p class="go"><kbd>←</kbd><kbd>→</kbd> move <kbd>↑</kbd> jump</p>'}`;
+  mission.innerHTML = `<p>Thanks for finding me! I'm looking for the <code>contacts</code> table. Have you seen it?</p>${touch ? '<p class="go">use the buttons below ↓</p>' : '<p class="go"><kbd>←</kbd><kbd>→</kbd> move <kbd>↑</kbd> jump</p>'}`;
   // El panel fijo con los controles y el botón para reiniciar; aparece cuando el juego ya empezó.
   const help = document.createElement('div');
   help.className = 'play-help';
@@ -49,14 +49,12 @@
   addEventListener('title-typed', () => { peekAt = performance.now() + 1400; });
   // Sin animación de escritura (movimiento reducido) no hay nada que esperar.
   // Si el título se terminó de escribir antes de que este archivo escuchara el aviso, se toma de la clase.
-  // Si la portada quedó atrás sin jugar, Little Bit flota perdido en el espacio, sin gravedad: deriva despacio por
-  // la pantalla, gira apenas y rebota suave en los bordes, pidiendo ayuda. Vive en coordenadas de la ventana.
+  // Mientras nadie juega, Little Bit flota perdido en el espacio, sin gravedad, por detrás de la página: deriva
+  // despacio, gira apenas y rebota suave en los bordes de la pantalla, pidiendo ayuda. Vive en coordenadas de la ventana.
   const drift = { x: 0, y: 0, vx: -16, vy: 11, a: 0, va: .18, since: 0, ready: false };
   const drifting = now => {
     if (mode !== 'wait' || peekFrom() === null || now < peekFrom()) { drift.since = 0; return false; }
-    const ws = waitSpot();
-    if (ws.y + S > scrollY && ws.y < scrollY + H) { drift.since = 0; return false; }
-    if (!drift.ready) { drift.ready = true; drift.x = W - 120; drift.y = H * .55; }
+    if (!drift.ready) { drift.ready = true; drift.x = W * .72; drift.y = H * .28; }
     if (!drift.since) drift.since = now;
     return true;
   };
@@ -923,10 +921,12 @@
   }
   function beginIntro() {
     relayout();
-    const spot = home(), ws = waitSpot();
+    // Sale desde donde estaba flotando y pasa por la cara antes de aterrizar en el título.
+    const spot = home(), ws = drifting(performance.now()) ? { x: drift.x + S * BIG / 2 - S / 2, y: scrollY + drift.y + S * BIG / 2 - S / 2 } : waitSpot();
     hint.classList.remove('on');
-    // Sin movimiento, o si ya no está a la vista, aterriza directo.
-    if (still || !portrait || ws.y < scrollY || ws.y > scrollY + H) { endIntro(); return; }
+    // Sin movimiento, o si la cara no está a la vista, aterriza directo.
+    const face = portrait && box(portrait);
+    if (still || !face || face.b < scrollY || face.y > scrollY + H) { endIntro(); return; }
     const r = box(portrait), out = [ws.x, ws.y];
     P.x = out[0]; P.y = out[1];
     const points = [out, [out[0] - 20, out[1] - 160], [r.r - r.w * 0.12, r.y + r.h * 0.5], [r.x + r.w * 0.15, r.y + r.h * 0.42], [r.x + r.w * 0.5, r.y + r.h * 0.02], [spot.x, spot.y]];
