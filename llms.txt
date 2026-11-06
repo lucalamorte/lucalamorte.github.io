@@ -1,0 +1,28 @@
+# Luca Lamorte
+
+> Senior Data Architect at IBM, based in Buenos Aires, Argentina. Designs data platforms on Snowflake and dbt and ships GenAI products on top of them: RAG, tool-calling agents and Snowflake Cortex. Over 4 years of enterprise experience across North America and Latin America.
+
+## Experience
+
+- **Senior Data Architect, IBM** (Nov 2026 to present), client Kraft Heinz: warehouse architecture and dbt star schemas with full change history; Snowflake Cortex Agents (Analyst and Search) on semantic views that answer business questions in plain language; evaluation and delivery of AI use cases.
+- **Data Engineer, Kimberly-Clark** (Nov 2025 to Oct 2026): in-house Composable CDP on Snowflake for North America Marketing. 12+ source systems from AWS S3 and APIs, 65M Customer 360 profiles, a $260K/month vendor dependency retired and $5M in projected savings. CI/CD in Azure DevOps, data quality with Monte Carlo. [Case study](https://lucalamorte.github.io/projects/cdp.html)
+- **Solution Engineer, Kimberly-Clark** (Jul 2023 to Oct 2025): rollout of real-time machine data and digital twins in 10 plants across 5 countries, SAP and ERP data in Azure, one reporting layer in Power BI, $21.5M annual ROI. [Case study](https://lucalamorte.github.io/projects/smom.html)
+
+## Own products
+
+- [PrimeroLab](https://lucalamorte.github.io/projects/primerolab.html): study app with a tool-calling agent and RAG over the user's own documents (Next.js, Supabase, pgvector, Gemini and OpenAI with fallback, row-level security).
+- [Nutrigordo](https://lucalamorte.github.io/projects/nutrigordo.html): nutrition assistant in Telegram that logs meals from text, photos and voice notes (Python, FastAPI, OpenAI structured outputs, Supabase, 136 automated tests).
+- [DataChinchilla](https://lucalamorte.github.io/projects/datachinchilla.html): learning paths into a tech role from free courses, skipping what a CV already covers.
+
+## Skills
+
+Data: Python, SQL, Spark, Snowflake, dbt, Databricks, Airflow, dimensional modeling (Kimball), Medallion architecture, CI/CD, data observability. Cloud: AWS, Azure, Google Cloud. GenAI: LLMs, RAG, pgvector, tool-calling agents, Snowflake Cortex, Vertex AI, OpenAI, Claude Code.
+
+## Education
+
+Bachelor's in Information Systems Management, UADE (expected 2026). Certifications: Astronomer Airflow 3, Databricks Academy, Snowflake, Google Cloud, Microsoft Power BI, IBM.
+
+## Contact
+
+- Email: lclamorte@gmail.com
+- LinkedIn: https://www.linkedin.com/in/lclamorte/
