@@ -416,6 +416,22 @@
     }
     if (rise > 0) { ctx.globalAlpha = rise; drawPk(t.x + t.w / 2 - S / 2, t.y - S - 6 * (1 - rise), now); ctx.globalAlpha = 1; }
   }
+  // Pisos, cornisas y paredes son estrellas: casi invisibles de lejos y se encienden alrededor del muñequito
+  // cuando camina, aterriza o se choca. Así el suelo existe sin ser una raya que corta la página.
+  function starLine(x1, y1, x2, y2, base, now) {
+    const len = Math.hypot(x2 - x1, y2 - y1), n = Math.max(1, Math.round(len / 15)), cx = P.x + S / 2, cy = P.y + S / 2;
+    const a0 = ctx.globalAlpha;
+    for (let i = 0; i <= n; i++) {
+      const u = i / n, seed = Math.sin((x1 + i * 7.3) * 12.9898 + (y1 + i * 3.1) * 78.233) * 43758.5;
+      const j = (seed - Math.floor(seed)) - .5, x = x1 + (x2 - x1) * u + (y1 === y2 ? 0 : j * 2), y = y1 + (y2 - y1) * u + (y1 === y2 ? j * 2 : 0);
+      const near = Math.max(0, 1 - Math.hypot(x - cx, y - cy) / 150), glow = near * near * (3 - 2 * near);
+      const tw = .75 + .25 * Math.sin(now / 650 + i * 1.7), a = Math.max(base * tw, glow * .9);
+      if (a < .02) continue;
+      ctx.globalAlpha = a0 * a; ctx.fillStyle = glow > .25 ? ACCENT : '#cbd5e1';
+      ctx.beginPath(); ctx.arc(x, y, 1 + glow * 1.1, 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.globalAlpha = a0;
+  }
   function drawPlat(p, now) {
     if (p.hidden || p.crate) return;
     if (p.kind === 'model') {
@@ -427,10 +443,7 @@
       if (p.label && !p.built) snowflake(p.x + p.w - 18, p.y + 16, 5, p.t ? ACCENT : MUTED);
       return;
     }
-    // Los pisos no se dibujan: una línea de lado a lado de la pantalla se lee como un borde roto de la página.
-    if (p.floor) return;
-    ctx.strokeStyle = p.solid ? LINE : 'rgba(94,234,212,.15)'; ctx.lineWidth = 2; ctx.setLineDash([8, 6]);
-    ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(p.x + p.w, p.y); ctx.stroke(); ctx.setLineDash([]);
+    starLine(p.x, p.y, p.x + p.w, p.y, p.floor ? .07 : p.solid ? .4 : .2, now);
   }
   function drawPk(x, y, now) {
     if (P.form === 'dot') { ctx.shadowColor = ACCENT; ctx.shadowBlur = 14; ctx.fillStyle = ACCENT; ctx.beginPath(); ctx.arc(x + S / 2, y + S / 2, 6, 0, Math.PI * 2); ctx.fill(); ctx.shadowBlur = 0; return; }
@@ -464,10 +477,9 @@
       ctx.save();
       if (unfolded.length) { ctx.beginPath(); ctx.rect(0, top - 40, W, Math.min(...unfolded) + 40 - top); ctx.clip(); }
       for (const t of level.things) t.draw(now);
-      ctx.strokeStyle = 'rgba(148,163,184,.12)'; ctx.lineWidth = 1; ctx.beginPath();
-      for (const w of level.walls) { const y1 = Math.max(w.y1, top - 20), y2 = Math.min(w.y2, top + H + 20); if (y2 > y1) { ctx.moveTo(w.x, y1); ctx.lineTo(w.x, y2); } }
-      for (const x of [level.bounds.l, level.bounds.r]) { ctx.moveTo(x, top); ctx.lineTo(x, top + H); }
-      ctx.stroke(); ctx.setLineDash([]);
+      for (const w of level.walls) { const y1 = Math.max(w.y1, top - 20), y2 = Math.min(w.y2, top + H + 20); if (y2 > y1) starLine(w.x, y1, w.x, y2, .05, now); }
+      // Los bordes de la pantalla solo aparecen cuando se los toca.
+      for (const x of [level.bounds.l, level.bounds.r]) starLine(x, top, x, top + H, 0, now);
       // Lo que queda lejos del muñequito se apaga, para que el texto de la página se lea tranquilo.
       for (const p of level.plats) {
         if (!seen(p.y)) continue;
@@ -550,10 +562,9 @@
   const cards = n => [n.task, ...(n.mates || [])];
   function railStep(dt, control, now) {
     const r = P.rail;
-    // Primero se centra lo que hay que leer: hasta que la cámara llega, no arranca el viaje ni corre la tarea.
-    // La tecla igual se toma: el muñequito elige la arista y sale cuando la cámara está lista.
-    // Espera a que la cámara llegue antes de avanzar, pero nunca para siempre: si el jugador scrolleó con el dedo
-    // (la cámara quedó libre) o el celu no deja llegar al lugar exacto, a los 0,9 s sigue igual.
+    // El viaje arranca apenas se toca la flecha y la cámara lo acompaña. Lo único que espera a la cámara es la
+    // lectura de una tarea, y nunca para siempre: si el jugador scrolleó con el dedo (la cámara quedó libre) o el
+    // celu no deja llegar al lugar exacto, a los 0,9 s corre igual.
     const settled = n => {
       if (camFree || now < swapUntil) return true;
       const t = frameTarget(n); if (t === null || Math.abs(scrollY - t) <= 6) { r.waitFrom = 0; return true; }
@@ -562,21 +573,21 @@
       return false;
     };
     if (r.to) {
-      if (r.d === 0 && !settled(r.to)) return;
       r.d += RAIL * dt;
       const len = Math.hypot(r.to.x - r.at.x, r.to.y - r.at.y), u = Math.min(1, r.d / (len || 1));
       P.x = r.at.x + (r.to.x - r.at.x) * u - S / 2; P.y = r.at.y + (r.to.y - r.at.y) * u - S / 2; P.form = 'dot';
       if (u < 1) return;
-      const from = r.at, n = r.at = r.to; r.to = null; r.d = 0; onNode(n); P.form = 'pk';
-      if (n.exit) { P.rail = null; P.vy = 120; return; }
+      const from = r.at, n = r.at = r.to; r.to = null; r.d = 0; onNode(n);
+      if (n.exit) { P.rail = null; P.vy = 120; P.form = 'pk'; return; }
       // Si la tarea trae frase, un solo anillo cubre las dos cosas: la frase y la lectura.
       if (n.task && !n.fold && n.task.dataset.say) { once(n.task.dataset.say); if (!n.done) hold(n.need * 1000 + 500); }
       if ((n.bus || n.start) && from.gate && from.y < n.y) once('I ❤️ dbt. Raw in, clean out.');
-      if (n.task && !n.done) { r.fresh = !!n.fold; return; }
+      if (n.task && !n.done) { r.fresh = !!n.fold; P.form = 'pk'; return; }
       if (n.gate && from.y < n.y && !gateOpen(n)) gateHint(n);
       const ahead = n.links.filter(m => m !== from);
       if (n.links.length === 2 && !n.task && !n.bus && (!n.gate || (from.y < n.y && gateOpen(n)))) r.to = ahead[0];
       else r.fresh = true;
+      if (!r.to) P.form = 'pk';
       return;
     }
     const n = r.at;
@@ -800,7 +811,11 @@
     if (rel > H * 0.62) target = P.y - H * 0.62;
     // En el DAG la cámara muestra centrado, debajo del menú, el cuadro del nodo hacia donde va el muñequito
     // (o su comienzo si no entra entero), para que se lea completo y no cortado.
-    const framed = P.rail ? frameTarget(P.rail.to || P.rail.at) : null;
+    let framed = P.rail ? frameTarget(P.rail.to || P.rail.at) : null;
+    if (framed !== null && P.rail.to) {
+      const room = Math.max(64 + 90, Math.min(H * 0.3, 190)), floorRoom = W < 760 ? 150 : 90;
+      framed = Math.max(P.y - (H - floorRoom), Math.min(P.y - room, framed));
+    }
     if (framed !== null) target = framed;
     if (target === null) return;
     scrollTo(0, Math.max(0, scrollY + (target - scrollY) * Math.min(1, dt * 7)));
