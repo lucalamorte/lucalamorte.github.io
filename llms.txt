@@ -16,7 +16,9 @@
 
 ## Skills
 
-Data: Python, SQL, Spark, Snowflake, dbt, Databricks, Airflow, dimensional modeling (Kimball), Medallion architecture, CI/CD, data observability. Cloud: AWS, Azure, Google Cloud. GenAI: LLMs, RAG, pgvector, tool-calling agents, Snowflake Cortex, Vertex AI, OpenAI, Claude Code.
+Data: Python, SQL, Snowflake, dbt, Airflow, dimensional modeling (Kimball), CI/CD, data observability. Cloud: AWS, Azure, Google Cloud. GenAI: LLMs, RAG, pgvector, tool-calling agents, Snowflake Cortex, OpenAI, Claude Code.
+
+Learning through courses, not yet used at work: Spark, Databricks, Medallion architecture, Vertex AI.
 
 ## Education
 
