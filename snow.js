@@ -102,6 +102,14 @@
       const [mx, my] = at(.86, .7, .2, .74), step = small ? 18 : 24;
       [0, 1, 2].forEach(k => bright(mx + (k - 1) * step, my - (k - 1) * step * .42, 2.2 - k * .15));
     }
+    // La bandera argentina como constelación: el contorno y las dos franjas en trazo fino, estrellas celestes
+    // en las esquinas y el sol, una estrella dorada, en el medio.
+    {
+      const [fx, fy] = at(.9, .3, .84, .44), u = small ? 14 : 18;
+      figure(fx, fy, u, [[[-1, -.62], [1, -.62], [1, .62], [-1, .62], [-1, -.62]], [[-1, -.2], [1, -.2]], [[-1, .2], [1, .2]]], []);
+      [[-1, -.62], [1, -.62], [1, .62], [-1, .62]].forEach(([x, y]) => bright(fx + x * u, fy + y * u, 1.1, '116,172,223'));
+      bright(fx, fy, 1.3, '246,180,14');
+    }
     // Un mate con la bombilla.
     figure(...at(.07, .78, .14, .9), small ? 18 : 24,
       [[[-.62, -.2], [-.72, .25], [-.55, .7], [-.2, .95], [.2, .95], [.55, .7], [.72, .25], [.62, -.2]],
