@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Warehouse and AI agents · Luca Lamorte</title>
+<meta name="description" content="Early write-up: the data architecture for Kraft Heinz on Snowflake and dbt, with AI agents that answer business questions in plain language.">
+<link rel="canonical" href="https://lucalamorte.github.io/projects/ibm.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Luca Lamorte">
+<meta property="og:title" content="Warehouse and AI agents · Luca Lamorte">
+<meta property="og:description" content="Early write-up: the data architecture for Kraft Heinz on Snowflake and dbt, with AI agents that answer business questions in plain language.">
+<meta property="og:url" content="https://lucalamorte.github.io/projects/ibm.html">
+<meta property="og:image" content="https://lucalamorte.github.io/assets/og/home.png">
+<meta property="og:image:alt" content="Warehouse and AI agents · Luca Lamorte">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="en_US">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Warehouse and AI agents · Luca Lamorte">
+<meta name="twitter:description" content="Early write-up: the data architecture for Kraft Heinz on Snowflake and dbt, with AI agents that answer business questions in plain language.">
+<meta name="twitter:image" content="https://lucalamorte.github.io/assets/og/home.png">
+<meta name="author" content="Luca Lamorte">
+<meta name="theme-color" content="#0b1120">
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="../assets/favicon-32.png" type="image/png" sizes="32x32">
+<link rel="apple-touch-icon" href="../assets/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../style.css">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Warehouse and AI agents","description":"Early write-up: the data architecture for Kraft Heinz on Snowflake and dbt, with AI agents that answer business questions in plain language.","url":"https://lucalamorte.github.io/projects/ibm.html","image":"https://lucalamorte.github.io/assets/og/home.png","author":{"@type":"Person","@id":"https://lucalamorte.github.io/#luca","name":"Luca Lamorte","url":"https://lucalamorte.github.io/"},"about":["Snowflake","dbt","Cortex Agents","Cortex Analyst","Cortex Search","Semantic views"],"keywords":"Snowflake, dbt, Cortex Agents, Cortex Analyst, Cortex Search, Semantic views","datePublished":"2026","inLanguage":"en"}</script>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-mail" viewBox="0 0 24 24"><path fill="currentColor" d="M3 5h18a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1zm9 7.2L4 7.3V17h16V7.3l-8 4.9zM5.2 7l6.8 4.2L18.8 7H5.2z"/></symbol>
+  <symbol id="i-linkedin" viewBox="0 0 24 24"><path fill="currentColor" d="M4.98 3.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5zM3 9.75h4V21H3V9.75zm7 0h3.8v1.6h.06c.53-1 1.83-2.06 3.77-2.06 4.03 0 4.77 2.65 4.77 6.1V21h-4v-5c0-1.2-.02-2.74-1.67-2.74-1.67 0-1.93 1.3-1.93 2.65V21h-4V9.75z"/></symbol>
+  <symbol id="i-db" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8"><ellipse cx="12" cy="5.5" rx="7.5" ry="2.8"/><path d="M4.5 5.5v13c0 1.5 3.4 2.8 7.5 2.8s7.5-1.3 7.5-2.8v-13M4.5 12c0 1.5 3.4 2.8 7.5 2.8s7.5-1.3 7.5-2.8"/></g></symbol>
+  <symbol id="i-copy" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" d="M9 9h10.5a1.5 1.5 0 0 1 1.5 1.5V20a1.5 1.5 0 0 1-1.5 1.5H10.5A1.5 1.5 0 0 1 9 20zM15 9V4.5A1.5 1.5 0 0 0 13.5 3H4.5A1.5 1.5 0 0 0 3 4.5v9A1.5 1.5 0 0 0 4.5 15H9"/></symbol>
+  <symbol id="i-factory" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" d="M3 21V10l5 3V10l5 3V10l5 3V4h3v17H3zm4-4h2m4 0h2"/></symbol>
+</svg>
+<a class="skip" href="#content">Skip to content</a>
+<nav class="nav" aria-label="Main">
+  <a class="name" href="../index.html">Luca Lamorte</a>
+  <div class="links"><a href="../index.html#experience">Experience</a><a href="../index.html#projects">Products</a><a href="../index.html#how-i-work">How I work</a><a href="../index.html#contact">Contact</a></div>
+  <div class="icons">
+    <a href="mailto:lclamorte@gmail.com?subject=Let's%20connect!" aria-label="Email"><svg><use href="#i-mail"/></svg></a>
+    <a href="https://www.linkedin.com/in/lclamorte/" aria-label="LinkedIn" target="_blank" rel="noopener"><svg><use href="#i-linkedin"/></svg></a>
+  </div>
+</nav>
+<article class="article" id="top">
+  <span id="content"></span>
+  <a class="back" href="../index.html#experience">← Back to experience</a>
+
+  <header>
+    <svg class="art-logo icon" aria-hidden="true"><use href="#i-db"/></svg>
+    <span class="eyebrow">Data architecture · IBM · client: Kraft Heinz · 2026 · present</span>
+    <h1>Warehouse and AI agents</h1>
+    <p class="lede">The data architecture for Kraft Heinz is being designed on Snowflake and dbt, with AI agents on top so business teams can ask their data questions in plain language. This is an early write-up that grows as the work ships.</p>
+  </header>
+
+  <figure class="art-visual"><svg viewBox="0 0 720 200" role="img" aria-label="sources to dbt to history to semantic to agents."><rect x="14" y="66" width="116" height="52" rx="12" fill="rgba(94,234,212,0.05)" stroke="rgba(94,234,212,0.30)"/><text x="72" y="90" fill="#e2e8f0" font-family="JetBrains Mono, monospace" font-size="12" text-anchor="middle">sources</text><text x="72" y="106" fill="#94a3b8" font-family="JetBrains Mono, monospace" font-size="10" text-anchor="middle">business systems</text><path d="M134 92 H154" stroke="#5eead4" stroke-width="1.5" stroke-dasharray="4 6" fill="none" class="sc-flow"/><rect x="158" y="66" width="116" height="52" rx="12" fill="rgba(94,234,212,0.09)" stroke="rgba(94,234,212,0.42)"/><text x="216" y="90" fill="#e2e8f0" font-family="JetBrains Mono, monospace" font-size="12" text-anchor="middle">dbt</text><text x="216" y="106" fill="#94a3b8" font-family="JetBrains Mono, monospace" font-size="10" text-anchor="middle">star schemas</text><path d="M278 92 H298" stroke="#5eead4" stroke-width="1.5" stroke-dasharray="4 6" fill="none" class="sc-flow"/><rect x="302" y="66" width="116" height="52" rx="12" fill="rgba(94,234,212,0.13)" stroke="rgba(94,234,212,0.54)"/><text x="360" y="90" fill="#e2e8f0" font-family="JetBrains Mono, monospace" font-size="12" text-anchor="middle">history</text><text x="360" y="106" fill="#94a3b8" font-family="JetBrains Mono, monospace" font-size="10" text-anchor="middle">every change kept</text><path d="M422 92 H442" stroke="#5eead4" stroke-width="1.5" stroke-dasharray="4 6" fill="none" class="sc-flow"/><rect x="446" y="66" width="116" height="52" rx="12" fill="rgba(94,234,212,0.17)" stroke="rgba(94,234,212,0.66)"/><text x="504" y="90" fill="#e2e8f0" font-family="JetBrains Mono, monospace" font-size="12" text-anchor="middle">semantic</text><text x="504" y="106" fill="#94a3b8" font-family="JetBrains Mono, monospace" font-size="10" text-anchor="middle">views</text><path d="M566 92 H586" stroke="#5eead4" stroke-width="1.5" stroke-dasharray="4 6" fill="none" class="sc-flow"/><rect x="590" y="66" width="116" height="52" rx="12" fill="rgba(94,234,212,0.21)" stroke="rgba(94,234,212,0.78)"/><text x="648" y="90" fill="#e2e8f0" font-family="JetBrains Mono, monospace" font-size="12" text-anchor="middle">agents</text><text x="648" y="106" fill="#94a3b8" font-family="JetBrains Mono, monospace" font-size="10" text-anchor="middle">Analyst · Search</text><text x="360" y="172" fill="#5eead4" font-family="JetBrains Mono, monospace" font-size="11" text-anchor="middle">a question in plain language, an answer from governed data</text></svg></figure>
+  <div class="built"><p>Built with</p><ul><li>Snowflake</li><li>dbt</li><li>Cortex Agents</li><li>Cortex Analyst</li><li>Cortex Search</li><li>Semantic views</li></ul></div>
+
+  <div class="facts">
+    <div><b>4</b><span>workstreams</span></div>
+    <div><b>1</b><span>semantic layer shared by every agent</span></div>
+    <div><b>Full</b><span>change history in every star schema</span></div>
+    <div><b>Early</b><span>stage, updated as it ships</span></div>
+  </div>
+
+  <h2>The goal</h2>
+  <p>Business questions should be answered from one governed model of the data, not from spreadsheets that disagree. The warehouse is designed first and the agents are built on top of it, so every answer traces back to the same definitions.</p>
+
+  <h2>How the data will flow</h2>
+  <div class="flow" aria-label="Data flow"><div class="step">Business systems<small>the sources the business already runs on</small></div><div class="step code">dbt star schemas<small>facts and dimensions, with the full history of every change</small></div><div class="step code">Semantic views<small>one definition per metric, shared by every consumer</small></div><div class="step model">AI agents on Snowflake Cortex<small>Analyst answers from tables, Search answers from documents</small></div><div class="step">Business teams<small>questions in plain language, answers they can trust</small></div></div>
+
+  <h2>Workstreams</h2>
+  <ul><li><strong>Warehouse:</strong> the architecture is designed, with star schemas modeled in dbt that keep the full change history.</li><li><strong>Agents:</strong> AI agents are built on Snowflake Cortex, with Analyst and Search on semantic views.</li><li><strong>Use cases:</strong> AI use cases are evaluated for business value, and the viable ones are shipped.</li><li><strong>People:</strong> requirements from business and technical teams are turned into working solutions.</li></ul>
+
+  <p class="note">Preliminary write-up. Client data, schemas and internal details are not shown.</p>
+  <nav class="article-end" aria-label="More">
+    <a href="../index.html#experience">← Back to experience</a>
+    <a href="#top">↑ Back to top</a>
+    <a class="next" href="cdp.html"><small>Next case study</small>Composable CDP →</a>
+  </nav>
+</article>
+<footer>© 2026 Luca Lamorte · <a href="../index.html">Home</a> · <a href="https://www.linkedin.com/in/lclamorte/" target="_blank" rel="noopener">LinkedIn</a></footer>
+<script src="../snow.js"></script>
+<script>
+  // Cada caso de estudio arranca desde su título, aunque el navegador recuerde dónde había quedado la lectura.
+  if (!location.hash) { history.scrollRestoration = 'manual'; scrollTo(0, 0); addEventListener('load', () => scrollTo(0, 0)); }
+</script>
+</body>
+</html>

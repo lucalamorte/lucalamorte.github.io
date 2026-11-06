@@ -49,6 +49,24 @@
   addEventListener('title-typed', () => { peekAt = performance.now() + 1400; });
   // Sin animación de escritura (movimiento reducido) no hay nada que esperar.
   // Si el título se terminó de escribir antes de que este archivo escuchara el aviso, se toma de la clase.
+  // Si la portada quedó atrás sin jugar, Little Bit flota perdido en el espacio, sin gravedad: deriva despacio por
+  // la pantalla, gira apenas y rebota suave en los bordes, pidiendo ayuda. Vive en coordenadas de la ventana.
+  const drift = { x: 0, y: 0, vx: -16, vy: 11, a: 0, va: .18, since: 0, ready: false };
+  const drifting = now => {
+    if (mode !== 'wait' || peekFrom() === null || now < peekFrom()) { drift.since = 0; return false; }
+    const ws = waitSpot();
+    if (ws.y + S > scrollY && ws.y < scrollY + H) { drift.since = 0; return false; }
+    if (!drift.ready) { drift.ready = true; drift.x = W - 120; drift.y = H * .55; }
+    if (!drift.since) drift.since = now;
+    return true;
+  };
+  const moveDrift = dt => {
+    drift.x += drift.vx * dt; drift.y += drift.vy * dt; drift.a += drift.va * dt;
+    const l = 24, r = W - S * BIG - 24, t = 90, b = H - S * BIG - 110;
+    if (drift.x < l || drift.x > r) { drift.vx *= -1; drift.x = Math.max(l, Math.min(r, drift.x)); }
+    if (drift.y < t || drift.y > b) { drift.vy *= -1; drift.y = Math.max(t, Math.min(b, drift.y)); }
+    if (Math.abs(drift.a) > .35) drift.va = -Math.sign(drift.a) * Math.abs(drift.va);
+  };
   const peekFrom = () => {
     const h = $('.hero h1');
     if (!h || !h.classList.contains('typing')) return 0;
@@ -453,13 +471,19 @@
     // Esperando, el muñequito se asoma por detrás del título, listo para arrancar. Al terminar queda solo el de la nota.
     // Esperando no se dibuja en ningún otro lado: hasta que se asoma, no está.
     if (mode === 'wait' && !(peekFrom() !== null && now >= peekFrom())) { /* todavía escondido detrás del título */ }
-    else if (mode === 'wait') {
+    else if (mode === 'wait' && drifting(now)) {
+      const cx = drift.x + S * BIG / 2, cy = scrollY + drift.y + S * BIG / 2;
+      ctx.save(); ctx.globalAlpha = Math.min(1, (now - drift.since) / 700);
+      ctx.translate(cx, cy); ctx.rotate(drift.a); ctx.scale(BIG, BIG);
+      drawPk(-S / 2, -S / 2, now); ctx.restore();
+    } else if (mode === 'wait') {
       // Sube desde detrás de las letras, y después cada tanto da un saltito para espiar.
       const rise = 1 - Math.min(1, (now - peekFrom()) / 650), up = (1 - (1 - rise) ** 3) * S * BIG;
       const ws = { ...waitSpot() }; ws.y += up;
       const hop = still ? 0 : (now % 1600 < 520 ? Math.sin((now % 1600) / 520 * Math.PI) * 12 : 0);
       P.face = -1;
-      ctx.save(); ctx.beginPath(); ctx.rect(ws.x - 80, ws.ledge - 160, S * BIG + 160, 160); ctx.clip();
+      // El recorte solo existe mientras sube: ya arriba, nada lo corta (ni su brillo).
+      ctx.save(); if (rise > 0) { ctx.beginPath(); ctx.rect(ws.x - 80, ws.ledge - 160, S * BIG + 160, 160); ctx.clip(); }
       ctx.translate(ws.x + S / 2, ws.y + S - hop); ctx.scale(BIG, BIG); ctx.translate(-(ws.x + S / 2), -(ws.y + S));
       drawPk(ws.x, ws.y, now); ctx.restore();
     } else if (mode !== 'done' && !endAt && seen(P.y)) {
@@ -917,15 +941,19 @@
     if (P.trail.length && mode !== 'intro') P.trail.shift();
     draw(now);
     // El botón invisible sobre el muñequito: para tocarlo en el celu o llegar con Tab.
-    const ws = waitSpot(), waiting = mode === 'wait', showHit = mode === 'idle' || (waiting && peekFrom() !== null && now >= peekFrom()), big = S * BIG + 24;
+    const floating = drifting(now);
+    if (floating && !still) moveDrift(dt);
+    const ws = floating ? { x: drift.x + S * BIG / 2 - S / 2, y: scrollY + drift.y + S * BIG - S } : waitSpot(), waiting = mode === 'wait', showHit = mode === 'idle' || (waiting && peekFrom() !== null && now >= peekFrom()), big = S * BIG + 24;
+    hint.textContent = floating ? (touch ? "help! i'm lost. tap me" : "help! i'm lost. click me") : (touch ? "hi, i'm Little Bit. tap me" : "hi, i'm Little Bit. click me");
+    document.body.classList.toggle('pk-floating', floating);
     hit.style.display = showHit ? '' : 'none';
     if (waiting) Object.assign(hit.style, { left: `${ws.x + S / 2 - big / 2}px`, top: `${ws.y + S + 6 - big}px`, width: `${big}px`, height: `${big}px` });
     else if (showHit) Object.assign(hit.style, { left: `${P.x - 10}px`, top: `${P.y - 10}px`, width: '44px', height: '44px' });
     // El globito mientras espera, y la misión sobre el muñequito al aterrizar.
-    hint.classList.toggle('on', waiting && peekFrom() !== null && now >= peekFrom() + 900 && ws.y > scrollY && ws.y < scrollY + H);
+    hint.classList.toggle('on', waiting && peekFrom() !== null && now >= peekFrom() + 900 && (floating ? now - drift.since > 900 : ws.y > scrollY && ws.y < scrollY + H));
     if (waiting) {
       // Al costado si entra; en pantallas angostas, arriba del muñequito.
-      const side = ws.x + S * BIG + 230 < W;
+      const side = ws.x + S * BIG + 230 < W && !(floating && ws.x > W / 2);
       hint.classList.toggle('side', side);
       hint.style.left = `${side ? ws.x + S / 2 + S * BIG / 2 + 14 : Math.min(W - 70, ws.x + S / 2)}px`;
       hint.style.top = `${side ? ws.y + S - S * BIG / 2 : ws.y + S - S * BIG - 14}px`;

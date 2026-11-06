@@ -35,6 +35,14 @@
     points.push(p);
   }));
   points.forEach(p => { p.left = at.get(p.r * 1000 + p.c - 1); p.right = at.get(p.r * 1000 + p.c + 1); });
+  // La disolución de los hombros va en cada raya, según dónde vive (abajo y a los costados del cuadro se apaga),
+  // y no en el cuadro: así el retrato quieto se ve igual que siempre y una raya empujada se lleva su transparencia
+  // consigo, sin chocar nunca contra un borde.
+  points.forEach(p => {
+    const x = (p.c + .5) / DATA.cols, y = (p.r + .5) / DATA.grid.length;
+    const down = y < .8 ? 1 : Math.max(0, 1 - (y - .8) / .2), side = Math.min(1, x / .12, (1 - x) / .12);
+    p.fade = Math.max(0, down * side);
+  });
   const rows = [...new Set(points.map(p => p.r))].map(r => ({ r, x: 0, y: 0, vx: 0, vy: 0, loaded: true }));
   const rowOf = new Map(rows.map(row => [row.r, row]));
 
@@ -176,7 +184,7 @@
       const [x, y] = position(p, t);
       const arrived = landed(p);
       if (arrived < 1) {
-        ctx.globalAlpha = .2 + arrived * .5; ctx.fillStyle = accent;
+        ctx.globalAlpha = (.2 + arrived * .5) * p.fade; ctx.fillStyle = accent;
         ctx.fillRect(x - step * .1, y - step * .1, step * .2, step * .2);
         continue;
       }
@@ -185,7 +193,7 @@
       const stretch = Math.min(1, Math.hypot(p.ox, p.oy) / (step * 2.5));
       if (stretch > .02) moving = true;
       const lit = Math.min(1, p.edge * .8 + stretch);
-      ctx.globalAlpha = pending ? .5 : Math.min(1, .2 + p.tone * .5 + lit * .45);
+      ctx.globalAlpha = (pending ? .5 : Math.min(1, .2 + p.tone * .5 + lit * .45)) * p.fade;
       ctx.fillStyle = ctx.strokeStyle = pending ? '#94a3b8' : accent;
       if (!pending && p.edge > .62) {
         // Rasgo: una crucecita, como en la referencia.

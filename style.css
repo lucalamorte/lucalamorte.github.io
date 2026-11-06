@@ -849,10 +849,6 @@ html.js .reveal.in :is(.card, .fold):nth-child(3) { transition-delay: .16s; }
 html.js .reveal.in :is(.card, .fold):nth-child(4) { transition-delay: .24s; }
 html.js .reveal.in .glass-live, html.js .reveal.in .glass-live:hover { transition-delay: 0s; transform: perspective(1100px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) translateY(var(--lift, 0px)); }
 @media (prefers-reduced-motion: reduce) { html.js .reveal .card, html.js .reveal .fold { opacity: 1; transform: none; filter: none; } .glass-live { --rx: 0deg !important; --ry: 0deg !important; } }
-/* El retrato se dibuja en una capa más grande que su cuadro, para que las rayas empujadas no se corten. */
-.portrait { position: relative; }
-.portrait-ink { position: absolute; z-index: 1; pointer-events: none; }
-.portrait .portrait-ink { max-width: none; margin: 0; aspect-ratio: auto; cursor: default; }
 /* Mientras se scrollea, el vidrio usa solo el desenfoque, que es liviano; la refracción vuelve apenas se detiene.
    Así el scroll no pierde cuadros. */
 html.is-scrolling.lg-liquid :is(.nav, .play-help, .pad button, .scroll-next, .btn:not(.solid), .card, .fold summary, .agent-note, .art-visual, .facts div, .article-end) {
@@ -862,9 +858,7 @@ html.is-scrolling .nav:not(.scrolled) { -webkit-backdrop-filter: none; backdrop-
    un leve desplazamiento, que la placa de video mueve sin costo. */
 html.js .reveal .card, html.js .reveal .fold { filter: none; transition: opacity .8s var(--ease), transform .8s var(--ease); will-change: opacity, transform; }
 html.js .reveal.in .card, html.js .reveal.in .fold { will-change: auto; }
-/* La disolución de los hombros pasa a la capa grande del dibujo, medida para que el retrato se funda igual que antes
-   en su base y sus costados. Lo que el mouse empuja hacia afuera se desvanece de a poco, nunca contra un borde. */
-.portrait .portrait-ink {
-  -webkit-mask-image: linear-gradient(180deg, #000 68%, transparent 81%), linear-gradient(90deg, transparent 0, #000 26%, #000 74%, transparent 100%);
-  mask-image: linear-gradient(180deg, #000 68%, transparent 81%), linear-gradient(90deg, transparent 0, #000 26%, #000 74%, transparent 100%);
-  -webkit-mask-composite: source-in; mask-composite: intersect; }
+/* El retrato se dibuja en una capa más grande que su cuadro, para que las rayas empujadas no choquen contra un
+   borde. La disolución de los hombros la hace cada raya (portrait.js), así que esta capa no lleva máscara. */
+.portrait { position: relative; }
+.portrait .portrait-ink { position: absolute; z-index: 1; pointer-events: none; max-width: none; margin: 0; aspect-ratio: auto; cursor: default; -webkit-mask-image: none; mask-image: none; }
