@@ -464,7 +464,7 @@
       ctx.save();
       if (unfolded.length) { ctx.beginPath(); ctx.rect(0, top - 40, W, Math.min(...unfolded) + 40 - top); ctx.clip(); }
       for (const t of level.things) t.draw(now);
-      ctx.setLineDash([2, 8]); ctx.strokeStyle = 'rgba(148,163,184,.25)'; ctx.lineWidth = 1; ctx.beginPath();
+      ctx.strokeStyle = 'rgba(148,163,184,.12)'; ctx.lineWidth = 1; ctx.beginPath();
       for (const w of level.walls) { const y1 = Math.max(w.y1, top - 20), y2 = Math.min(w.y2, top + H + 20); if (y2 > y1) { ctx.moveTo(w.x, y1); ctx.lineTo(w.x, y2); } }
       for (const x of [level.bounds.l, level.bounds.r]) { ctx.moveTo(x, top); ctx.lineTo(x, top + H); }
       ctx.stroke(); ctx.setLineDash([]);
@@ -962,7 +962,7 @@
     const floating = drifting(now);
     if (floating && !still) moveDrift(dt);
     const ws = floating ? { x: drift.x + S * BIG / 2 - S / 2, y: scrollY + drift.y + S * BIG - S } : waitSpot(), waiting = mode === 'wait', showHit = mode === 'idle' || (waiting && peekFrom() !== null && now >= peekFrom()), big = S * BIG + 24;
-    hint.textContent = floating ? (touch ? "help! i'm Little Bit, a lost record. tap me" : "help! i'm Little Bit, a lost record. click me") : (touch ? "hi, i'm Little Bit. tap me" : "hi, i'm Little Bit. click me");
+    hint.textContent = floating ? (touch ? "help! i'm lost. tap me" : "help! i'm lost. click me") : (touch ? "hi, i'm Little Bit. tap me" : "hi, i'm Little Bit. click me");
     document.body.classList.toggle('pk-floating', floating);
     hit.style.display = showHit ? '' : 'none';
     // Se mueven con translate (fracciones de píxel en la placa de video), no con left/top, que saltan de a un píxel.
