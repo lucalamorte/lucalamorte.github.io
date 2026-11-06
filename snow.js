@@ -7,7 +7,8 @@
   const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
   // El vidrio líquido: un ruido suave y lento desplaza lo que se ve a través de las tarjetas. Solo Chromium sabe
   // usar un filtro SVG como fondo de un elemento; en el resto no se agrega nada y queda el vidrio limpio.
-  if (navigator.userAgentData && !still) {
+  // Apagado: recalcular la refracción de cada tarjeta en cada cuadro no deja llegar a 60 fps con el cielo en movimiento.
+  if (false) {
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     svg.setAttribute('width', '0'); svg.setAttribute('height', '0'); svg.setAttribute('aria-hidden', 'true');
     svg.style.position = 'absolute';
@@ -42,7 +43,8 @@
   canvas.setAttribute('aria-hidden', 'true');
   document.body.prepend(canvas);
   const ctx = canvas.getContext('2d');
-  let width = 0, height = 0, flakes = [], agents = [], stars = [];
+  let width = 0, height = 0, flakes = [], agents = [], stars = [], twinkle = [];
+  const sky = document.createElement('canvas');
   // Cuánto acompaña el cielo al scroll: poco, porque está lejos.
   const SKY = 0.22;
 
@@ -51,7 +53,8 @@
   const rand = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
 
   function build() {
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    // El fondo es difuso: a resolución simple se ve igual y cuesta la cuarta parte.
+    const dpr = 1;
     width = innerWidth; height = innerHeight;
     canvas.width = Math.round(width * dpr); canvas.height = Math.round(height * dpr);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -61,6 +64,21 @@
     stars = Array.from({ length: Math.round(width * height / (small ? 2600 : 3200)) }, () => ({
       x: rand() * width, y: rand() * height, r: 0.35 + rand() * 0.75, a: 0.12 + rand() * 0.4, tw: 0.4 + rand() * 1.6, ph: rand() * 6.3, blue: rand() < 0.3,
     }));
+    // Las estrellas quietas se pintan una sola vez en una imagen que después solo se desplaza; titilan solo las más
+    // brillantes, que son pocas.
+    sky.width = width; sky.height = height;
+    const sk = sky.getContext('2d');
+    sk.clearRect(0, 0, width, height);
+    for (const st of stars) { sk.globalAlpha = st.a * .8; sk.fillStyle = st.blue ? '#a5b4fc' : '#e2e8f0'; sk.fillRect(st.x, st.y, st.r * 2, st.r * 2); }
+    twinkle = stars.filter(st => st.a > .44);
+    // La Cruz del Sur, el guiño a Argentina: sus cinco estrellas en la forma real, un poco más brillantes y sin
+    // rótulo. Arriba a la izquierda, lejos del texto.
+    const cx = width * (small ? .78 : .1), cy = height * .2, u = small ? 22 : 30;
+    [[.05, -1, 2], [0, 1, 2.3], [-.6, .12, 1.9], [.52, -.22, 1.5], [.28, .38, 1]].forEach(([dx, dy, r]) => {
+      const x = cx + dx * u, y = cy + dy * u, g = sk.createRadialGradient(x, y, 0, x, y, r * 4);
+      g.addColorStop(0, 'rgba(241,245,249,.95)'); g.addColorStop(.25, 'rgba(165,180,252,.35)'); g.addColorStop(1, 'rgba(165,180,252,0)');
+      sk.globalAlpha = 1; sk.fillStyle = g; sk.beginPath(); sk.arc(x, y, r * 4, 0, Math.PI * 2); sk.fill();
+    });
     flakes = Array.from({ length: count }, () => {
       const flake = rand() < 0.32;
       return {
@@ -196,12 +214,15 @@
     ctx.globalCompositeOperation = 'destination-over';
     if (dt) drawComet(t, dt);
     drawAgents(t);
-    for (const s of stars) {
-      const y = ((s.y - scrollY * 0.12) % height + height) % height;
-      ctx.globalAlpha = s.a * (0.65 + 0.35 * Math.sin(t / 1000 * s.tw + s.ph));
-      ctx.fillStyle = s.blue ? '#a5b4fc' : '#e2e8f0'; ctx.fillRect(s.x, y, s.r * 2, s.r * 2);
+    const off = ((scrollY * 0.12) % height + height) % height;
+    for (const s of twinkle) {
+      const y = ((s.y - off) % height + height) % height;
+      ctx.globalAlpha = s.a * (0.35 * Math.sin(t / 1000 * s.tw + s.ph)) + .15;
+      ctx.fillStyle = s.blue ? '#a5b4fc' : '#e2e8f0'; ctx.fillRect(s.x - .5, y - .5, s.r * 2 + 1, s.r * 2 + 1);
     }
     ctx.globalAlpha = 1;
+    ctx.drawImage(sky, 0, off, width, height - off, 0, 0, width, height - off);
+    if (off) ctx.drawImage(sky, 0, 0, width, off, 0, height - off, width, off);
     ctx.globalCompositeOperation = 'source-over';
   }
 
