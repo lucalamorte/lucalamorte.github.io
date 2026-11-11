@@ -27,8 +27,9 @@
   addEventListener('scroll', () => { document.documentElement.classList.add('is-scrolling'); clearTimeout(still_); still_ = setTimeout(() => document.documentElement.classList.remove('is-scrolling'), 180); }, { passive: true });
   // El vidrio responde al mouse: un reflejo que lo sigue y una inclinación chiquita hacia él.
   if (matchMedia('(hover: hover)').matches && !still) {
-    document.querySelectorAll('.card, .agent-note, .art-visual').forEach(el => {
-      el.classList.add('glass-live');
+    // Los desplegables responden igual que las tarjetas; su reflejo va en el fondo, porque su ::before ya es el filo de luz.
+    document.querySelectorAll('.card, .agent-note, .art-visual, .fold summary').forEach(el => {
+      el.classList.add(el.matches('summary') ? 'glass-tilt' : 'glass-live');
       el.addEventListener('pointermove', event => {
         const r = el.getBoundingClientRect(), x = (event.clientX - r.left) / r.width, y = (event.clientY - r.top) / r.height;
         el.style.setProperty('--mx', `${x * 100}%`); el.style.setProperty('--my', `${y * 100}%`);
@@ -47,6 +48,19 @@
   const sky = document.createElement('canvas');
   // Cuánto acompaña el cielo al scroll: poco, porque está lejos.
   const SKY = 0.22;
+  // Las referencias personales no se ven todas juntas: van una por una, alternando márgenes, en un cielo propio
+  // más largo que la pantalla que pasa un poco más rápido que las estrellas. Aparece una cada pantalla y media, más o menos.
+  const REFS = 0.4;
+  let refs = [], refsH = 1;
+  // Las constelaciones se reparten a lo largo de todo lo que se scrollea, para que pasen todas, de a una, hasta el
+  // final de la página. Se vuelve a medir al terminar de cargar, cuando la página ya tiene su alto real.
+  const spreadRefs = () => {
+    if (!refs.length) return;
+    const span = Math.max(height, (document.documentElement.scrollHeight - height) * REFS + height * .9), step = Math.max(height * .42, span / refs.length);
+    refs.forEach((f, k) => { f.y = zones[k].y = (k + .5) * step; });
+    refsH = Math.max(height, refs.length * step);
+  };
+  addEventListener('load', () => spreadRefs());
 
   // Semilla fija: la nevada arranca igual en cada visita.
   let seed = 11;
@@ -67,7 +81,7 @@
     // Las estrellas quietas se pintan una sola vez en una imagen que después solo se desplaza; titilan solo las más
     // brillantes, que son pocas.
     sky.width = width; sky.height = height;
-    const sk = sky.getContext('2d');
+    let sk = sky.getContext('2d');
     sk.clearRect(0, 0, width, height);
     for (const st of stars) { sk.globalAlpha = st.a * .8; sk.fillStyle = st.blue ? '#a5b4fc' : '#e2e8f0'; sk.fillRect(st.x, st.y, st.r * 2, st.r * 2); }
     twinkle = stars.filter(st => st.a > .44);
@@ -87,8 +101,14 @@
       marks.forEach(([x, y, r = 1.5]) => bright(ox + x * u, oy + y * u, r));
     };
     const ring = (cx, cy, r, n = 28) => Array.from({ length: n + 1 }, (_, k) => [cx + Math.cos(k / n * Math.PI * 2) * r, cy + Math.sin(k / n * Math.PI * 2) * r]);
-    zones = [];
-    const at = (fx, fy, mx, my, r = small ? 40 : 56) => { const p = [width * (small ? mx : fx), height * (small ? my : fy)]; zones.push({ x: p[0], y: p[1], r }); return p; };
+    zones = []; refs = [];
+    const at = (fx, fy, mx, my, r = small ? 40 : 56) => {
+      const k = refs.length, R = small ? 70 : 90, c = document.createElement('canvas'); c.width = c.height = R * 2;
+      // En pantallas anchas, en los márgenes; en el celu, cerca de los bordes.
+      const x = k % 2 ? width * (small ? .84 : .93) : width * (small ? .16 : .07), y = 0;
+      refs.push({ c, x, y, R }); zones.push({ x, y, r }); sk = c.getContext('2d');
+      return [R, R];
+    };
 
     // La Cruz del Sur: sus cinco estrellas en la forma real.
     {
@@ -123,13 +143,35 @@
       figure(tx, ty, u, [wing(-1.2), wing(1.2), [[-1.2, 0], [-.42, 0]], [[.42, 0], [1.2, 0]], ring(0, 0, .42)],
         [[0, 0, 1.6], [-1.2, -1], [-1.2, 1], [1.2, -1], [1.2, 1]]);
     }
-    // Un joystick: el contorno con las dos manijas, la cruz y los botones.
+    // Un café: la taza con su asa y dos hilos de vapor.
+    figure(...at(.05, .5, .1, .42), small ? 15 : 20,
+      [[[-.7, -.4], [-.55, .7], [.55, .7], [.7, -.4], [-.7, -.4]], Array.from({ length: 11 }, (_, k) => { const a = -Math.PI / 2 + k / 10 * Math.PI; return [.62 + Math.cos(a) * .32, .12 + Math.sin(a) * .3]; }),
+       [[-.2, -.6], [-.05, -.85], [-.2, -1.1]], [[.2, -.6], [.35, -.85], [.2, -1.1]]],
+      [[-.7, -.4], [.7, -.4], [-.2, -1.1, 1.2], [.2, -1.1, 1.2]]);
+    // Una medialuna: la curva de afuera, la de adentro y sus pliegues.
+    figure(...at(.93, .88, .55, .84), small ? 15 : 20,
+      [[[-1, .3], [-.72, -.22], [-.28, -.5], [.28, -.5], [.72, -.22], [1, .3]], [[1, .3], [.5, .06], [0, -.04], [-.5, .06], [-1, .3]],
+       [[-.5, -.37], [-.32, .02]], [[0, -.5], [0, -.04]], [[.5, -.37], [.32, .02]]],
+      [[-1, .3], [1, .3], [0, -.5, 1.3]]);
+    // Un libro abierto: dos páginas que se curvan hacia el lomo.
+    figure(...at(.2, .9, .86, .9), small ? 14 : 19,
+      [[[0, -.5], [-.5, -.66], [-1, -.5], [-1, .6], [-.5, .45], [0, .6], [.5, .45], [1, .6], [1, -.5], [.5, -.66], [0, -.5], [0, .6]],
+       [[-.8, -.2], [-.2, -.15]], [[.2, -.15], [.8, -.2]], [[-.8, .1], [-.2, .15]], [[.2, .15], [.8, .1]]],
+      [[-1, -.5], [1, -.5], [-1, .6], [1, .6]]);
+    // Una guitarra, un poco inclinada: el cuerpo de dos curvas, la boca, el mástil y la cabeza.
     {
-      const [jx, jy] = at(.33, .1, .32, .06), u = small ? 16 : 22;
-      const body = [[-.7, -.45], [.7, -.45], [1.05, -.3], [1.3, .35], [1.15, .62], [.85, .55], [.55, .25], [-.55, .25], [-.85, .55], [-1.15, .62], [-1.3, .35], [-1.05, -.3], [-.7, -.45]];
-      figure(jx, jy, u, [body, [[-.85, -.08], [-.45, -.08]], [[-.65, -.28], [-.65, .12]]],
-        [[.5, -.15, 1.4], [.8, -.02, 1.4], [.5, .1, 1.1], [.8, -.28, 1.1]]);
+      const tilt = .45, c = Math.cos(tilt), sn = Math.sin(tilt), rot = pts => pts.map(([x, y, r]) => [x * c - y * sn, x * sn + y * c, ...(r ? [r] : [])]);
+      const half = y => Math.max(Math.sqrt(Math.max(0, .25 - (y - .55) ** 2)), Math.sqrt(Math.max(0, .1296 - (y + .2) ** 2)), y > -.45 && y < .95 ? .27 : 0);
+      const ys = Array.from({ length: 31 }, (_, k) => -.56 + k / 30 * 1.61), body = [...ys.map(y => [half(y), y]), ...ys.reverse().map(y => [-half(y), y])];
+      body.push(body[0]);
+      figure(...at(.95, .5, .9, .6), small ? 20 : 26,
+        // La silueta es una sola línea: dos curvas unidas por la cintura, como el cuerpo de una guitarra criolla.
+        [rot(body), rot(ring(0, .1, .12, 16)), rot([[-.18, .72], [.18, .72]]),
+         rot([[-.07, -.56], [-.07, -1.5]]), rot([[.07, -.56], [.07, -1.5]]), rot([[-.07, -.8], [.07, -.8]]), rot([[-.07, -1.1], [.07, -1.1]]),
+         rot([[-.07, -1.5], [-.14, -1.82], [.14, -1.82], [.07, -1.5]]), rot([[0, .72], [0, -1.5]])],
+        rot([[0, 1.05, 1.3], [0, -1.82, 1.3], [-.55, .5, 1], [.55, .5, 1]]));
     }
+    spreadRefs();
     flakes = Array.from({ length: count }, () => {
       const flake = rand() < 0.32;
       return {
@@ -163,10 +205,10 @@
   // Las referencias del cielo se mueven con el fondo y los agentes con otra velocidad: cuando un agente pasa
   // cerca de una, se desvanece, así nunca quedan pegados.
   function apart(x, y) {
-    const off = ((scrollY * 0.12) % height + height) % height;
+    const off = scrollY * REFS;
     let k = 1;
     for (const z of zones) {
-      const zy = ((z.y - off) % height + height) % height, d = Math.hypot(x - z.x, y - zy) - z.r - 40;
+      const zy = ((z.y - off) % refsH + refsH) % refsH, d = Math.hypot(x - z.x, y - zy) - z.r - 40;
       k = Math.min(k, Math.max(0, Math.min(1, d / 50)));
     }
     return k * k * (3 - 2 * k);
@@ -296,6 +338,10 @@
       ctx.fillStyle = s.blue ? '#a5b4fc' : '#e2e8f0'; ctx.fillRect(s.x - .5, y - .5, s.r * 2 + 1, s.r * 2 + 1);
     }
     ctx.globalAlpha = 1;
+    for (const f of refs) {
+      const y = ((f.y - scrollY * REFS) % refsH + refsH) % refsH;
+      for (const yy of [y, y - refsH]) if (yy > -f.R && yy < height + f.R) ctx.drawImage(f.c, f.x - f.R, yy - f.R);
+    }
     ctx.drawImage(sky, 0, off, width, height - off, 0, 0, width, height - off);
     if (off) ctx.drawImage(sky, 0, 0, width, off, 0, height - off, width, off);
     ctx.globalCompositeOperation = 'source-over';
@@ -309,4 +355,22 @@
   if (document.fonts) document.fonts.ready.then(repaint);
   if ('ResizeObserver' in window) new ResizeObserver(repaint).observe(document.body);
   if (still) { draw(0, 0); addEventListener('scroll', () => draw(0, 0), { passive: true }); } else requestAnimationFrame(frame);
+})();
+
+// La estela del cursor: al mover el mouse quedan estrellitas de los colores de la cara que se apagan solas. El
+// puntero es el del navegador, así que la estela nunca lo demora. Solo con mouse y si no se pidió menos movimiento.
+(() => {
+  if (!matchMedia('(hover: hover) and (pointer: fine)').matches || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const TINTS = ['#5eead4', '#5eead4', '#e2e8f0', '#a5b4fc'];
+  let lx = 0, ly = 0, at = 0;
+  addEventListener('pointermove', e => {
+    if (e.pointerType !== 'mouse') return;
+    const now = performance.now();
+    if (now - at < 45 || Math.hypot(e.clientX - lx, e.clientY - ly) < 14) return;
+    at = now; lx = e.clientX; ly = e.clientY;
+    const s = document.createElement('i'); s.className = 'spark';
+    s.style.left = `${e.clientX + (Math.random() - .5) * 8}px`; s.style.top = `${e.clientY + (Math.random() - .5) * 8}px`;
+    s.style.setProperty('--c', TINTS[Math.floor(Math.random() * TINTS.length)]); s.style.setProperty('--dx', `${(Math.random() - .5) * 14}px`);
+    s.addEventListener('animationend', () => s.remove()); document.body.append(s);
+  }, { passive: true });
 })();

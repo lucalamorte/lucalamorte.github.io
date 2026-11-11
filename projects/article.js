@@ -1,11 +1,29 @@
-// La flecha de los artículos: el centro de la barra de abajo baja de zona en zona (el dibujo, los números y
+// La flecha de los artículos: el centro de la barra de abajo baja de zona en zona (el stack con los números y
 // cada título; las que quedan muy pegadas a la actual se saltean) y, cuando ya no queda nada abajo, pasa a ser "Back to top". Una sola fuente para todos.
 (() => {
   const link = document.querySelector('.article-end a[href="#top"]');
   if (!link) return;
-  const stops = [...document.querySelectorAll('.article > .art-visual, .article > .facts, .article > h2')];
-  const root = document.documentElement;
+  const root = document.documentElement, article = document.querySelector('.article'), bar = document.querySelector('.article-end');
   const pad = () => (parseFloat(getComputedStyle(root).scrollPaddingTop) || 0) + 12;
+  // Cada parada tiene que entrar entera en la pantalla. Arranca una en cada título, y si lo que sigue ya no entra
+  // (en el celu, una sección con texto y diagrama), se corta antes de lo que no entra; un título nunca queda solo al final.
+  let stops = [];
+  const plan = () => {
+    const room = innerHeight - pad() - (bar ? bar.getBoundingClientRect().height : 0) - 16;
+    // Lo que solo ya no entra (un diagrama largo en un celu bajo) se recorre por partes: sus pasos pasan a ser candidatos.
+    const flat = el => el.getBoundingClientRect().height > room && el.children.length > 1 ? [...el.children].flatMap(flat) : [el];
+    const kids = [...article.children].filter(el => el !== bar && !el.matches('.back, header, span') && el.getBoundingClientRect().height > 0).flatMap(flat);
+    stops = []; let start = null;
+    kids.forEach((el, k) => {
+      const head = el.matches('h2, h3, .built, .facts'), prev = kids[k - 1];
+      const over = start && el.getBoundingClientRect().bottom - start.getBoundingClientRect().top > room;
+      if (head || !start) { start = el; stops.push(el); }
+      else if (over) { start = prev && prev.matches('h2, h3') && prev !== stops[stops.length - 1] ? prev : el; if (start !== stops[stops.length - 1]) stops.push(start); }
+    });
+  };
+  plan();
+  // Para las pruebas: qué paradas se armaron.
+  window.__stops = () => stops;
   const at = el => el.getBoundingClientRect().top + scrollY - pad();
   const end = () => root.scrollHeight - innerHeight - 4;
   const upcoming = () => (scrollY >= end() ? null : stops.find(el => at(el) > scrollY + Math.max(40, innerHeight * .2)) || null);
@@ -26,7 +44,8 @@
     scrollTo({ top: Math.min(at(el), end() + 4) });
   });
   addEventListener('scroll', sync, { passive: true });
-  addEventListener('resize', sync);
+  addEventListener('resize', () => { plan(); sync(); });
+  addEventListener('load', () => { plan(); sync(); });
   sync();
 })();
 

@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 300" font-family="Inter, Segoe UI, Arial, sans-serif">
+  <rect width="920" height="300" fill="#ffffff"/>
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#475569"/></marker>
+  </defs>
+  <g fill="#f8fafc" stroke="#334155" stroke-width="1.5">
+    <rect x="20" y="90" width="150" height="90" rx="12"/>
+    <rect x="215" y="90" width="150" height="90" rx="12"/>
+    <rect x="410" y="90" width="150" height="90" rx="12"/>
+    <rect x="605" y="90" width="120" height="90" rx="12"/>
+    <rect x="770" y="90" width="130" height="90" rx="12" fill="#ecfdf5" stroke="#059669"/>
+  </g>
+  <g stroke="#475569" stroke-width="1.8" marker-end="url(#a)">
+    <line x1="172" y1="135" x2="211" y2="135"/>
+    <line x1="367" y1="135" x2="406" y2="135"/>
+    <line x1="562" y1="135" x2="601" y2="135"/>
+    <line x1="727" y1="135" x2="766" y2="135"/>
+  </g>
+  <g text-anchor="middle" fill="#0f172a">
+    <text x="95" y="128" font-size="16" font-weight="600">My brother's PC</text>
+    <text x="95" y="150" font-size="13" fill="#475569">NeoProgrammer</text>
+    <text x="290" y="128" font-size="16" font-weight="600">CH341A</text>
+    <text x="290" y="150" font-size="13" fill="#475569">USB, works at 3.3 V</text>
+    <text x="485" y="128" font-size="16" font-weight="600">1.8 V adapter</text>
+    <text x="485" y="150" font-size="13" fill="#475569">brings it down to 1.8 V</text>
+    <text x="665" y="128" font-size="16" font-weight="600">Clip</text>
+    <text x="665" y="150" font-size="13" fill="#475569">red wire = pin 1</text>
+    <text x="835" y="128" font-size="16" font-weight="600">BIOS chip</text>
+    <text x="835" y="150" font-size="13" fill="#475569">W25Q128FW</text>
+  </g>
+  <text x="460" y="50" text-anchor="middle" font-size="18" font-weight="700" fill="#0f172a">Writing the BIOS without booting the board</text>
+  <text x="460" y="235" text-anchor="middle" font-size="14" fill="#475569">Board unplugged, CMOS battery out. Read twice, save the backup, then erase, write and verify.</text>
+</svg>

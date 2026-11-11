@@ -4,12 +4,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PrimeroLab · Luca Lamorte</title>
-<meta name="description" content="A GenAI study app that turns your notes into flashcards and answers questions using only your documents.">
+<meta name="description" content="A GenAI study app for any subject: answer out loud, get graded on the spot from 1 to 5, and review what went worst first.">
 <link rel="canonical" href="https://lucalamorte.github.io/projects/primerolab.html">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Luca Lamorte">
 <meta property="og:title" content="PrimeroLab · Luca Lamorte">
-<meta property="og:description" content="A GenAI study app that turns your notes into flashcards and answers questions using only your documents.">
+<meta property="og:description" content="A GenAI study app for any subject: answer out loud, get graded on the spot from 1 to 5, and review what went worst first.">
 <meta property="og:url" content="https://lucalamorte.github.io/projects/primerolab.html">
 <meta property="og:image" content="https://lucalamorte.github.io/assets/og/primerolab.png">
 <meta property="og:image:alt" content="PrimeroLab · Luca Lamorte">
@@ -18,7 +18,7 @@
 <meta property="og:locale" content="en_US">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="PrimeroLab · Luca Lamorte">
-<meta name="twitter:description" content="A GenAI study app that turns your notes into flashcards and answers questions using only your documents.">
+<meta name="twitter:description" content="A GenAI study app for any subject: answer out loud, get graded on the spot from 1 to 5, and review what went worst first.">
 <meta name="twitter:image" content="https://lucalamorte.github.io/assets/og/primerolab.png">
 <meta name="author" content="Luca Lamorte">
 <meta name="theme-color" content="#0b1120">
@@ -29,7 +29,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../style.css">
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"PrimeroLab","description":"A GenAI study app that turns your notes into flashcards and answers questions using only your documents.","url":"https://lucalamorte.github.io/projects/primerolab.html","image":"https://lucalamorte.github.io/assets/og/primerolab.png","author":{"@type":"Person","@id":"https://lucalamorte.github.io/#luca","name":"Luca Lamorte","url":"https://lucalamorte.github.io/"},"about":["Next.js","TypeScript","Supabase","Postgres","pgvector","RAG","Tool-calling agent","Gemini","OpenAI","Row-level security","Spaced repetition"],"keywords":"Next.js, TypeScript, Supabase, Postgres, pgvector, RAG, Tool-calling agent, Gemini, OpenAI, Row-level security, Spaced repetition","datePublished":"2025","inLanguage":"en"}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"PrimeroLab","description":"A GenAI study app for any subject: answer out loud, get graded on the spot from 1 to 5, and review what went worst first.","url":"https://lucalamorte.github.io/projects/primerolab.html","image":"https://lucalamorte.github.io/assets/og/primerolab.png","author":{"@type":"Person","@id":"https://lucalamorte.github.io/#luca","name":"Luca Lamorte","url":"https://lucalamorte.github.io/"},"about":["Next.js","TypeScript","Supabase","Postgres","pgvector","RAG","Tool-calling agent","Gemini","OpenAI","Row-level security","Spaced repetition"],"keywords":"Next.js, TypeScript, Supabase, Postgres, pgvector, RAG, Tool-calling agent, Gemini, OpenAI, Row-level security, Spaced repetition","datePublished":"2025","inLanguage":"en"}</script>
 </head>
 <body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
@@ -42,7 +42,7 @@
 <a class="skip" href="#content">Skip to content</a>
 <nav class="nav" aria-label="Main">
   <a class="name" href="../index.html">Luca Lamorte</a>
-  <div class="links"><a href="../index.html#experience">Experience</a><a href="../index.html#projects">Products</a><a href="../index.html#how-i-work">How I work</a><a href="../index.html#contact">Contact</a></div>
+  <div class="links"><a href="../index.html#experience">Experience</a><a href="../index.html#projects">Products</a><a href="../index.html#notes">Notes</a><a href="../index.html#contact">Contact</a></div>
   <div class="icons">
     <a href="mailto:lclamorte@gmail.com?subject=Let's%20connect!" aria-label="Email"><svg><use href="#i-mail"/></svg></a>
     <a href="https://www.linkedin.com/in/lclamorte/" aria-label="LinkedIn" target="_blank" rel="noopener"><svg><use href="#i-linkedin"/></svg></a>
@@ -56,10 +56,10 @@
     <img class="art-logo" src="../assets/primerolab.png" alt="">
     <span class="eyebrow">GenAI · own product · 2026</span>
     <h1>PrimeroLab</h1>
-    <p class="lede">A study tool for any subject. Upload notes, a PDF or a transcript and get flashcards, scheduled with spaced repetition so they stick. A study assistant answers questions about your own material.</p>
+    <p class="lede">A study app built around answering. Every answer, spoken or typed, is graded from 1 to 5, and what went worst comes back first.</p>
     <div class="cta">
       <a class="btn solid" href="https://primerolab.com" target="_blank" rel="noopener">Visit PrimeroLab</a>
-      <a class="btn" href="#agent">How the assistant works</a>
+      <a class="btn" href="#session">How an answer is graded</a>
     </div>
   </header>
 
@@ -70,25 +70,41 @@
   <div class="built"><p>Built with</p><ul><li>Next.js 15</li><li>React 19</li><li>TypeScript</li><li>Supabase</li><li>Postgres</li><li>pgvector</li><li>Gemini</li><li>OpenAI</li><li>Claude API</li><li>Tailwind</li><li>Vitest</li><li>Claude Code</li></ul></div>
 
   <div class="facts">
-    <div><b>5</b><span>tools the agent can call</span></div>
+    <div><b>60 s</b><span>level diagnostic on the landing, no sign up</span></div>
+    <div><b>1–5</b><span>score on every answer, with what was missing</span></div>
     <div><b>2</b><span>model providers, with fallback</span></div>
     <div><b>224</b><span>automated tests</span></div>
-    <div><b>60</b><span>database migrations, each one documented</span></div>
   </div>
 
   <h2>The problem</h2>
-  <p>Flashcard generation used to cut every document at 6,000 characters and quietly drop the rest. For an 80-page PDF, about 95% of the material never reached the model, and nothing on screen said so. The study assistant had a similar problem. It ran a keyword search on every message and stuffed whatever matched into the prompt, even when the question had nothing to do with the material.</p>
+  <p>Rereading feels like studying, but never shows what you could not explain. Flashcards help, but you write them and grade yourself.</p>
 
-  <h2>Retrieval over the whole document</h2>
-  <p>A bigger cut would only move the limit. So each document is split into overlapping chunks, every chunk is stored with its embedding in Postgres with pgvector, and only the passages closest to the request are retrieved.</p>
+  <h2 id="session">What a study session looks like</h2>
+  <p>Decks come from your material or a topic. Each answer is graded on the spot, with what was missing and a complete example.</p>
+  <div class="flow" aria-label="How an answer is graded">
+    <div class="step">A card is answered out loud<small>or typed</small></div>
+    <div class="arrow"></div>
+    <div class="step code">The audio is transcribed<small>Whisper</small></div>
+    <div class="arrow"></div>
+    <div class="step model">The answer is graded from 1 to 5<small>what was right, what was missing, and an ideal answer</small></div>
+    <div class="arrow"></div>
+    <div class="step code">The score is checked and saved<small>a malformed grade never reaches the schedule</small></div>
+    <div class="arrow"></div>
+    <div class="step code">The next review is scheduled<small>what went worst comes back first</small></div>
+  </div>
+  <div class="legend"><span><i class="m"></i>language model</span><span><i class="c"></i>code</span><span><i></i>user</span></div>
+  <p>Besides decks, there is a technical interview simulator with a crew of interviewer characters, and an express mode with a time limit for quick reviews.</p>
+
+  <h2>Any material, not just the first pages</h2>
+  <p>The first version cut every document at 6,000 characters: 95% of an 80-page PDF never reached the model. Now the whole document is chunked and searched with pgvector.</p>
   <ul>
     <li>Chunks of about 1,200 characters with 150 of overlap, so an idea split at a boundary is not lost.</li>
     <li>An HNSW index for similarity search, with a documented fallback when the extension version does not support it.</li>
-    <li>The owner's id is repeated on every chunk so the security policy is resolved without a join, which would run per row as the table grows.</li>
+    <li>The owner's id sits on every chunk, so the security check needs no join.</li>
   </ul>
 
-  <h2 id="agent">An agent instead of a guess</h2>
-  <p>The assistant was rebuilt as a tool-calling agent. Asking what to review today reads the review queue, instead of matching words against flashcards.</p>
+  <h2 id="agent">A study assistant that reads your progress</h2>
+  <p>The study chat used to stuff keyword matches into every prompt. It was rebuilt as a tool-calling agent: “what should I review today?” reads the real queue.</p>
   <div class="flow" aria-label="Agent flow">
     <div class="step">The user asks a question<small>inside a workspace or with a deck open</small></div>
     <div class="arrow"></div>
@@ -103,7 +119,7 @@
   <div class="legend"><span><i class="m"></i>language model</span><span><i class="c"></i>code</span><span><i></i>user</span></div>
 
   <h3>Security lives in the database</h3>
-  <p>Every tool queries through the request's own Supabase client, the one carrying the signed-in user's session, so row-level security decides what comes back. The model never supplies a user id, and there is no parameter through which it could. Tool arguments are clamped on the way in, since they are generated text and not validated input.</p>
+  <p>Every tool runs with the user's own session, so row-level security decides what comes back. The model never supplies a user id.</p>
 
   <h3>Hard limits</h3>
   <ul>
@@ -111,24 +127,24 @@
     <li><strong>8 seconds per tool</strong> and <strong>6,000 characters per tool result</strong>, so one slow or huge answer cannot stall the conversation.</li>
   </ul>
 
-  <h2>Two providers, one call</h2>
-  <p>Gemini answers when the deployment is configured for it, and OpenAI answers otherwise or when Gemini fails. Every reply records which provider answered and why, because a silent fallback looks exactly like a provider that was never enabled.</p>
+  <h2>The assistant does not go down with one provider</h2>
+  <p>Gemini answers first and OpenAI takes over if it fails. Every reply logs which one answered, so a silent fallback never hides.</p>
 
-  <h2>Spaced repetition</h2>
-  <p>Reviews are scheduled with SM-2, chosen over FSRS on purpose: FSRS retains better but needs a model trained on review history that does not exist yet. SM-2 produces that history.</p>
+  <h2>Why what went worst comes back first</h2>
+  <p>Each 1 to 5 score feeds SM-2. FSRS retains better, but it needs review history that does not exist yet. SM-2 builds it.</p>
 
 
   <p class="note">Built and run by one engineer: product, data model, AI features, security and deploys.</p>
   <nav class="article-end" aria-label="More">
     <a href="../index.html#projects">← All projects</a>
     <a href="#top">↑ Back to top</a>
-    <a class="next" href="warehouse.html"><small>Next case study</small>Ask the warehouse →</a>
+    <a class="next" href="nutrigordo.html"><small>Next case study</small>Nutrigordo →</a>
   </nav>
 </article>
 <footer>© 2026 Luca Lamorte · <a href="../index.html">Home</a> · <a href="https://www.linkedin.com/in/lclamorte/" target="_blank" rel="noopener">LinkedIn</a></footer>
 <script src="../snow.js"></script>
-<script src="article.js"></script>
 <script src="../cursor.js"></script>
+<script src="article.js"></script>
 <script>
   // Cada caso de estudio arranca desde su título, aunque el navegador recuerde dónde había quedado la lectura.
   // Cada artículo abre en el título: sin restaurar la posición anterior, sin animar la subida y de nuevo al

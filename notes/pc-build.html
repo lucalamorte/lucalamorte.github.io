@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>I sold my PC to a stranger on Reddit and ended up flashing a BIOS by hand · Luca Lamorte</title>
+<meta name="description" content="How a plan to upgrade a few parts turned into a white build, a chip programmer, a GPU from China and a new desk.">
+<link rel="canonical" href="https://lucalamorte.github.io/notes/pc-build.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Luca Lamorte">
+<meta property="og:title" content="I sold my PC to a stranger on Reddit and ended up flashing a BIOS by hand · Luca Lamorte">
+<meta property="og:description" content="How a plan to upgrade a few parts turned into a white build, a chip programmer, a GPU from China and a new desk.">
+<meta property="og:url" content="https://lucalamorte.github.io/notes/pc-build.html">
+<meta property="og:image" content="https://lucalamorte.github.io/assets/og/home.png">
+<meta property="og:image:alt" content="I sold my PC to a stranger on Reddit and ended up flashing a BIOS by hand · Luca Lamorte">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="en_US">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="I sold my PC to a stranger on Reddit and ended up flashing a BIOS by hand · Luca Lamorte">
+<meta name="twitter:description" content="How a plan to upgrade a few parts turned into a white build, a chip programmer, a GPU from China and a new desk.">
+<meta name="twitter:image" content="https://lucalamorte.github.io/assets/og/home.png">
+<meta name="author" content="Luca Lamorte">
+<meta name="theme-color" content="#0b1120">
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="../assets/favicon-32.png" type="image/png" sizes="32x32">
+<link rel="apple-touch-icon" href="../assets/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-mail" viewBox="0 0 24 24"><path fill="currentColor" d="M3 5h18a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1zm9 7.2L4 7.3V17h16V7.3l-8 4.9zM5.2 7l6.8 4.2L18.8 7H5.2z"/></symbol>
+  <symbol id="i-linkedin" viewBox="0 0 24 24"><path fill="currentColor" d="M4.98 3.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5zM3 9.75h4V21H3V9.75zm7 0h3.8v1.6h.06c.53-1 1.83-2.06 3.77-2.06 4.03 0 4.77 2.65 4.77 6.1V21h-4v-5c0-1.2-.02-2.74-1.67-2.74-1.67 0-1.93 1.3-1.93 2.65V21h-4V9.75z"/></symbol>
+  <symbol id="i-db" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8"><ellipse cx="12" cy="5.5" rx="7.5" ry="2.8"/><path d="M4.5 5.5v13c0 1.5 3.4 2.8 7.5 2.8s7.5-1.3 7.5-2.8v-13M4.5 12c0 1.5 3.4 2.8 7.5 2.8s7.5-1.3 7.5-2.8"/></g></symbol>
+  <symbol id="i-copy" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" d="M9 9h10.5a1.5 1.5 0 0 1 1.5 1.5V20a1.5 1.5 0 0 1-1.5 1.5H10.5A1.5 1.5 0 0 1 9 20zM15 9V4.5A1.5 1.5 0 0 0 13.5 3H4.5A1.5 1.5 0 0 0 3 4.5v9A1.5 1.5 0 0 0 4.5 15H9"/></symbol>
+  <symbol id="i-factory" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" d="M3 21V10l5 3V10l5 3V10l5 3V4h3v17H3zm4-4h2m4 0h2"/></symbol>
+</svg>
+<a class="skip" href="#content">Skip to content</a>
+<nav class="nav" aria-label="Main">
+  <a class="name" href="../index.html">Luca Lamorte</a>
+  <div class="links"><a href="../index.html#experience">Experience</a><a href="../index.html#projects">Products</a><a href="../index.html#notes">Notes</a><a href="../index.html#contact">Contact</a></div>
+  <div class="icons">
+    <a href="mailto:lclamorte@gmail.com?subject=Let's%20connect!" aria-label="Email"><svg><use href="#i-mail"/></svg></a>
+    <a href="https://www.linkedin.com/in/lclamorte/" aria-label="LinkedIn" target="_blank" rel="noopener"><svg><use href="#i-linkedin"/></svg></a>
+  </div>
+</nav>
+<article class="article notes-article" id="top">
+  <span id="content"></span>
+  <a class="back" href="../index.html#notes">← Home</a>
+
+  <header>
+    <span class="eyebrow">Off the clock · hardware · 2026</span>
+    <h1>I sold my PC to a stranger on Reddit and ended up flashing a BIOS by hand</h1>
+    <p class="lede">How a plan to upgrade a few parts turned into a white build, a chip programmer, a GPU from China and a brand new desk.</p>
+  </header>
+
+  <h2>The plan was boring</h2>
+  <div class="thumb"><figure class="note-fig"><a href="../assets/notes/pc-build/old-setup.webp" target="_blank" rel="noopener"><img src="../assets/notes/pc-build/old-setup.webp" alt="The old setup, before all of this" loading="lazy"></a><figcaption>The old setup, before all of this</figcaption></figure></div>
+  <p>My PC was from 2019. How I got it is <a href="pc-builds.html">its own story</a>. Six years later it still worked, but it was time.</p>
+  <p>The plan was simple and a little boring: sell the parts one by one on Mercado Libre, get some money back and upgrade slowly.</p>
+  <p>I had the listings ready when my brother told me there was an Argentine subreddit for buying and selling hardware. Why not. I posted everything and went to sleep. (I took the photos as things happened, mess included, so a few got a quick AI cleanup.)</p>
+  <h2>Two critics and one buyer</h2>
+  <div class="thumb two"><figure class="note-fig"><a href="../assets/notes/pc-build/old-hdd.webp" target="_blank" rel="noopener"><img src="../assets/notes/pc-build/old-hdd.webp" alt="The forgotten HDD, packed with its cable and screws" loading="lazy"></a><figcaption>The forgotten HDD, packed with its cable and screws</figcaption></figure><figure class="note-fig"><a href="../assets/notes/pc-build/old-ssd.webp" target="_blank" rel="noopener"><img src="../assets/notes/pc-build/old-ssd.webp" alt="The forgotten SSD, ready to go" loading="lazy"></a><figcaption>The forgotten SSD, ready to go</figcaption></figure></div>
+  <p>The next morning I went to the gym and checked my phone between sets.</p>
+  <p>The first two messages were reviews nobody asked for. More or less: "anyone can upgrade a PC if they add a hundred bucks", and something about how for that price I could buy better RAM. Thanks, Reddit.</p>
+  <p>The third message was an offer. One guy wanted almost everything:</p>
+  <ul><li>GTX 1660 Super</li><li>Ryzen 5 2600</li><li>16 GB of DDR4 3200 (2 × 8 GB)</li><li>A 600 W 80 Plus White power supply</li></ul>
+  <p>He didn't want the case or the monitor. I kept the motherboard and the M.2 SSD, because I was going to reuse them. We negotiated a bit, agreed on a price and said I would bring everything the next day.</p>
+  <p>Then he sent me the money. All of it. Before seeing a single part, before meeting me, before anything. We were two strangers from a subreddit, and he just trusted me.</p>
+  <p>The next day I took the PC apart and brought him everything. While we were talking he reminded me of something: the old case still had a Kingston SSD and a 1 TB Seagate BarraCuda inside that I hadn't used in years. I took them out, photographed them and sold them too. Free money I didn't know I had.</p>
+  <p>That sale alone paid for almost half of the new CPU, RAM, power supply and case.</p>
+  <h3>The monitor that came back</h3>
+  <p>The old monitor, a Coradir, sold a few days later. Then it came back.</p>
+  <div class="note-gallery" style="--n:3"><figure class="note-fig"><a href="../assets/notes/pc-build/listing-original.png" target="_blank" rel="noopener"><img src="../assets/notes/pc-build/listing-original.png" alt="The original photo, the adapter on a hydraulic arm" loading="lazy"></a><figcaption>The original photo, the adapter on a hydraulic arm</figcaption></figure><figure class="note-fig"><a href="../assets/notes/pc-build/coradir-pole.webp" target="_blank" rel="noopener"><img src="../assets/notes/pc-build/coradir-pole.webp" alt="The other photos, the pole mount and the Coradir on it" loading="lazy"></a><figcaption>The other photos, the pole mount and the Coradir on it</figcaption></figure><figure class="note-fig"><a href="../assets/notes/pc-build/listing-ai.webp" target="_blank" rel="noopener"><img src="../assets/notes/pc-build/listing-ai.webp" alt="The new AI image, without the gas arm" loading="lazy"></a><figcaption>The new AI image, without the gas arm</figcaption></figure></div>
+  <p>The listing had a photo of a VESA adapter on a hydraulic arm. The monitor didn't come with the arm: it came with the adapter on a fixed pole mount, and the listing had photos of that too. The buyer expected the arm and returned it.</p>
+  <p>I complained to Mercado Libre, because the other photos showed exactly what he got. Bad idea. I paid the shipping twice, which added up to more than half of what the monitor was worth, and my seller reputation took the hit anyway.</p>
+  <p>So I made a new image for the listing with AI, this time without the gas arm.</p>
+  <p><strong>Lesson:</strong> your listing photo is a promise. Show only what you're selling. And sometimes accepting a return costs less than fighting it.</p>
+  <h2>Ten days without a PC</h2>
+  <p>That left me with no computer. The same day the money came in I ordered the new parts from Compra Gamer, an Argentine store with very good prices:</p>
+  <ul><li><strong>CPU:</strong> AMD Ryzen 7 5700G</li><li><strong>RAM:</strong> 32 GB of DDR4 3200 CL16 (2 × 16 GB, ADATA XPG Spectrix D35G)</li><li><strong>Power supply:</strong> ASRock Steel Legend 850 W, 80 Plus Gold, full modular, white</li><li><strong>Case:</strong> Antec C5 Curve ARGB, white</li></ul>
+  <p>The 5700X3D is the better gaming CPU, but the 5700G has integrated graphics, and the graphics card was still weeks away. With the G I could use the PC without a GPU. I still ended up about ten days without a computer. Without integrated graphics it would have been two weeks more.</p>
+  <p>The case was white. My first white build.</p>
+  <h2>It turned on. Sort of</h2>
+  <div class="thumb"><figure class="note-fig"><a href="../assets/notes/pc-build/no-video.webp" target="_blank" rel="noopener"><img src="../assets/notes/pc-build/no-video.webp" alt="Lights on, fans spinning, no image" loading="lazy"></a><figcaption>Lights on, fans spinning, no image</figcaption></figure></div>
+  <p>The next day I was at the office when my brother texted me: the PC had arrived. I spent the rest of the day wanting to go home.</p>
+  <p>I built it, plugged it in, pressed the button. Fans spinning, RGB everywhere, and a black screen. No image, no beep, nothing.</p>
+  <p>So I did what everyone does:</p>
+  <ul><li>Checked the 24 pin and the CPU power cable.</li><li>Reseated the RAM. Then tried one stick. Then the other.</li><li>Checked the front panel pins, which are always wrong.</li><li>Swapped the video cable.</li><li>Cleared the CMOS.</li><li>Took everything out and tried with the minimum: CPU, one stick of RAM, power.</li></ul>
+  <p>Nothing worked. And then I understood.</p>
+  <h2>The chicken and the egg</h2>
+  <div class="thumb"><figure class="note-fig"><a href="../assets/notes/pc-build/motherboard-box.webp" target="_blank" rel="noopener"><img src="../assets/notes/pc-build/motherboard-box.webp" alt="The PRIME B450M-A box, &quot;Ryzen 3000 Desktop Ready&quot;" loading="lazy"></a><figcaption>The PRIME B450M-A box, "Ryzen 3000 Desktop Ready"</figcaption></figure></div>
+  <p>I had bought the motherboard in 2019 and never updated the BIOS. Not once. With the old Ryzen 2600 it didn't matter. The 5700G is newer, and the old BIOS didn't know it existed.</p>
+  <p>Normally you just update the BIOS. But to update the BIOS you need the PC to boot, and to boot you need a CPU the old BIOS supports. That CPU was in a stranger's house. I had sold it the day before.</p>
+  <p>The motherboard box still said "AMD Ryzen 3000 Desktop Ready". I was trying to put a 5000 in it.</p>
+  <p>I needed a new BIOS to use the new CPU, and an old CPU to install the new BIOS.</p>
+  <h2>Flashing a chip by hand</h2>
+  <p>After a lot of searching I found the way out: a BIOS programmer. The BIOS lives on a tiny chip on the motherboard, and a programmer can write to that chip directly, without the board ever booting.</p>
+  <div class="note-gallery" style="--n:3"><figure class="note-fig"><a href="../assets/notes/pc-build/bios-chip.webp" target="_blank" rel="noopener"><img src="../assets/notes/pc-build/bios-chip.webp" alt="Close-up of the Winbond chip, &quot;25Q128FWSQ 1927&quot;" loading="lazy"></a><figcaption>Close-up of the Winbond chip, "25Q128FWSQ 1927"</figcaption></figure><figure class="note-fig"><a href="../assets/notes/pc-build/programmer-adapter.webp" target="_blank" rel="noopener"><img src="../assets/notes/pc-build/programmer-adapter.webp" alt="The programmer with the 1.8 V adapter on top" loading="lazy"></a><figcaption>The programmer with the 1.8 V adapter on top</figcaption></figure><figure class="note-fig"><a href="../assets/notes/pc-build/programmer-old-case.webp" target="_blank" rel="noopener"><img src="../assets/notes/pc-build/programmer-old-case.webp" alt="Plugged into my brother&#x27;s PC, the motherboard on the desk" loading="lazy"></a><figcaption>Plugged into my brother's PC, the motherboard on the desk</figcaption></figure></div>
+  <p>The one I bought is the classic CH341A kit: a USB programmer, a clip with a cable and a couple of small boards. It arrived the next day. My board is an ASUS PRIME B450M-A, and its BIOS chip is a Winbond W25Q128FW. That last detail will matter.</p>
+  <p>The chip even has its birthday printed on it: 1927. Year 2019, week 27. Same age as my mistake.</p>
+  <figure class="note-fig note-wide"><img src="../assets/notes/pc-build/bios-diagram.svg" alt="How the pieces connect" loading="lazy"><figcaption>How the pieces connect</figcaption></figure>
+  <h3>How I did it, step by step</h3>
+  <div class="thumb"><figure class="note-fig"><a href="../assets/notes/pc-build/red-errors.webp" target="_blank" rel="noopener"><img src="../assets/notes/pc-build/red-errors.webp" alt="The red wall of errors" loading="lazy"></a><figcaption>The red wall of errors</figcaption></figure></div>
+  <div class="thumb two"><figure class="note-fig"><a href="../assets/notes/pc-build/neoprogrammer-detect.webp" target="_blank" rel="noopener"><img src="../assets/notes/pc-build/neoprogrammer-detect.webp" alt="NeoProgrammer detecting the W25Q128FW" loading="lazy"></a><figcaption>NeoProgrammer detecting the W25Q128FW</figcaption></figure><figure class="note-fig"><a href="../assets/notes/pc-build/erase-success.webp" target="_blank" rel="noopener"><img src="../assets/notes/pc-build/erase-success.webp" alt="The log, &quot;Erasing memory... Success&quot;" loading="lazy"></a><figcaption>The log, "Erasing memory... Success"</figcaption></figure></div>
+  <div class="thumb"><figure class="note-fig"><a href="../assets/notes/pc-build/flashing-setup.png" target="_blank" rel="noopener"><img src="../assets/notes/pc-build/flashing-setup.png" alt="The whole setup, with the ring light" loading="lazy"></a><figcaption>The whole setup, with the ring light</figcaption></figure></div>
+  <p>If you ever end up in the same loop, this is the whole process:</p>
+  <div class="thumb two"><figure class="note-fig"><a href="../assets/notes/pc-build/clip-on-chip.webp" target="_blank" rel="noopener"><img src="../assets/notes/pc-build/clip-on-chip.webp" alt="The clip on the BIOS chip, next to the M.2 slot" loading="lazy"></a><figcaption>The clip on the BIOS chip, next to the M.2 slot</figcaption></figure><figure class="note-fig"><a href="../assets/notes/pc-build/neoprogrammer-search.webp" target="_blank" rel="noopener"><img src="../assets/notes/pc-build/neoprogrammer-search.webp" alt="NeoProgrammer&#x27;s chip search, two W25Q128FW" loading="lazy"></a><figcaption>NeoProgrammer's chip search, two W25Q128FW</figcaption></figure></div>
+  <ol><li><strong>Turn everything off.</strong> Unplug the power supply and take out the CMOS battery. The board must have no power at all.</li><li><strong>Install the driver.</strong> Windows needs the CH341A driver to see the programmer.</li><li><strong>Install NeoProgrammer.</strong> It's the free program that reads and writes the chip.</li><li><strong>Get the new BIOS.</strong> Download the latest version from the motherboard's support page, and check that it lists your new CPU.</li><li><strong>Prepare the file.</strong> ASUS ships the BIOS as a .CAP file, made to be installed from the BIOS itself, so it has extra data around the real image. I opened it with UEFITool and extracted only the body of the capsule: the 16 MB image the chip needs.</li><li><strong>Build the stack.</strong> The 1.8 V adapter goes on the programmer, and the clip cable goes on the adapter.</li><li><strong>Find pin 1.</strong> The chip has a small dot in one corner. That's pin 1, and it must match the red wire of the clip. Get this wrong and nothing will work.</li><li><strong>Clip it.</strong> Press the clip onto the chip until it holds firmly, then plug the programmer into another computer. Mine had no CPU it could use, so I did all of this on my brother's PC.</li><li><strong>Read first.</strong> In NeoProgrammer, detect the chip and read it. Careful here: when I searched for my chip, NeoProgrammer listed two W25Q128FW, and the one called "W25Q128FW_1.8V" was the 3.3 V one. The right one is the one that says 1.8V in the Volts column. Save that file: it's your backup of the old BIOS. Read it twice and check both files are the same, so you know the clip is making good contact.</li><li><strong>Erase, write, verify.</strong> Erase the chip, write the new image and verify it. Verify is the step that tells you it worked.</li><li><strong>Put it back together.</strong> Remove the clip, put the CMOS battery back, connect everything.</li><li><strong>Be patient.</strong> The first boot after a new BIOS takes longer than usual, because the board is testing the RAM. Don't panic and don't turn it off.</li></ol>
+  <p>That's the clean version. The real one started with a red wall: "Connecting Error CH341 (Not found)" and "IC not responding", over and over.</p>
+  <p>The trick was noticing there were two different errors. "CH341 Not found" meant the computer didn't even see the programmer: the driver was wrong. I tried drivers until that error disappeared. "IC not responding" was the clip: the programmer was fine, but it couldn't talk to the chip. I put the clip back on, carefully, pin 1 on pin 1.</p>
+  <p>And then Claude, the AI I was asking for help, pointed out something I had missed: the W25Q128FW runs at 1.8 V, and the CH341A works at 3.3 V. Connecting them directly can damage the chip. So I needed a 1.8 V adapter, and one more trip, this time to a shop ten minutes from home.</p>
+  <p>And then, finally: "Erasing memory... Success".</p>
+  <p>So there it was: the motherboard hanging off the edge of the desk, the programmer plugged into my brother's PC, a clip on a tiny chip and a ring light from an AMD box so I could see the pins. A very rustic setup that I swear worked. I pressed the button.</p>
+  <p>It turned on.</p>
+  <p>A motherboard from 2019 running a CPU it had never heard of, without replacing anything. It was the most technical part of the whole project, and honestly the most fun.</p>
+  <p><strong>Lesson:</strong> update the BIOS before you sell the old CPU. One click then, two days and a clip on a chip later.</p>
+  <h3>One more thing in the BIOS</h3>
+  <div class="thumb"><figure class="note-fig"><a href="../assets/notes/pc-build/bios-3200.webp" target="_blank" rel="noopener"><img src="../assets/notes/pc-build/bios-3200.webp" alt="The BIOS after D.O.C.P., memory at 3200 MHz" loading="lazy"></a><figcaption>The BIOS after D.O.C.P., memory at 3200 MHz</figcaption></figure></div>
+  <p>The first screen showed the memory at 2666 MHz. I paid for 3200. RAM always starts at a safe default speed, and the profile that makes it run at the speed on the box is off until you turn it on. On ASUS it's called D.O.C.P. (XMP on Intel boards). One setting, and it went to 3200.</p>
+  <h2>A GPU from China, and why everything is white</h2>
+  <p>Meanwhile, the graphics card. Mercado Libre now lets you buy from China, and I found a ZOTAC Gaming RTX 5070 Ti Solid OC White about 500 dollars cheaper than in local stores. You wait longer and the warranty is a question mark, but 500 dollars is 500 dollars.</p>
+  <p>The one I found was white. That's the whole reason the build is white. One good deal, and every other part had to match it.</p>
+  <h2>Things I didn't need, and bought anyway</h2>
+  <div class="thumb"><figure class="note-fig"><a href="../assets/notes/pc-build/ai-render-white.webp" target="_blank" rel="noopener"><img src="../assets/notes/pc-build/ai-render-white.webp" alt="AI render, the case with the AIO and reverse fans" loading="lazy"></a><figcaption>AI render, the case with the AIO and reverse fans</figcaption></figure></div>
+  <p>During the build I asked AI tools a lot of "what should I buy" questions. At some point I asked for images of how the case would look with matching fans and water cooling. That was a mistake. Once you see it, you can't unsee it.</p>
+  <p>Who wouldn't spend 100 dollars more to go from a stock cooler and three plain fans to this?</p>
+  <p>So I bought them:</p>
+  <p><strong>An AIO I didn't need.</strong> An Antec Luna 360, white. Does a 5700G need water cooling? No. The CPU even came with its own cooler, the one I used for the first days. But it's the same brand as the case and the fans, and it looks amazing. I'm not going to defend this one.</p>
+  <p><strong>Reverse fans.</strong> Three Antec Vision Connect 120 Reverse. This one was new to me. Every fan has a pretty side and an ugly side, the one with the motor support. When a fan has to push air the other way, you usually end up showing the ugly side. Reverse fans blow air in the opposite direction, so the pretty side stays visible. Zero performance difference. Big difference when you look at the case.</p>
+  <h3>Where the air goes</h3>
+  <div class="thumb"><figure class="note-fig"><a href="../assets/notes/pc-build/ai-render-airflow.webp" target="_blank" rel="noopener"><img src="../assets/notes/pc-build/ai-render-airflow.webp" alt="AI render with the airflow, blue arrows in, red arrows out" loading="lazy"></a><figcaption>AI render with the airflow, blue arrows in, red arrows out</figcaption></figure></div>
+  <p>Ten fans in total: four from the case, the three I added and three on the radiator. This is where the air goes:</p>
+  <p>Six pull air in and four push it out. More air in than out means the dust has a harder time getting inside. The reverse fans are on the side, pulling air in, with their good side facing the glass.</p>
+  <h3>White, not rainbow</h3>
+  <p>ARGB fans come with a rainbow by default. I tried it for one evening. Then I set everything to white, and it stays white.</p>
+  <h3>The reset button that doesn't reset</h3>
+  <p>One more puzzle. The case has its own controller for the fans and the lights, and the front reset button can go to the motherboard or to that controller. I connected it to the controller. Now the reset button doesn't restart the PC: it changes the lights. I can't remember the last time I used a reset button, so it was an easy choice.</p>
+  <div class="note-gallery" style="--n:2"><figure class="note-fig"><a href="../assets/notes/pc-build/manual-fan-controller.webp" target="_blank" rel="noopener"><img src="../assets/notes/pc-build/manual-fan-controller.webp" alt="The manual page, &quot;ARGB &amp; PWM fan controller connections&quot;" loading="lazy"></a><figcaption>The manual page, "ARGB &amp; PWM fan controller connections"</figcaption></figure><figure class="note-fig"><a href="../assets/notes/pc-build/stock-cooler.webp" target="_blank" rel="noopener"><img src="../assets/notes/pc-build/stock-cooler.webp" alt="The first version, with the stock AMD cooler" loading="lazy"></a><figcaption>The first version, with the stock AMD cooler</figcaption></figure></div>
+  <h3>Overclocking it anyway</h3>
+  <p>If you have a 360 mm radiator on a CPU that doesn't need it, you might as well use it. On Ryzen the safe way is not raising the clock by hand: it's Precision Boost Overdrive with Curve Optimizer. You lower the voltage the CPU asks for at each speed, so it runs cooler and boosts higher on its own.</p>
+  <p>The plan for this 5700G:</p>
+  <ul><li><strong>PBO:</strong> enabled, with the limits on Auto. The power stage of a B450M-A is basic, so I didn't raise them.</li><li><strong>Curve Optimizer:</strong> -15 on all cores. Every chip is different: some hold -25 or -30, others crash at -15. Starting at -15 is the safe bet.</li><li><strong>Testing:</strong> CoreCycler instead of Cinebench. Curve Optimizer errors usually show up at low load or idle, and Cinebench doesn't catch them. CoreCycler tests one core at a time.</li></ul>
+  <ul><li><strong>Next step:</strong> if it passes a few hours of CoreCycler without errors, go to -20. If one core fails, go back to -15 only on that core, with the Per Core mode.</li></ul>
+  <p>Most 5700G chips end up somewhere between -15 and -25. I'll update this when I know where mine lands.</p>
+  <p>Was the AIO necessary? Still no. But now at least it has a job.</p>
+  <h2>Things I did need</h2>
+  <div class="thumb"><figure class="note-fig"><a href="../assets/notes/pc-build/m2-heatsink.png" target="_blank" rel="noopener"><img src="../assets/notes/pc-build/m2-heatsink.png" alt="The Arctic M2 Pro, from the listing: a passive heatsink for about 6 dollars" loading="lazy"></a><figcaption>The Arctic M2 Pro, from the listing: a passive heatsink for about 6 dollars</figcaption></figure></div>
+  <p><strong>A modular power supply.</strong> You only plug in the cables you need, so there's no pile of extra cables hidden behind the case. Mine is white, and so are the cables.</p>
+  <p><strong>A cheap M.2 heatsink.</strong> Motherboards that come with an M.2 heatsink usually cost more. I bought an Arctic M2 Pro for about 10,000 pesos (around 6 dollars) and installed it in two minutes. I bought two, actually: the second one was for my brother. Check your SSD temperatures first, though. Not every drive needs one.</p>
+  <p><strong>Wi-Fi and Bluetooth adapters.</strong> Boards with Wi-Fi cost more. I bought two small TP-Link adapters instead. And I always play on cable anyway: it's more stable than any Wi-Fi.</p>
+  <h2>The hidden cost: cables and adapters</h2>
+  <p>Nobody puts this in the budget, and everybody pays it.</p>
+  <div class="note-gallery" style="--n:2"><figure class="note-fig"><a href="../assets/notes/pc-build/typee-connector.webp" target="_blank" rel="noopener"><img src="../assets/notes/pc-build/typee-connector.webp" alt="The front USB-C plug: a Type-E connector, and no place for it on a 2019 board" loading="lazy"></a><figcaption>The front USB-C plug: a Type-E connector, and no place for it on a 2019 board</figcaption></figure><figure class="note-fig"><a href="../assets/notes/pc-build/typee-adapter.png" target="_blank" rel="noopener"><img src="../assets/notes/pc-build/typee-adapter.png" alt="The adapter, from the listing: 9 pin USB 2.0 on one side, Type-E on the other" loading="lazy"></a><figcaption>The adapter, from the listing: 9 pin USB 2.0 on one side, Type-E on the other</figcaption></figure></div>
+  <ul><li><strong>Four DisplayPort 1.4 cables.</strong> Two computers and two monitors through a KVM means four cables, not two.</li><li><strong>A USB-C header adapter</strong> from AliExpress. The front USB-C port of the case uses a small connector called Type-E, and a B450 board from 2019 doesn't have one. The USB 3.0 header was already taken by the other front ports. The adapter turns a 9 pin USB 2.0 header into a Type-E, so the port works. Slower, but it works.</li></ul>
+  <ul><li><strong>A USB hub</strong> from Vention, because a desk with a KVM eats USB ports.</li><li><strong>The 1.8 V adapter</strong> for the BIOS programmer.</li></ul>
+  <p>None of them is expensive. Together, they're a small part you didn't plan for.</p>
+  <h2>The desk got an upgrade too</h2>
+  <div class="thumb"><figure class="note-fig setup-soon"><div class="soon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7h4l2-3h6l2 3h4v13H3z"/><circle cx="12" cy="13" r="4"/></svg><span>The final setup, coming soon</span></div></figure></div>
+  <div class="thumb two"><figure class="note-fig"><a href="../assets/notes/pc-build/kvm-two-monitors.png" target="_blank" rel="noopener"><img src="../assets/notes/pc-build/kvm-two-monitors.png" alt="The first KVM, the two-monitor one, from the listing. Now it&#x27;s my brother&#x27;s" loading="lazy"></a><figcaption>The first KVM, the two-monitor one, from the listing. Now it's my brother's</figcaption></figure><figure class="note-fig"><a href="../assets/notes/pc-build/kvm-three-monitors.png" target="_blank" rel="noopener"><img src="../assets/notes/pc-build/kvm-three-monitors.png" alt="The one I kept, from the listing: two DisplayPort and one HDMI per PC, one for each monitor" loading="lazy"></a><figcaption>The one I kept, from the listing: two DisplayPort and one HDMI per PC, one for each monitor</figcaption></figure></div>
+  <p>I bought two ASUS TUF Gaming VG27AQL5A: 27", 1440p, IPS, 210 Hz. The third one is a 24" HDMI monitor at 60 Hz that a previous job gave me and never asked me to return.</p>
+  <p>That one is vertical. If you write code, read documentation or follow logs, a vertical screen fits twice as many lines, and the two main screens stay free.</p>
+  <p><strong>Hydraulic arms.</strong> The rigid ones always end up in the wrong position. With gas arms you move the screen with one hand. I bought a Smart Tech double arm for the two 27" and a single one for the vertical monitor, because a triple arm cost more than both together.</p>
+  <p><strong>DisplayPort.</strong> A 210 Hz monitor doesn't give you 210 Hz if the cable can't carry it. DisplayPort has more bandwidth than HDMI, so the two main monitors use it.</p>
+  <p><strong>The keyboard.</strong> A Logitech MX Mechanical Mini. 75% is the perfect size: no number pad, but the arrows and the function keys stay. It's mechanical, low profile, wireless on a 2.4 GHz receiver, the backlight is only white, and it has a Ñ, which in Argentina is not a detail.</p>
+  <p><strong>The mouse.</strong> A Logitech G305. Wireless and light.</p>
+  <p><strong>A KVM.</strong> I have two computers: mine and the work laptop. A UGREEN KVM shares the three monitors, the keyboard and the mouse between both, and one button switches from one to the other. No cables to change, ever.</p>
+  <p>I actually bought two. The first one was a UGREEN 8K DP KVM for two monitors, from AliExpress. My brother saw it and wanted the same setup, but with two monitors: he doesn't like three. So that one is his, and I bought the three-monitor version for me.</p>
+  <figure class="note-fig note-wide"><img src="../assets/notes/pc-build/kvm-diagram.svg" alt="How the KVM connects everything" loading="lazy"><figcaption>How the KVM connects everything</figcaption></figure>
+  <p><strong>The TV.</strong> The PC is also connected to the living room TV, a 55" TCL 55P735 with a game mode. When I want to play from the couch, I play there in 4K at 60 FPS.</p>
+  <h2>Sound and light</h2>
+  <div class="thumb two"><figure class="note-fig"><a href="../assets/notes/pc-build/zone-vibe-100.webp" target="_blank" rel="noopener"><img src="../assets/notes/pc-build/zone-vibe-100.webp" alt="The Zone Vibe 100, before they left" loading="lazy"></a><figcaption>The Zone Vibe 100, before they left</figcaption></figure><figure class="note-fig"><a href="../assets/notes/pc-build/headband-cover.png" target="_blank" rel="noopener"><img src="../assets/notes/pc-build/headband-cover.png" alt="The headband cover, from the listing: mesh, zipper, made for the Delta II" loading="lazy"></a><figcaption>The headband cover, from the listing: mesh, zipper, made for the Delta II</figcaption></figure></div>
+  <p>I had a black Blue Snowball with a boom arm and a pop filter, and a pair of Logitech Zone Vibe 100 for the office. Fine headphones. Boring headphones.</p>
+  <p>Then I bought new headphones, and the mic was so good that the Snowball didn't make sense anymore. I sold the Snowball, the arm, the filter and the Vibe 100.</p>
+  <p>Choosing them took a while. These were the candidates, all in the same store:</p>
+  <ul><li><strong>SteelSeries Arctis Nova 7 Gen 2.</strong> Very good and white, but the mic retracts into the cup instead of coming off, and the battery is 50 hours.</li><li><strong>Logitech Astro A50X.</strong> It has a base station with HDMI, which is great if you also have a console. Almost twice the price, and 24 hours of battery.</li><li><strong>SteelSeries Arctis Nova Pro.</strong> Hi-Res audio and a GameDAC, but black and wired to that DAC.</li><li><strong>SteelSeries Arctis Nova 3P.</strong> White and cheaper, but a step below in audio.</li><li><strong>ASUS ROG Delta II Wireless.</strong> The winner.</li></ul>
+  <p>Why the Delta II: the mic comes off when I'm not using it, they're light, the leatherette doesn't peel, the audio is very good, the mic sounds almost like a studio mic, and the battery lasts up to 110 hours. And they're white.</p>
+  <p>One more thing about the Delta II: the headband padding is known to wear out. Before it happened, I bought a cover for it on AliExpress, made for this exact model: breathable mesh with a zipper, in light grey to match. It cost about 7 dollars.</p>
+  <p>If I ever buy a microphone again, it'll be a Fifine with a low profile arm, so it doesn't block the webcam.</p>
+  <p>The webcam is an old Logitech that still works fine. What I did buy was light: a Logitech Litra Glow. Good light does more for your image than an expensive camera.</p>
+  <p>I think this matters more than people admit. At work we used to talk about two skills: knowing your stuff and knowing how to communicate it. Remote work added a third one: production quality. You can know everything and explain it well, but if nobody can hear you clearly or see your face in a meeting, part of the message gets lost.</p>
+  <h2>Steam Families: free games, legally</h2>
+  <p>My brother has a group of friends who are serious gamers, with huge Steam libraries. With Steam Families, up to six accounts can share their libraries. Before you buy a game, check whether someone in your family already has it. We ended up with a lot of games we never paid for.</p>
+  <h2>The tool I didn't know I needed</h2>
+  <p>To clean the PC I used to need an air compressor. Now I have a mini turbo blower, a small electric one, and it's perfect for dust in fans and filters. Tip: hold the fans while you clean them, so they don't spin too fast.</p>
+  <h2>Perfect timing</h2>
+  <p>All of this happened right when I was changing jobs, so now I work on a company laptop and the KVM finally earned its place.</p>
+  <h2>The full list</h2>
+  <div class="note-tables"><div><h3>Inside the PC</h3><div class="note-table tw"><table><thead><tr><th>Part</th><th>Model</th><th>Where</th></tr></thead><tbody><tr><td>CPU</td><td>AMD Ryzen 7 5700G</td><td>Compra Gamer</td></tr><tr><td>GPU</td><td>ZOTAC Gaming RTX 5070 Ti Solid OC White</td><td>Mercado Libre, from China</td></tr><tr><td>RAM</td><td>2 × 16 GB DDR4 3200 CL16, ADATA XPG Spectrix D35G</td><td>Compra Gamer</td></tr><tr><td>Motherboard</td><td>ASUS PRIME B450M-A</td><td>Reused, with a new BIOS</td></tr><tr><td>Storage</td><td>Kingston NV3 2 TB, M.2 NVMe</td><td>Reused</td></tr><tr><td>M.2 heatsink</td><td>Arctic M2 Pro</td><td>Mercado Libre</td></tr><tr><td>Power supply</td><td>ASRock Steel Legend 850 W Gold, white</td><td>Compra Gamer</td></tr><tr><td>Case</td><td>Antec C5 Curve ARGB, white</td><td>Compra Gamer</td></tr><tr><td>CPU cooler</td><td>Antec Luna 360 ARGB, white</td><td>Compra Gamer</td></tr><tr><td>Fans</td><td>3 × Antec Vision Connect 120 Reverse</td><td>Compra Gamer</td></tr></tbody></table></div></div><div><h3>On the desk</h3><div class="note-table tw"><table><thead><tr><th>Part</th><th>Model</th><th>Where</th></tr></thead><tbody><tr><td>Monitors</td><td>2 × ASUS TUF Gaming VG27AQL5A</td><td>Mercado Libre</td></tr><tr><td>Third monitor</td><td>24", 60 Hz</td><td>A previous job</td></tr><tr><td>Arms</td><td>Smart Tech double hydraulic arm + one single arm</td><td>Mercado Libre</td></tr><tr><td>KVM</td><td>UGREEN DP KVM, three monitors</td><td></td></tr><tr><td>Keyboard</td><td>Logitech MX Mechanical Mini</td><td></td></tr><tr><td>Mouse</td><td>Logitech G305</td><td></td></tr><tr><td>Headphones</td><td>ASUS ROG Delta II Wireless, white</td><td>Compra Gamer</td></tr><tr><td>Light</td><td>Logitech Litra Glow</td><td></td></tr><tr><td>BIOS programmer</td><td>CH341A kit + 1.8 V adapter</td><td>Mercado Libre + local shop</td></tr></tbody></table></div></div></div>
+  <h2>What I'd tell you before you start</h2>
+  <ul><li>Update the BIOS before you sell the old CPU.</li><li>If your GPU is late, a CPU with integrated graphics keeps you working.</li><li>Turn on D.O.C.P. or XMP, or your RAM runs slower than what you paid for.</li><li>Check what you're paying for on a motherboard. Wi-Fi, Bluetooth and an M.2 heatsink are cheaper as separate parts.</li><li>Budget for cables and adapters.</li><li>Buy a modular power supply if you care about cables.</li><li>Use DisplayPort for high refresh monitors.</li><li>Your listing photo is a promise.</li><li>Light first, camera second.</li><li>Share your Steam library.</li><li>Sometimes strangers on the internet are kind.</li></ul>
+  <h2>What's next</h2>
+  <p>It's for work and for gaming. The Witcher 3 again, Red Dead Redemption 2, which I never finished, and The Witcher 4 when it finally comes out.</p>
+  <p>And probably another upgrade one day. Apparently a PC is never finished.</p>
+
+  <nav class="article-end" aria-label="More">
+    <a href="../index.html#notes">← Home</a>
+    <a href="#top">↑ Back to top</a>
+  </nav>
+</article>
+<dialog class="note-lb" aria-label="Photo">
+  <figure><img alt=""><figcaption></figcaption></figure>
+  <button type="button" class="lb-prev" aria-label="Previous photo"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M10 3L5 8l5 5"/></svg></button>
+  <button type="button" class="lb-next" aria-label="Next photo"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3l5 5-5 5"/></svg></button>
+  <button type="button" class="lb-close" aria-label="Close"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8"/></svg></button>
+</dialog>
+<script>
+  // Tocar una foto la abre en grande; se cierra con la cruz, tocando afuera o con Escape. Las flechas pasan a la de al lado.
+  (() => {
+    const lb = document.querySelector('.note-lb'), img = lb.querySelector('img'), cap = lb.querySelector('figcaption');
+    const links = [...document.querySelectorAll('.note-fig a')];
+    let at = 0;
+    const show = k => { at = (k + links.length) % links.length; const a = links[at]; img.src = a.href; img.alt = a.querySelector('img').alt; cap.textContent = a.closest('figure').querySelector('figcaption')?.textContent || ''; };
+    links.forEach((a, k) => a.addEventListener('click', e => { e.preventDefault(); show(k); lb.showModal(); }));
+    lb.querySelector('.lb-close').addEventListener('click', () => lb.close());
+    lb.querySelector('.lb-prev').addEventListener('click', () => show(at - 1));
+    lb.querySelector('.lb-next').addEventListener('click', () => show(at + 1));
+    lb.addEventListener('click', e => { if (e.target === lb || e.target.tagName === 'FIGURE') lb.close(); });
+    lb.addEventListener('keydown', e => { if (e.key === 'ArrowLeft') show(at - 1); if (e.key === 'ArrowRight') show(at + 1); });
+  })();
+</script>
+<footer>© 2026 Luca Lamorte · <a href="../index.html">Home</a> · <a href="https://www.linkedin.com/in/lclamorte/" target="_blank" rel="noopener">LinkedIn</a></footer>
+<script src="../snow.js"></script>
+<script src="../cursor.js"></script>
+<script src="../projects/article.js"></script>
+<script>
+  // Cada caso de estudio arranca desde su título, aunque el navegador recuerde dónde había quedado la lectura.
+  // Cada artículo abre en el título: sin restaurar la posición anterior, sin animar la subida y de nuevo al
+  // terminar de cargar y al volver con atrás o adelante, por si el navegador movió la página en el medio.
+  if (!location.hash || location.hash === '#top') {
+    if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+    // scrollIntoView también mueve el marco que la contiene, si la página se muestra dentro de otra.
+    const top = () => { const go = () => { scrollTo({ top: 0, left: 0, behavior: 'instant' }); (document.getElementById('top') || document.body).scrollIntoView({ block: 'start', behavior: 'instant' }); }; go(); requestAnimationFrame(go); };
+    top(); addEventListener('DOMContentLoaded', top); addEventListener('load', top); addEventListener('pageshow', top);
+  }
+</script>
+</body>
+</html>

@@ -170,6 +170,17 @@
     if (!still) y += Math.sin(p.c * .25 + t * 1.3 + p.r * .08) * step * .14;
     return [x, y];
   }
+  // La misma estrellita del juego (la del piso, las paredes y el portal): cuatro puntas, centro blanco y brillo
+  // verde. Es la magia que Little Bit se lleva al atravesar la cara. Se dibuja una vez y después solo se estampa.
+  // Tres colores, como el cielo de la página: el verde, blanco y lavanda. Cada uno en dos giros.
+  const TINTS = [[accent, 'rgba(94,234,212,.8)'], ['#e2e8f0', 'rgba(226,232,240,.6)'], ['#a5b4fc', 'rgba(165,180,252,.7)']];
+  const SPARK = 48, sparks = TINTS.flatMap(([fill, halo]) => [0, .45].map(spin => {
+    const c = document.createElement('canvas'); c.width = c.height = SPARK; const g = c.getContext('2d'), r = SPARK * .3;
+    g.translate(SPARK / 2, SPARK / 2); g.rotate(spin); g.shadowColor = halo; g.shadowBlur = r * 1.1; g.fillStyle = fill;
+    g.beginPath(); g.moveTo(0, -r); g.quadraticCurveTo(0, 0, r, 0); g.quadraticCurveTo(0, 0, 0, r); g.quadraticCurveTo(0, 0, -r, 0); g.quadraticCurveTo(0, 0, 0, -r); g.fill();
+    return c;
+  }));
+  const stamp = (x, y, r, k) => { const d = r / .3; ctx.drawImage(sparks[k], x - d / 2, y - d / 2, d, d); };
   function frame(time) {
     const t = time / 1000;
     if (born === null) born = time;
@@ -195,20 +206,20 @@
       const stretch = Math.min(1, Math.hypot(p.ox, p.oy) / (step * 2.5));
       if (stretch > .02) moving = true;
       const lit = Math.min(1, p.edge * .8 + stretch);
-      ctx.globalAlpha = (pending ? .5 : Math.min(1, .2 + p.tone * .5 + lit * .45)) * p.fade;
+      // La cara está hecha de las estrellitas mágicas del juego: cada una titila a su ritmo y, al moverlas con el
+      // cursor, se encienden.
+      const seed = Math.abs(Math.sin(p.c * 12.9898 + p.r * 78.233) * 43758.5453) % 1;
+      const look = (seed < .5 ? 0 : seed < .8 ? 2 : 4) + ((seed * 7) % 1 < .5 ? 0 : 1);
+      const glow = still ? 1 : .78 + .22 * Math.sin(t * (1 + seed * 2.2) + seed * 40);
+      ctx.globalAlpha = (pending ? .5 : Math.min(1, (.32 + p.tone * .55 + lit * .45) * glow)) * p.fade;
       ctx.fillStyle = ctx.strokeStyle = pending ? '#94a3b8' : accent;
       if (!pending && p.edge > .62) {
-        // Rasgo: una crucecita, como en la referencia.
-        const s = step * (.16 + lit * .14);
-        ctx.fillRect(x - s, y - s * .35, s * 2, s * .7);
-        ctx.fillRect(x - s * .35, y - s, s * .7, s * 2);
+        // Rasgo: una estrellita más grande.
+        stamp(x, y, step * (.42 + lit * .25) * (.85 + .15 * glow), look);
         continue;
       }
-      // La raya apunta hacia la vecina de la derecha: si la fila ondula, la raya la sigue.
-      const next = p.right ? position(p.right, t) : [x + step, y];
-      const fx = x + (next[0] - x) * .5, fy = y + (next[1] - y) * .5;
-      ctx.lineWidth = step * (.13 + p.tone * .07);
-      ctx.beginPath(); ctx.moveTo(x - (fx - x) * .1, y - (fy - y) * .1); ctx.lineTo(fx, fy); ctx.stroke();
+      if (pending) { ctx.beginPath(); ctx.arc(x, y, step * (.09 + p.tone * .08), 0, Math.PI * 2); ctx.fill(); }
+      else stamp(x, y, step * (.2 + p.tone * .16 + lit * .12), look);
     }
     ctx.globalAlpha = 1;
     if (!still || moving || pointer.active) requestAnimationFrame(frame);

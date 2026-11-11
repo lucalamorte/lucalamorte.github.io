@@ -4,12 +4,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Ask the warehouse · Luca Lamorte</title>
-<meta name="description" content="Early write-up: an agent on Snowflake Cortex that answers business questions in plain English from tables and documents.">
+<meta name="description" content="An agent on Snowflake Cortex that answers business questions in plain English from tables and documents.">
 <link rel="canonical" href="https://lucalamorte.github.io/projects/warehouse.html">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Luca Lamorte">
 <meta property="og:title" content="Ask the warehouse · Luca Lamorte">
-<meta property="og:description" content="Early write-up: an agent on Snowflake Cortex that answers business questions in plain English from tables and documents.">
+<meta property="og:description" content="An agent on Snowflake Cortex that answers business questions in plain English from tables and documents.">
 <meta property="og:url" content="https://lucalamorte.github.io/projects/warehouse.html">
 <meta property="og:image" content="https://lucalamorte.github.io/assets/og/home.png">
 <meta property="og:image:alt" content="Ask the warehouse · Luca Lamorte">
@@ -18,7 +18,7 @@
 <meta property="og:locale" content="en_US">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Ask the warehouse · Luca Lamorte">
-<meta name="twitter:description" content="Early write-up: an agent on Snowflake Cortex that answers business questions in plain English from tables and documents.">
+<meta name="twitter:description" content="An agent on Snowflake Cortex that answers business questions in plain English from tables and documents.">
 <meta name="twitter:image" content="https://lucalamorte.github.io/assets/og/home.png">
 <meta name="author" content="Luca Lamorte">
 <meta name="theme-color" content="#0b1120">
@@ -29,7 +29,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../style.css">
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Ask the warehouse","description":"Early write-up: an agent on Snowflake Cortex that answers business questions in plain English from tables and documents.","url":"https://lucalamorte.github.io/projects/warehouse.html","image":"https://lucalamorte.github.io/assets/og/home.png","author":{"@type":"Person","@id":"https://lucalamorte.github.io/#luca","name":"Luca Lamorte","url":"https://lucalamorte.github.io/"},"about":["Snowflake","Cortex Agents","Cortex Analyst","Cortex Search","Semantic model","Cortex Code"],"keywords":"Snowflake, Cortex Agents, Cortex Analyst, Cortex Search, Semantic model, Cortex Code","datePublished":"2026","inLanguage":"en"}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Ask the warehouse","description":"An agent on Snowflake Cortex that answers business questions in plain English from tables and documents.","url":"https://lucalamorte.github.io/projects/warehouse.html","image":"https://lucalamorte.github.io/assets/og/home.png","author":{"@type":"Person","@id":"https://lucalamorte.github.io/#luca","name":"Luca Lamorte","url":"https://lucalamorte.github.io/"},"about":["Snowflake","Cortex Agents","Cortex Analyst","Cortex Search","Semantic model","Cortex Code"],"keywords":"Snowflake, Cortex Agents, Cortex Analyst, Cortex Search, Semantic model, Cortex Code","datePublished":"2026","inLanguage":"en"}</script>
 </head>
 <body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
@@ -42,7 +42,7 @@
 <a class="skip" href="#content">Skip to content</a>
 <nav class="nav" aria-label="Main">
   <a class="name" href="../index.html">Luca Lamorte</a>
-  <div class="links"><a href="../index.html#experience">Experience</a><a href="../index.html#projects">Products</a><a href="../index.html#how-i-work">How I work</a><a href="../index.html#contact">Contact</a></div>
+  <div class="links"><a href="../index.html#experience">Experience</a><a href="../index.html#projects">Products</a><a href="../index.html#notes">Notes</a><a href="../index.html#contact">Contact</a></div>
   <div class="icons">
     <a href="mailto:lclamorte@gmail.com?subject=Let's%20connect!" aria-label="Email"><svg><use href="#i-mail"/></svg></a>
     <a href="https://www.linkedin.com/in/lclamorte/" aria-label="LinkedIn" target="_blank" rel="noopener"><svg><use href="#i-linkedin"/></svg></a>
@@ -54,14 +54,14 @@
 
   <header>
     <svg class="art-logo icon" aria-hidden="true"><use href="#i-db"/></svg>
-    <span class="eyebrow">GenAI · own product · in progress · 2026</span>
+    <span class="eyebrow">GenAI · own product · 2026</span>
     <h1>Ask the warehouse</h1>
-    <p class="lede">A business question in plain English goes in, and the answer comes back from the company's own data. This is an early write-up of a product being built now.</p>
+    <p class="lede">A business question in plain English goes in, and the answer comes back from the company's own data.</p>
   </header>
   <div class="built"><p>Built with</p><ul><li>Snowflake</li><li>Cortex Agents</li><li>Cortex Analyst</li><li>Cortex Search</li><li>Semantic model</li><li>Cortex Code</li></ul></div>
 
-  <h2>The idea</h2>
-  <p>Most questions about a business are already answered somewhere in its warehouse or its documents. The hard part is knowing where.</p>
+  <h2>The problem</h2>
+  <p>Which campaign won Q3? Today that is a ticket to the data team and a wait. Here it is asked in plain English, and the answer comes with its source.</p>
 
   <h2>How a question is answered</h2>
   <div class="flow" aria-label="Agent flow"><div class="step">A question<small>which campaign won Q3?</small></div><div class="step model">The agent picks a tool<small>Cortex Agents decides between tables and documents</small></div><div class="step code">Cortex Analyst<small>turns the question into SQL over a semantic model</small></div><div class="step code">Cortex Search<small>finds the passages that answer it in documents</small></div><div class="step">The answer, with its source<small>the table or the document behind every number</small></div></div>
@@ -78,8 +78,8 @@
 </article>
 <footer>© 2026 Luca Lamorte · <a href="../index.html">Home</a> · <a href="https://www.linkedin.com/in/lclamorte/" target="_blank" rel="noopener">LinkedIn</a></footer>
 <script src="../snow.js"></script>
-<script src="article.js"></script>
 <script src="../cursor.js"></script>
+<script src="article.js"></script>
 <script>
   // Cada caso de estudio arranca desde su título, aunque el navegador recuerde dónde había quedado la lectura.
   // Cada artículo abre en el título: sin restaurar la posición anterior, sin animar la subida y de nuevo al

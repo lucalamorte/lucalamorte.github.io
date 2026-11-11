@@ -46,7 +46,7 @@ section { padding: 72px 0 16px; }
 /* ---------- portada: el retrato a la izquierda, la presentación a la derecha ---------- */
 .hero { position: relative; min-height: min(760px, calc(100vh - 64px)); display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); align-items: center; gap: clamp(24px, 5vw, 64px); padding: 72px 0; }
 .portrait { min-width: 0; }
-.portrait canvas { display: block; width: 100%; max-width: 500px; aspect-ratio: 1; margin: 0 auto; cursor: crosshair; }
+.portrait canvas { display: block; width: 100%; max-width: 500px; aspect-ratio: 1; margin: 0 auto; }
 .hero .game-status { min-height: 1.5em; max-width: none; margin: 6px 0 0; text-align: center; font-family: var(--mono); font-size: .76rem; color: var(--accent); }
 .hero h1 { font-size: clamp(2.6rem, 5.4vw, 4.4rem); line-height: 1.02; margin: 0; color: var(--text); font-weight: 700; letter-spacing: -.045em; }
 .hero h1 b { color: var(--accent); font-weight: 700; }
@@ -530,7 +530,7 @@ footer { border-top: 0; }
 /* Mientras se juega, el contacto deja lugar a la izquierda para la caja de Snowflake. */
 /* Mientras se juega, antes del contacto entran el bucket, la pipeline y la caja de Snowflake. */
 .playing .contact { padding-top: 220px; }
-@media (max-width: 1200px) { .playing .contact { padding-top: 330px; } }
+@media (max-width: 1200px) { .playing .contact { padding-top: 600px; } }
 @media (max-width: 760px) { .playing .contact { padding-bottom: 150px; } }
 /* Los tres perfiles, debajo del nombre. */
 .hero .roles { margin: 14px 0 0 !important; font-family: var(--mono); font-size: .9rem !important; color: var(--accent) !important; letter-spacing: .02em; text-align: left; }
@@ -863,9 +863,10 @@ html.js .reveal.in .card, html.js .reveal.in .fold { will-change: auto; }
 .portrait { position: relative; }
 .portrait .portrait-ink { position: absolute; z-index: 1; pointer-events: none; max-width: none; margin: 0; aspect-ratio: auto; cursor: default; -webkit-mask-image: none; mask-image: none; }
 /* Mientras flota, el lienzo del juego queda detrás de la página: Little Bit pasa por detrás del texto y del vidrio. */
-body.pk-floating .play-layer { z-index: -1; }
+/* Flotando, en la compu va detrás del texto del margen; en el celu, adelante: si no, una tarjeta que ocupa la pantalla lo tapa. */
+@media (min-width: 768px) { body.pk-floating .play-layer { z-index: -1; } }
 /* El globito de ayuda también flota por detrás de la página, junto con Little Bit: nunca tapa lo que se lee. */
-body.pk-floating .pk-hint { z-index: -1; }
+@media (min-width: 768px) { body.pk-floating .pk-hint { z-index: -1; } }
 /* El globito y el área de click de Little Bit viven en su propia capa: se desplazan suave, sin saltos de píxel. */
 .pk-hint, .pk-hit { will-change: translate, transform; }
 
@@ -888,11 +889,304 @@ html, body { overflow-x: clip; }
 .pad .x, .pad .re { background: var(--lg); -webkit-backdrop-filter: blur(8px) saturate(170%); backdrop-filter: blur(8px) saturate(170%); }
 /* La nota final y el globo de la misión, con el mismo vidrio que el resto. */
 .agent-note, .pk-say { background: var(--lg) !important; box-shadow: var(--lg-shadow) !important; -webkit-backdrop-filter: blur(10px) saturate(170%); backdrop-filter: blur(10px) saturate(170%); border-color: transparent !important; }
-/* Cursor propio en pantallas con mouse: un círculo suave que sigue al puntero y crece sobre lo que se puede tocar. */
+
+/* Los botones chicos del juego van dentro de la barra, entre las flechas y el salto: nunca encima de otro. */
+/* La barra del celu: las cuatro flechas del mismo tamaño y, en el medio, reiniciar y salir, chicos. */
+.pad { display: grid; grid-template-columns: 60px 60px 1fr 1fr 60px 60px; align-items: center; column-gap: 8px; }
+.pad button { width: 60px; height: 60px; margin: 0; }
+.pad [data-k="left"] { grid-column: 1; } .pad [data-k="right"] { grid-column: 2; } .pad .down { grid-column: 5; } .pad .jump { grid-column: 6; width: 60px; height: 60px; }
+.pad .x, .pad .re { position: static; grid-row: 1; width: 34px; height: 34px; font-size: 14px; }
+.pad .re { grid-column: 3; justify-self: end; } .pad .x { grid-column: 4; justify-self: start; }
+/* Más aire entre secciones en el celu (en la compu ya tienen 120 px). */
+@media (max-width: 760px) {
+  main { padding: 0 22px; }
+  main > section:not(.hero) { padding-top: 104px; padding-bottom: 84px; }
+  .pr-panel { order: 0; margin: 6px 0 22px; }
+  .card { padding-top: 30px; }
+  .card + .card { margin-top: 12px; }
+  /* Jugando en el celu, la página queda de fondo: el juego se lee sin mezclarse con el texto. */
+  main, footer { transition: opacity .5s var(--ease); }
+  body.playing main, body.playing footer { opacity: .85; }
+}
+/* Sin subrayado debajo de la regla elegida: el tiempo sigue corriendo por dentro, pero no se ve. */
+.pr-item .bar, .auto .pr-item.on::before { opacity: 0; }
+
+/* Los diálogos de Little Bit y su saludo: vidrio, sin borde de color. */
+.pk-bubble { position: absolute; left: 0; top: 0; z-index: 21; display: flex; align-items: center; height: 36px; padding: 0 16px; border-radius: 12px; transform: translate(-50%, -50%); font: 500 15px "JetBrains Mono", monospace; color: #f1f5f9; white-space: nowrap; pointer-events: none; opacity: 0; background: var(--lg); box-shadow: var(--lg-shadow); -webkit-backdrop-filter: blur(12px) saturate(170%); backdrop-filter: blur(12px) saturate(170%); will-change: translate, opacity; }
+.pk-hint { background: var(--lg) !important; box-shadow: var(--lg-shadow); border-color: transparent !important; -webkit-backdrop-filter: blur(12px) saturate(170%); backdrop-filter: blur(12px) saturate(170%); }
+.pk-hint::after { display: none; }
+
+/* El reflejo de la tarjeta ocupa toda la tarjeta: nunca queda como una línea arriba (venía del subrayado viejo). */
+.card.glass-live::before { top: 0; left: 0; width: auto; height: auto; background: radial-gradient(320px circle at var(--mx, 50%) var(--my, 0%), rgba(255, 255, 255, .09), transparent 65%); }
+/* Los desplegables: la misma inclinación y el mismo reflejo que las tarjetas. */
+.fold summary.glass-tilt { transform: perspective(1100px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) translateY(var(--lift, 0px)); transition: transform .7s var(--ease), background .45s var(--ease), box-shadow .3s; }
+.fold summary.glass-tilt.glint { --lift: -4px; background: radial-gradient(320px circle at var(--mx, 50%) var(--my, 0%), rgba(255, 255, 255, .09), transparent 65%), linear-gradient(135deg, rgba(255, 255, 255, .12), rgba(255, 255, 255, .04) 42%, rgba(255, 255, 255, .07)); }
+.playing .fold summary.glass-tilt { --rx: 0deg !important; --ry: 0deg !important; --lift: 0px !important; }
+
+/* Dentro de los globos: las flechas como teclas y las tablas como código, igual que en la misión. */
+.pk-bubble { gap: 6px; }
+.pk-bubble kbd { display: inline-grid; place-items: center; min-width: 24px; height: 24px; margin: 0 2px; border: 1px solid var(--accent-line); border-bottom-width: 2px; border-radius: 6px; color: var(--accent); font: inherit; font-size: .95rem; }
+.pk-bubble code { font-family: var(--mono); font-size: .9em; color: var(--accent); background: rgba(94, 234, 212, .1); padding: 1px 6px; border-radius: 5px; }
+
+/* Jugando en el celu, el DAG corre por su propio carril a la izquierda: debajo de la portada el contenido se corre
+   un poco y Little Bit nunca queda encima de un número o de un título. */
+@media (max-width: 760px) { body.playing main > section:not(.hero) { padding-left: 26px !important; } }
+
+/* El rol: más presente, y escrito por el mismo cursor que el título. */
+.hero .roles { margin: 18px 0 0 !important; font-size: 1.12rem !important; font-weight: 500; letter-spacing: .01em; }
+.hero .roles.typing .ch:not(.on) { color: transparent; }
+.hero .roles .caret { display: inline-block; width: 0; }
+.hero .roles .caret::after { content: ""; display: inline-block; width: .55em; height: 1.05em; margin-left: .12em; vertical-align: -.18em; border-radius: 2px; background: var(--accent); opacity: .85; animation: caret-blink 1s steps(1) infinite; }
+@media (max-width: 760px) { .hero .roles { font-size: 1rem !important; margin-top: 14px !important; } }
+
+/* La nota final la firma Little Bit, con la respuesta que da Snowflake al insertar su fila. */
+.agent-note code { font-family: var(--mono); font-size: .88em; color: var(--accent); background: rgba(94, 234, 212, .1); padding: 1px 6px; border-radius: 5px; }
+.agent-note small { display: block; margin-top: 6px; font-family: var(--mono); font-size: .72rem; color: var(--muted); }
+.agent-note small::before { content: "✓ "; color: var(--accent); }
+
+/* El globo de Little Bit cuando flota en el margen: se parte en renglones para no meterse en el contenido. */
+.pk-hint.lane { white-space: normal; text-wrap: balance; text-align: center; line-height: 1.45; }
+
+/* El globo que hay que leer sí o sí se pasa con su botón. */
+.pk-say.on { pointer-events: auto; }
+.pk-say .next { display: inline-flex; align-items: center; gap: 8px; margin-top: 10px; padding: 6px 10px 6px 12px; border: 1px solid var(--accent-line); border-radius: 9px; background: rgba(94, 234, 212, .08); color: var(--accent); font: inherit; font-size: .82rem; font-weight: 600; cursor: pointer; }
+.pk-say .next:hover { background: rgba(94, 234, 212, .16); }
+.pk-say .next kbd { min-width: 20px; height: 20px; font-size: .78rem; border-bottom-width: 2px; border-radius: 5px; }
+
+/* El mismo aire entre todas las secciones, medido entre lo último que se ve de una y el título de la siguiente. */
+main > section:not(.hero), main > section#more { padding: 84px 0; }
+main > section#more { padding-bottom: 111px; }
+@media (max-width: 760px) { main > section:not(.hero), main > section#more { padding: 72px 0; } main > section#more { padding-bottom: 96px; } }
+
+/* El aviso cuando Little Bit quedó esperando fuera de pantalla: arriba de la barra del juego, sin tapar la lectura. */
+.pk-away { position: fixed; right: 18px; bottom: 76px; z-index: 24; width: min(300px, calc(100vw - 36px)); padding: 12px 14px; border: 1px solid var(--accent-line); border-radius: 12px; background: rgba(11, 17, 32, .94); backdrop-filter: blur(8px); color: var(--text); font-size: .86rem; line-height: 1.45; opacity: 0; pointer-events: none; transform: translateY(8px); transition: opacity .35s, transform .35s; }
+.pk-away.on { opacity: 1; pointer-events: auto; transform: none; }
+.pk-away p { margin: 0 0 10px; }
+.pk-away div { display: flex; gap: 8px; }
+.pk-away button { height: 30px; padding: 0 12px; border: 1px solid var(--border-strong); border-radius: 8px; background: transparent; color: var(--text-2); font: inherit; font-size: .8rem; cursor: pointer; }
+.pk-away .back { border-color: var(--accent-line); color: var(--accent); }
+.pk-away button:hover { background: var(--accent-tint); }
+@media (max-width: 760px) { .pk-away { right: 16px; bottom: 150px; } }
+
+
+/* En el celu los globos de Little Bit son angostos y se ajustan al texto: no ocupan todo el ancho. */
+@media (max-width: 760px) { .pk-say { width: max-content; max-width: min(250px, 72vw); } .pk-hint { white-space: normal; max-width: min(210px, 62vw); text-align: center; line-height: 1.45; } }
+
+/* La presentación entra entera en la primera pantalla, en cualquier alto: la cara se achica según el alto visible
+   (svh, sin las barras del navegador) y deja lugar al texto y a la flecha de abajo. En el celu usa todo el ancho. */
+.portrait canvas:not(.portrait-ink) { max-width: min(620px, calc(100vh - 210px)); max-width: min(620px, calc(100svh - 210px)); }
+@media (max-width: 760px) {
+  .hero { min-height: calc(100vh - 64px); min-height: calc(100svh - 64px); padding: 8px 0 84px; gap: 4px; align-content: center; }
+  .portrait canvas:not(.portrait-ink) { max-width: min(400px, 100%, calc(100vh - 380px)); max-width: min(400px, 100%, calc(100svh - 380px)); min-width: 200px; }
+}
+
+/* En pantallas táctiles no hay inclinación 3D (es un efecto del mouse). En iPhone, Safari dibuja lo que tiene
+   transformación 3D por encima de todo, aunque tenga menos z-index: tapaba los globos de Little Bit. */
+@media (hover: none) { .glass-live, .card.glass-live:hover, html.js .reveal.in .glass-live, html.js .reveal.in .glass-live:hover, .fold summary.glass-tilt { transform: translateY(var(--lift, 0px)) !important; } }
+
+/* En el celu los globos de Little Bit son más chicos: acompañan sin tapar. */
+@media (max-width: 760px) { .pk-hint { font-size: .62rem; padding: 3px 8px; border-radius: 8px; max-width: min(180px, 55vw); } .pk-bubble { height: 28px; padding: 0 11px; font-size: 12px; border-radius: 9px; } .pk-say { font-size: .8rem; padding: 10px 12px; } }
+
+/* El cursor propio: un círculo de vidrio que crece sobre lo que se puede tocar, con un punto en el centro que marca
+   exactamente dónde apunta. Va pegado al puntero, sin inercia: con inercia quedaba atrás y se sentía impreciso. */
 @media (hover: hover) and (pointer: fine) {
   html.soft-cursor, html.soft-cursor * { cursor: none !important; }
-  .cursor { position: fixed; left: 0; top: 0; z-index: 9999; width: 18px; height: 18px; margin: -9px 0 0 -9px; border-radius: 50%; background: rgba(241, 245, 249, .92); box-shadow: 0 3px 8px rgba(0, 0, 0, .35); pointer-events: none; transition: width .25s var(--ease), height .25s var(--ease), margin .25s var(--ease), background .25s var(--ease), opacity .2s; will-change: transform; }
-  .cursor.on-link { width: 38px; height: 38px; margin: -19px 0 0 -19px; background: rgba(241, 245, 249, .22); -webkit-backdrop-filter: blur(2px); backdrop-filter: blur(2px); box-shadow: 0 0 0 1px rgba(241, 245, 249, .5); }
-  .cursor.down { width: 14px; height: 14px; margin: -7px 0 0 -7px; }
+  .cursor { position: fixed; left: 0; top: 0; z-index: 9999; width: 18px; height: 18px; margin: -9px 0 0 -9px; border-radius: 50%; background: rgba(241, 245, 249, .06); border: 1px solid rgba(241, 245, 249, .55); box-shadow: inset 0 1px 1px rgba(255, 255, 255, .35), inset 0 -1px 2px rgba(0, 0, 0, .18), 0 2px 10px rgba(0, 0, 0, .25); pointer-events: none; transition: width .25s var(--ease), height .25s var(--ease), margin .25s var(--ease), background .25s var(--ease), opacity .2s; will-change: transform; }
+  .cursor::after { content: ""; position: absolute; left: 50%; top: 50%; width: 3px; height: 3px; margin: -1.5px 0 0 -1.5px; border-radius: 50%; background: #5eead4; box-shadow: 0 0 6px rgba(94, 234, 212, .9); }
+  .cursor.on-link { width: 42px; height: 42px; margin: -21px 0 0 -21px; background: rgba(241, 245, 249, .1); border-color: rgba(241, 245, 249, .7); }
+  .cursor.down { width: 14px; height: 14px; margin: -7px 0 0 -7px; background: rgba(241, 245, 249, .18); }
   .cursor.gone { opacity: 0; }
+  .spark { position: fixed; z-index: 9999; width: 8px; height: 8px; margin: -4px 0 0 -4px; pointer-events: none; background: var(--c, #5eead4); clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%); filter: drop-shadow(0 0 3px var(--c, #5eead4)); animation: spark-out .6s ease-out forwards; }
+  @keyframes spark-out { from { opacity: .9; transform: translate(0, 0) scale(1) rotate(0deg); } to { opacity: 0; transform: translate(var(--dx, 0), 10px) scale(.2) rotate(90deg); } }
 }
+
+/* Celu: cada parada del juego entra entera entre el menú y los botones. Las cifras van en una sola fila y,
+   mientras se juega, la línea de herramientas se guarda (está completa en cada caso). */
+@media (max-width: 420px) {
+  .card.big .nums { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px 12px; margin-bottom: 18px; }
+  .card.big .nums b { font-size: 1.3rem; }
+  .card.big .nums li { font-size: .74rem; line-height: 1.35; }
+}
+@media (max-width: 760px) { .playing .card p.tools, .playing .card.big .more { display: none; } }
+@media (max-width: 760px) {
+  .playing .card.big, .playing .projects .card { padding-top: 22px; padding-bottom: 16px; }
+  .playing .slides .track { aspect-ratio: 16 / 8; }
+  .playing .slides .slide svg { max-height: 100%; }
+}
+/* Celu: los diagramas de los casos, un poco más juntos, para que cada sección entre en una pantalla. */
+@media (max-width: 760px) { .article .flow { gap: 12px; margin: 20px 0 12px; } }
+/* En pantallas táctiles no hay teclado: el ↵ de los botones del diálogo no dice nada ahí. */
+@media (hover: none) { .pk-say .next kbd, button kbd { display: none; } }
+
+/* Notas fuera del trabajo: al final de todo, sin peso visual */
+.notes { padding-bottom: 72px; }
+.notes .cred { white-space: normal; }
+/* La nota fuera del trabajo: una tarjeta con su foto, para que se vea sin competir con los proyectos */
+.note-card { display: grid; grid-template-columns: minmax(0, 300px) minmax(0, 1fr); gap: 28px; align-items: center; }
+.note-card .note-shot { width: 100%; aspect-ratio: 4 / 5; object-fit: cover; object-position: right center; border-radius: 12px; display: block; }
+.note-card h3 { margin: 8px 0 10px; }
+.note-card .more { margin-top: 14px; display: inline-block; }
+@media (max-width: 760px) { .note-card { grid-template-columns: 1fr; gap: 16px; } .note-card .note-shot { aspect-ratio: 4 / 3; } }
+/* Notas, como Wikipedia: el relato corre en una columna ancha y las fotos van en un recuadro a la derecha,
+   con su pie abajo, y el texto las rodea. Los diagramas ocupan la columna entera. */
+.notes-article p, .notes-article li { text-align: left; }
+.notes-article ol { padding-left: 2.2em; }
+.article .thumb { float: right; clear: right; width: clamp(300px, 28vw, 480px); margin: 4px 0 18px 28px; padding: 6px; border: 1px solid var(--border); border-radius: 6px; background: rgba(11, 17, 32, .7); }
+.article .thumb.two { width: clamp(380px, 36vw, 640px); display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.article .thumb.two:has(.note-fig:nth-child(3)) { width: clamp(440px, 42vw, 760px); grid-template-columns: repeat(3, 1fr); }
+.article .thumb .note-fig { margin: 0; }
+.article .thumb .note-fig a { display: block; }
+.article .thumb img { display: block; width: 100%; height: auto; max-height: 440px; object-fit: contain; border-radius: 3px; }
+.article .thumb.two img { aspect-ratio: 4 / 3; max-height: none; object-fit: cover; }
+.article .thumb figcaption { padding: 8px 4px 2px; font-size: .84rem; line-height: 1.4; color: var(--muted); }
+/* Los diagramas van centrados y a lo ancho, debajo de las fotos que haya arriba */
+.article .note-wide { clear: both; margin: 28px auto; max-width: 1000px; }
+.article .note-wide img { display: block; width: 100%; height: auto; border-radius: 10px; }
+.article .note-wide figcaption { margin-top: 8px; font-size: .78rem; color: var(--muted); }
+.notes-article .note-tables, .notes-article .article-end { clear: both; }
+@media (min-width: 1000px) {
+  .article.notes-article { display: block; max-width: min(1500px, 92vw); }
+  .notes-article > h2 { display: block; margin-top: 64px; margin-bottom: 16px; padding: 0 0 10px; font-size: 1.6rem; border-bottom: 1px solid var(--border); }
+  .notes-article > h2 + * { margin-top: 0; }
+  .notes-article p, .notes-article li { font-size: 1.06rem; line-height: 1.75; }
+  .notes-article .note-tables { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; }
+}
+@media (max-width: 760px) {
+  .article .thumb, .article .thumb.two, .article .thumb.two:has(.note-fig:nth-child(3)) { float: none; width: auto; margin: 18px 0; }
+  .article .thumb img { max-height: 46vh; }
+  .article .thumb figcaption { font-size: .74rem; line-height: 1.35; padding: 6px 2px 0; }
+}
+/* Las listas se leen como una ficha: fondo propio que las separa del cielo, la pieza chica a la izquierda y el modelo en primer plano */
+.article .note-table { overflow-x: auto; margin: 14px 0; padding: 6px 20px; border-radius: 16px; background: rgba(11, 17, 32, .82); border: 1px solid var(--border); }
+.article .note-table table { width: 100%; border-collapse: collapse; font-size: .92rem; }
+.article .note-table th, .article .note-table td { text-align: left; padding: 11px 10px; border-bottom: 1px solid rgba(148, 163, 184, .1); vertical-align: top; }
+.article .note-table tr:last-child td { border-bottom: 0; }
+.article .note-table th { font-family: var(--mono); font-size: .7rem; font-weight: 500; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.note-tables .note-table td:first-child { font-family: var(--mono); font-size: .76rem; color: var(--accent); white-space: nowrap; padding-top: 13px; }
+.note-tables .note-table td:nth-child(2) { color: var(--text); }
+.note-tables .note-table td:nth-child(3) { color: var(--muted); font-size: .86rem; }
+.article ol { padding-left: 22px; }
+
+/* El juego es opcional: un botón discreto debajo de la presentación, que desaparece mientras se juega */
+/* Lo que sigue al nombre espera a que termine de escribirse la línea de abajo */
+.hero .intro.wait > p:not(.roles), .hero .intro.wait > .pk-play { opacity: 0; translate: 0 6px; transition: opacity .6s ease, translate .6s ease; }
+.hero .intro.wait.done > p:not(.roles), .hero .intro.wait.done > .pk-play { opacity: 1; translate: 0 0; }
+.hero .intro.wait:not(.done) > .pk-play { pointer-events: none; }
+.hero .intro.wait.done > .pk-play { transition-delay: .15s; }
+.pk-play { transition: opacity .6s ease, translate .6s ease, color .2s; }
+.pk-play { display: inline-flex; align-items: center; gap: 8px; margin-top: 18px; padding: 0; border: 0; background: none; color: var(--muted); font: 500 .82rem var(--mono); cursor: pointer; transition: color .2s; }
+.pk-play svg { width: 15px; height: 15px; fill: none; stroke: var(--accent); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.pk-play svg circle { fill: var(--accent); stroke: none; }
+.pk-play:hover, .pk-play:focus-visible { color: var(--accent); }
+.playing .pk-play { visibility: hidden; }
+
+/* El visor de fotos de las notas: la foto entera sobre la página oscurecida */
+.note-lb { max-width: none; max-height: none; width: 100vw; height: 100dvh; margin: 0; padding: 0; border: 0; background: rgba(5, 8, 16, .92); color: var(--text); }
+.note-lb::backdrop { background: transparent; }
+.note-lb[open] { display: grid; place-items: center; }
+.note-lb figure { margin: 0; padding: 56px 72px; display: grid; justify-items: center; gap: 12px; width: 100%; height: 100%; box-sizing: border-box; align-content: center; }
+.note-lb img { max-width: 100%; max-height: calc(100dvh - 150px); object-fit: contain; border-radius: 8px; }
+.note-lb figcaption { font-size: .9rem; color: var(--muted); text-align: center; }
+.note-lb button { position: fixed; display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--border); background: rgba(148, 163, 184, .1); color: var(--text); cursor: pointer; }
+.note-lb button svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.note-lb .lb-close { top: 16px; right: 16px; }
+.note-lb .lb-prev { left: 16px; top: 50%; translate: 0 -50%; }
+.note-lb .lb-next { right: 16px; top: 50%; translate: 0 -50%; }
+@media (max-width: 760px) { .note-lb figure { padding: 64px 12px; } .note-lb .lb-prev, .note-lb .lb-next { top: auto; bottom: 20px; translate: none; } }
+.article .thumb a { cursor: zoom-in; }
+
+/* Lugar reservado para la foto del setup terminado */
+.article .setup-soon .soon { display: grid; place-items: center; place-content: center; gap: 10px; aspect-ratio: 4 / 3; border: 1.5px dashed var(--border); border-radius: 6px; color: var(--muted); font-size: .9rem; text-align: center; padding: 16px; }
+.article .setup-soon svg { width: 34px; height: 34px; fill: none; stroke: var(--accent); stroke-width: 1.5; stroke-linejoin: round; }
+
+/* Jugar desde el menú: un joystick con su palabra, a la derecha de todo */
+.nav-play { display: inline-flex; align-items: center; gap: 6px; height: 36px; margin-left: 2px; padding: 0 8px; border: 0; border-radius: 8px; background: none; color: var(--accent); font: 500 .8rem var(--mono); cursor: pointer; transition: background .2s, border-color .2s; }
+.nav-play svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.nav-play circle { fill: currentColor; stroke: none; }
+.nav-play:hover, .nav-play:focus-visible { background: rgba(94, 234, 212, .08); }
+.playing .nav-play { visibility: hidden; }
+@media (max-width: 420px) { .nav-play span { display: none; } .nav-play { padding: 0 9px; } }
+
+/* Educación sin desplegable: la lista a la vista, debajo del título */
+.edu .list-label:first-child { margin-top: 8px; }
+
+/* Notas, simétrico y sin bordes: todos los recuadros de fotos miden lo mismo y cierran contra el borde derecho del
+   texto; las fotos van de a dos, y si queda una sola al final ocupa el ancho entero. Los diagramas van de borde a
+   borde de la columna. Sin líneas en los títulos ni marcos en las fotos. */
+.notes-article > h2 { border-bottom: 0 !important; padding-bottom: 0 !important; }
+.article .thumb, .article .thumb.two, .article .thumb.two:has(.note-fig:nth-child(3)) { padding: 0; border: 0; background: none; border-radius: 0; }
+.article .thumb img { border-radius: 8px; }
+.article .thumb figcaption { padding: 6px 0 0; }
+@media (min-width: 1000px) {
+  .article .thumb, .article .thumb.two, .article .thumb.two:has(.note-fig:nth-child(3)) { width: 38%; margin: 6px 0 22px 40px; }
+  .article .thumb.two, .article .thumb.two:has(.note-fig:nth-child(3)) { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 12px; }
+  .article .thumb.two .note-fig:last-child:nth-child(odd) { grid-column: 1 / -1; }
+  .article .thumb.two .note-fig:last-child:nth-child(odd) img { aspect-ratio: 16 / 9; }
+  .article .note-wide { max-width: none; margin: 32px 0; }
+}
+
+/* Productos: todos en una fila cuando entran, usando el ancho de la pantalla; uno por fila en pantallas angostas */
+@media (min-width: 1000px) {
+  .projects.four { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 28px; }
+  .projects.four .card p { text-align: left; }
+}
+@media (max-width: 999px) { .projects.four { grid-template-columns: 1fr; } }
+
+/* Notas: dos por fila, foto arriba y texto abajo, todas del mismo tamaño; una por fila en el celu */
+.note-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px; }
+.note-grid .note-card { display: flex; flex-direction: column; gap: 0; }
+.note-grid .note-card .note-shot { aspect-ratio: 16 / 9; object-position: center; border-radius: 12px; margin-bottom: 18px; }
+.note-grid .note-card p { text-align: left; }
+.note-grid .note-card .more { margin-top: auto; padding-top: 14px; }
+.note-grid .note-body { display: flex; flex-direction: column; flex: 1; }
+@media (max-width: 760px) { .note-grid { grid-template-columns: 1fr; } }
+.note-grid .note-card .kind { display: block; text-align: left; margin-bottom: 6px; }
+.note-grid .note-card h3 { font-size: 1.05rem; line-height: 1.35; }
+@media (min-width: 1300px) { .note-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 24px; } .note-grid .note-card { padding: 20px; } .note-grid .note-card .note-shot { aspect-ratio: 4 / 3; } }
+
+/* Tablas de números: la última columna es el resultado, alineado a la derecha como en una planilla */
+.notes-article .note-table:not(.note-tables .note-table) td, .notes-article .note-table:not(.note-tables .note-table) th { color: var(--muted); }
+.notes-article .note-table:not(.note-tables .note-table) td:first-child { color: var(--text); }
+.notes-article .note-table:not(.note-tables .note-table) td:not(:first-child), .notes-article .note-table:not(.note-tables .note-table) th:not(:first-child) { text-align: right; font-variant-numeric: tabular-nums; }
+/* Galería a lo ancho para las secciones con poco texto y varias fotos */
+.article .note-gallery { clear: both; display: grid; grid-template-columns: repeat(var(--n, 3), minmax(0, 1fr)); gap: 14px; margin: 24px 0 8px; }
+.article .note-gallery .note-fig { margin: 0; }
+.article .note-gallery img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 8px; display: block; }
+.article .note-gallery figcaption { margin-top: 8px; font-size: .84rem; color: var(--muted); }
+@media (max-width: 760px) { .article .note-gallery { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+/* Simetría: todas las fotos al costado del texto con el mismo ancho y la misma proporción, llenando su recuadro.
+   La foto entera se ve al tocarla. */
+@media (min-width: 1000px) {
+  .notes-article .thumb img, .notes-article .thumb.two img { width: 100%; aspect-ratio: 4 / 3; max-height: none; object-fit: cover; border-radius: 8px; }
+}
+/* Las filas de fotos tienen siempre el mismo tamaño de foto (un tercio del ancho), centradas: dos fotos no se agrandan */
+@media (min-width: 761px) {
+  .article .note-gallery { grid-template-columns: repeat(var(--n, 3), calc((100% - 28px) / 3)); justify-content: center; }
+  .article .note-gallery[style*="--n:4"] { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+/* Filas de fotos: cada foto mide un tercio del ancho (un cuarto si son cuatro) y las filas incompletas van centradas */
+@media (min-width: 761px) {
+  .article .note-gallery { display: flex; flex-wrap: wrap; justify-content: center; gap: 14px; }
+  .article .note-gallery .note-fig { flex: 0 0 calc((100% - 28px) / 3); }
+  .article .note-gallery[style*="--n:4"] .note-fig { flex-basis: calc((100% - 42px) / 4); }
+}
+/* Una foto sola al costado es más apaisada, para que no cuelgue más allá de su tramo de texto */
+@media (min-width: 1000px) { .notes-article .thumb:not(.two) img { aspect-ratio: 16 / 10; } }
+
+/* Todas las secciones usan el mismo ancho en pantallas grandes: etiqueta, título y contenido arrancan en el mismo
+   borde en toda la página, y el bloque queda centrado. */
+@media (min-width: 1000px) {
+  main > section:not(.hero) { margin-inline: calc((min(1500px, 94vw) - 100%) / -2); }
+}
+/* La tarjeta sola de IBM ocupa el ancho, pero su dibujo no crece sin límite */
+@media (min-width: 1000px) { .flagship.solo .visual { width: 100%; max-width: 980px; margin-inline: auto; } .flagship.solo .visual svg { width: 100%; height: auto; } }
+/* Jugando en compu, el tubo de Airflow baja por la izquierda de las notas: las tarjetas le dejan el lugar */
+@media (min-width: 761px) { body.playing #notes .note-grid { margin-left: 130px; } }
+
+/* Productos: arriba a la derecha, el repo de presentación y la app, por encima del enlace que cubre la tarjeta */
+.card .out { display: inline-flex; align-items: center; gap: 4px; }
+.card .out .kind { margin-right: 6px; }
+.card .ico { position: relative; z-index: 2; display: grid; place-items: center; width: 30px; height: 30px; border-radius: 8px; color: var(--muted); transition: color .2s, background .2s; }
+.card .ico svg { width: 16px; height: 16px; }
+.card .ico:hover, .card .ico:focus-visible { color: var(--accent); background: rgba(94, 234, 212, .1); text-decoration: none; }

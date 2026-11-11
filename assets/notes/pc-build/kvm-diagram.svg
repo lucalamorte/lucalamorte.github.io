@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 520" font-family="Inter, Segoe UI, Arial, sans-serif">
+  <rect width="920" height="520" fill="#ffffff"/>
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#475569"/></marker>
+  </defs>
+  <text x="460" y="42" text-anchor="middle" font-size="18" font-weight="700" fill="#0f172a">Two computers, three monitors, one button</text>
+
+  <!-- Monitores -->
+  <g fill="#f8fafc" stroke="#334155" stroke-width="1.5">
+    <rect x="70" y="80" width="240" height="120" rx="8"/>
+    <rect x="340" y="80" width="240" height="120" rx="8"/>
+    <rect x="640" y="70" width="90" height="150" rx="8"/>
+  </g>
+  <g text-anchor="middle" fill="#0f172a">
+    <text x="190" y="134" font-size="15" font-weight="600">27" 210 Hz</text>
+    <text x="190" y="155" font-size="12" fill="#475569">DisplayPort</text>
+    <text x="460" y="134" font-size="15" font-weight="600">27" 210 Hz</text>
+    <text x="460" y="155" font-size="12" fill="#475569">DisplayPort</text>
+    <text x="685" y="140" font-size="15" font-weight="600">24"</text>
+    <text x="685" y="160" font-size="12" fill="#475569">vertical</text>
+    <text x="685" y="176" font-size="12" fill="#475569">HDMI</text>
+  </g>
+
+  <!-- KVM -->
+  <rect x="300" y="270" width="320" height="70" rx="12" fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+  <text x="460" y="300" text-anchor="middle" font-size="16" font-weight="700" fill="#0f172a">UGREEN KVM</text>
+  <text x="460" y="321" text-anchor="middle" font-size="12" fill="#475569">one button switches everything</text>
+
+  <!-- KVM a monitores -->
+  <g stroke="#475569" stroke-width="1.8" fill="none" marker-end="url(#a)">
+    <path d="M380 270 L380 240 L190 240 L190 204"/>
+    <line x1="460" y1="270" x2="460" y2="204"/>
+    <path d="M540 270 L540 240 L685 240 L685 224"/>
+  </g>
+
+  <!-- Periféricos -->
+  <g fill="#f8fafc" stroke="#334155" stroke-width="1.5">
+    <rect x="720" y="270" width="170" height="70" rx="10"/>
+  </g>
+  <text x="805" y="299" text-anchor="middle" font-size="14" font-weight="600" fill="#0f172a">Keyboard + mouse</text>
+  <text x="805" y="318" text-anchor="middle" font-size="12" fill="#475569">USB, shared</text>
+  <line x1="718" y1="305" x2="624" y2="305" stroke="#475569" stroke-width="1.8" marker-end="url(#a)"/>
+
+  <!-- Computadoras -->
+  <g fill="#f8fafc" stroke="#334155" stroke-width="1.5">
+    <rect x="150" y="410" width="220" height="70" rx="10"/>
+    <rect x="550" y="410" width="220" height="70" rx="10"/>
+  </g>
+  <g text-anchor="middle" fill="#0f172a">
+    <text x="260" y="440" font-size="15" font-weight="600">My PC</text>
+    <text x="260" y="460" font-size="12" fill="#475569">3 video cables + USB</text>
+    <text x="660" y="440" font-size="15" font-weight="600">Work laptop</text>
+    <text x="660" y="460" font-size="12" fill="#475569">3 video cables + USB</text>
+  </g>
+  <g stroke="#475569" stroke-width="1.8" fill="none" marker-end="url(#a)">
+    <path d="M260 410 L260 375 L400 375 L400 344"/>
+    <path d="M660 410 L660 375 L520 375 L520 344"/>
+  </g>
+
+  <!-- Tele -->
+  <rect x="20" y="410" width="100" height="70" rx="10" fill="#f8fafc" stroke="#334155" stroke-width="1.5" stroke-dasharray="5 4"/>
+  <text x="70" y="440" text-anchor="middle" font-size="14" font-weight="600" fill="#0f172a">TV</text>
+  <text x="70" y="460" text-anchor="middle" font-size="12" fill="#475569">4K, HDMI</text>
+  <line x1="148" y1="445" x2="124" y2="445" stroke="#475569" stroke-width="1.8" marker-end="url(#a)"/>
+</svg>

@@ -42,7 +42,7 @@
 <a class="skip" href="#content">Skip to content</a>
 <nav class="nav" aria-label="Main">
   <a class="name" href="../index.html">Luca Lamorte</a>
-  <div class="links"><a href="../index.html#experience">Experience</a><a href="../index.html#projects">Products</a><a href="../index.html#how-i-work">How I work</a><a href="../index.html#contact">Contact</a></div>
+  <div class="links"><a href="../index.html#experience">Experience</a><a href="../index.html#projects">Products</a><a href="../index.html#notes">Notes</a><a href="../index.html#contact">Contact</a></div>
   <div class="icons">
     <a href="mailto:lclamorte@gmail.com?subject=Let's%20connect!" aria-label="Email"><svg><use href="#i-mail"/></svg></a>
     <a href="https://www.linkedin.com/in/lclamorte/" aria-label="LinkedIn" target="_blank" rel="noopener"><svg><use href="#i-linkedin"/></svg></a>
@@ -56,7 +56,7 @@
     <img class="art-logo" src="../assets/nutrigordo.webp" alt="">
     <span class="eyebrow">GenAI · own product · 2026</span>
     <h1>Nutrigordo</h1>
-    <p class="lede">A nutrition assistant in Telegram. Meals are logged with a text, a photo or a voice note. Calories, macros, workouts and supplements are tracked, and a PDF report is ready for your nutritionist.</p>
+    <p class="lede">A nutrition assistant in Telegram. Meals are logged by text, photo or voice, and a PDF report is ready for your nutritionist.</p>
     <div class="cta">
       <a class="btn solid" href="https://food-tracker-backend-cr8c.onrender.com/" target="_blank" rel="noopener">Try the web demo</a>
       <a class="btn" href="#how">How it works</a>
@@ -74,7 +74,7 @@
   </div>
 
   <h2>The problem</h2>
-  <p>Calorie trackers ask for grams and barcodes. People describe food the way they talk: <q>the usual toast</q>, <q>half an empanada from that place</q>, or a two-minute voice note with the whole day. The tracker had to understand that and still keep numbers a nutritionist can trust.</p>
+  <p>Trackers ask for grams. People say “the usual toast”. The bot had to understand that and still keep numbers a nutritionist can trust.</p>
 
   <h2 id="how">How a message is processed</h2>
   <div class="flow" aria-label="Message flow">
@@ -91,15 +91,15 @@
   <div class="legend"><span><i class="m"></i>language model</span><span><i class="c"></i>code</span><span><i></i>Telegram</span></div>
 
   <h2>The design rule</h2>
-  <p><strong>The model interprets; the code decides.</strong> A language model is good at understanding <q>I had the usual, but with two eggs</q> and bad at adding numbers or keeping dates consistent. So it is only asked for structured fields. Totals, averages and report periods are computed in code, and anything that deletes or overwrites goes through a second, narrow judgement first.</p>
+  <p>The model interprets; the code decides. The model only returns structured fields; totals, dates and anything that deletes are handled in code.</p>
 
   <h2>Two failures that shaped it</h2>
-  <div class="fix"><div class="was">A complaint undid a whole voice note</div><p><q>110 calories for one cookie is impossible</q> was read as "undo", and lunch, a snack and an afternoon meal disappeared. An undo request now needs a second judgement, and the complaint corrects that one food.</p></div>
+  <div class="fix"><div class="was">A complaint undid a whole voice note</div><p>“110 calories for one cookie is impossible” was read as undo, and a whole lunch disappeared. Undo now needs a second check.</p></div>
   <div class="fix"><div class="was">A product with several sizes got a random one</div><p>A can of soda was worth 66 or 106 kcal depending on which size the search found. Now the size is asked, with the real sizes as buttons.</p></div>
-  <p>Both are tests now, like every failure seen with a real user. Fast tests run on every push and block the deploy; scenario tests replay real conversations against the real model, only for the area that changed, because they cost money.</p>
+  <p>Both are tests now. Fast tests block every deploy; real conversations are replayed against the model only where the code changed.</p>
 
   <h2>Stack</h2>
-  <p>Telegram Bot API behind a secret-protected webhook, one FastAPI process on Render, OpenAI with structured outputs validated by Pydantic, and Supabase Postgres with row-level security, where each request carries a signed token for that one user.</p>
+  <p>Telegram webhook, one FastAPI process on Render, OpenAI with outputs validated by Pydantic, and Supabase with row-level security per user.</p>
 
   <p class="note">The code is private. The web demo is a guided walkthrough of a real day with the assistant and does not need Telegram or an account.</p>
   <nav class="article-end" aria-label="More">
@@ -110,8 +110,8 @@
 </article>
 <footer>© 2026 Luca Lamorte · <a href="../index.html">Home</a> · <a href="https://www.linkedin.com/in/lclamorte/" target="_blank" rel="noopener">LinkedIn</a></footer>
 <script src="../snow.js"></script>
-<script src="article.js"></script>
 <script src="../cursor.js"></script>
+<script src="article.js"></script>
 <script>
   // Cada caso de estudio arranca desde su título, aunque el navegador recuerde dónde había quedado la lectura.
   // Cada artículo abre en el título: sin restaurar la posición anterior, sin animar la subida y de nuevo al

@@ -12,7 +12,9 @@ mkdirSync(out, { recursive: true });
 const edge = `${process.env['ProgramFiles(x86)']}\\Microsoft\\Edge\\Application\\msedge.exe`;
 const prof = join(tmpdir(), `film-${Date.now()}`);
 const port = 9300 + Math.floor(Math.random() * 500);
-const proc = spawn(edge, ['--headless=new', '--disable-gpu', `--user-data-dir=${prof}`, `--remote-debugging-port=${port}`, '--window-size=390,844', 'about:blank'], { stdio: 'ignore' });
+// FILM_DESKTOP=1 filma una compu de 1600x912 con mouse, en vez del celular.
+const DESK = !!process.env.FILM_DESKTOP, VW = +process.env.FILM_W || (DESK ? 1600 : 390), VH = +process.env.FILM_H || (DESK ? 912 : 844);
+const proc = spawn(edge, ['--headless=new', '--disable-gpu', `--user-data-dir=${prof}`, `--remote-debugging-port=${port}`, `--window-size=${VW},${VH}`, 'about:blank'], { stdio: 'ignore' });
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 // Si algo se cuelga (por ejemplo, el servidor no está), corta a los 110 s en vez de quedarse esperando.
 setTimeout(() => { console.log('timeout'); try { proc.kill(); } catch {} process.exit(1); }, 110000).unref();
@@ -24,9 +26,11 @@ await new Promise(r => ws.addEventListener('open', r));
 let id = 0; const pending = new Map();
 ws.addEventListener('message', e => { const m = JSON.parse(e.data); if (m.method === 'Runtime.exceptionThrown') { const d = m.params.exceptionDetails; console.log('ERROR', d.exception?.description?.split(String.fromCharCode(10)).slice(0, 3).join(' | ') || d.text, d.lineNumber); } if (m.id && pending.has(m.id)) { pending.get(m.id)(m); pending.delete(m.id); } });
 const send = (method, params = {}) => new Promise(r => { const k = ++id; pending.set(k, r); ws.send(JSON.stringify({ id: k, method, params })); });
-await send('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 2, mobile: true });
+await send('Emulation.setDeviceMetricsOverride', { width: VW, height: VH, deviceScaleFactor: DESK ? 1 : 2, mobile: !DESK });
+if (!DESK) {
 await send('Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints: 5 });
 await send('Emulation.setEmitTouchEventsForMouse', { enabled: true, configuration: 'mobile' });
+}
 await send('Page.enable'); await send('Runtime.enable');
 // Sin esto la pestaña puede quedar 'oculta' y el navegador deja de animar.
 await send('Page.bringToFront'); await send('Emulation.setFocusEmulationEnabled', { enabled: true });

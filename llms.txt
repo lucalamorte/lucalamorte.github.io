@@ -4,13 +4,13 @@
 
 ## Experience
 
-- **Senior Data Architect, IBM** (Nov 2026 to present), client Kraft Heinz: warehouse architecture and dbt star schemas with full change history; AI agents on Snowflake Cortex (Cortex Agents with Analyst and Search) on semantic views that answer business questions in plain language; evaluation and delivery of AI use cases.
+- **Senior Data Architect, IBM** (Nov 2026 to present), client a global food and beverage company: data platform architecture and AI agents that answer business questions in plain language.
 - **Data Engineer, Kimberly-Clark** (Nov 2025 to Nov 2026): in-house Composable CDP on Snowflake for North America Marketing. 12+ source systems from AWS S3 and APIs, 65M Customer 360 profiles, a $260K/month vendor dependency retired and $5M in projected savings. CI/CD in Azure DevOps, data quality with Monte Carlo. [Case study](https://lucalamorte.github.io/projects/cdp.html)
-- **Solution Engineer, Kimberly-Clark** (Jul 2023 to Oct 2025): rollout of real-time machine data and digital twins in 10 plants across 5 countries, SAP and ERP data in Azure, one reporting layer in Power BI, $21.5M annual ROI. [Case study](https://lucalamorte.github.io/projects/smom.html)
+- **Solution Engineer, Kimberly-Clark** (Jul 2023 to Oct 2025): rollout of real-time machine data and digital twins in 10 plants across 5 countries, SAP and ERP data in Azure, one reporting layer in Power BI; 2 of the program's 3 projects were led, 3 plants at a time, on a team of 8 solution engineers, in a program of about 70 plants worldwide with $21.5M annual ROI. [Case study](https://lucalamorte.github.io/projects/smom.html)
 
 ## Own products
 
-- [PrimeroLab](https://lucalamorte.github.io/projects/primerolab.html): study app with a tool-calling agent and RAG over the user's own documents (Next.js, Supabase, pgvector, Gemini and OpenAI with fallback, row-level security).
+- [PrimeroLab](https://lucalamorte.github.io/projects/primerolab.html): study app where every answer, spoken or written, is graded from 1 to 5 and what went worst is reviewed first; tool-calling agent and RAG over the user's own documents (Next.js, Supabase, pgvector, Gemini and OpenAI with fallback, row-level security).
 - [Nutrigordo](https://lucalamorte.github.io/projects/nutrigordo.html): nutrition assistant in Telegram that logs meals from text, photos and voice notes (Python, FastAPI, OpenAI structured outputs, Supabase, 136 automated tests).
 - [DataChinchilla](https://lucalamorte.github.io/projects/datachinchilla.html): learning paths into a tech role from free courses, skipping what a CV already covers.
 
@@ -22,7 +22,7 @@ Learning through courses, not yet used at work: Spark, Databricks, Medallion arc
 
 ## Education
 
-Bachelor's in Information Systems Management, UADE (expected 2026). Certifications: Astronomer Airflow 3, Databricks Academy, Snowflake, Google Cloud, Microsoft Power BI, IBM.
+Bachelor's in Information Systems Management, UADE (2020 to 2026). Certifications: Astronomer AI Orchestration with Airflow, Databricks Academy, Snowflake, Google Cloud, Microsoft Power BI, IBM.
 
 ## Contact
 
