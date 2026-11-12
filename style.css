@@ -1177,10 +1177,10 @@ main > section#more { padding-bottom: 111px; }
 /* Todas las secciones usan el mismo ancho en pantallas grandes: etiqueta, título y contenido arrancan en el mismo
    borde en toda la página, y el bloque queda centrado. */
 @media (min-width: 1000px) {
-  main > section:not(.hero) { margin-inline: calc((min(1500px, 94vw) - 100%) / -2); }
+  main > section:not(.hero) { margin-inline: calc((min(1280px, 92vw) - 100%) / -2); }
 }
 /* La tarjeta sola de IBM ocupa el ancho, pero su dibujo no crece sin límite */
-@media (min-width: 1000px) { .flagship.solo .visual { width: 100%; max-width: 980px; margin-inline: auto; } .flagship.solo .visual svg { width: 100%; height: auto; } }
+@media (min-width: 1000px) { .flagship.solo .visual { width: 100%; max-width: 620px; margin-inline: auto; } .flagship.solo .visual svg { width: 100%; height: auto; } }
 /* Jugando en compu, el tubo de Airflow baja por la izquierda de las notas: las tarjetas le dejan el lugar */
 @media (min-width: 761px) { body.playing #notes .note-grid { margin-left: 130px; } }
 
@@ -1190,3 +1190,6 @@ main > section#more { padding-bottom: 111px; }
 .card .ico { position: relative; z-index: 2; display: grid; place-items: center; width: 30px; height: 30px; border-radius: 8px; color: var(--muted); transition: color .2s, background .2s; }
 .card .ico svg { width: 16px; height: 16px; }
 .card .ico:hover, .card .ico:focus-visible { color: var(--accent); background: rgba(94, 234, 212, .1); text-decoration: none; }
+
+/* Los dibujos de las tarjetas no crecen más que el texto que acompañan: sin sensación de zoom en pantallas grandes */
+@media (min-width: 1000px) { .card .visual svg.viz { max-width: 620px; margin-inline: auto; display: block; } }
