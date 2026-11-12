@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Data platform and AI agents · Luca Lamorte</title>
+<meta name="description" content="Early write-up: the data architecture for a global food and beverage company, with AI agents that answer business questions in plain language.">
+<link rel="canonical" href="https://lucalamorte.github.io/projects/ibm.html">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Luca Lamorte">
+<meta property="og:title" content="Data platform and AI agents · Luca Lamorte">
+<meta property="og:description" content="Early write-up: the data architecture for a global food and beverage company, with AI agents that answer business questions in plain language.">
+<meta property="og:url" content="https://lucalamorte.github.io/projects/ibm.html">
+<meta property="og:image" content="https://lucalamorte.github.io/assets/og/home-4.jpg">
+<meta property="og:image:alt" content="Data platform and AI agents · Luca Lamorte">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="en_US">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Data platform and AI agents · Luca Lamorte">
+<meta name="twitter:description" content="Early write-up: the data architecture for a global food and beverage company, with AI agents that answer business questions in plain language.">
+<meta name="twitter:image" content="https://lucalamorte.github.io/assets/og/home-4.jpg">
+<meta name="author" content="Luca Lamorte">
+<meta name="theme-color" content="#0b1120">
+<link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="../assets/favicon-32.png" type="image/png" sizes="32x32">
+<link rel="apple-touch-icon" href="../assets/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../style.css">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Data platform and AI agents","description":"Early write-up: the data architecture for a global food and beverage company, with AI agents that answer business questions in plain language.","url":"https://lucalamorte.github.io/projects/ibm.html","image":"https://lucalamorte.github.io/assets/og/home-4.jpg","author":{"@type":"Person","@id":"https://lucalamorte.github.io/#luca","name":"Luca Lamorte","url":"https://lucalamorte.github.io/"},"about":["Snowflake","dbt","Cortex Agents","Cortex Analyst","Cortex Search","Semantic views"],"keywords":"Snowflake, dbt, Cortex Agents, Cortex Analyst, Cortex Search, Semantic views","datePublished":"2026","inLanguage":"en"}</script>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-mail" viewBox="0 0 24 24"><path fill="currentColor" d="M3 5h18a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1zm9 7.2L4 7.3V17h16V7.3l-8 4.9zM5.2 7l6.8 4.2L18.8 7H5.2z"/></symbol>
+  <symbol id="i-linkedin" viewBox="0 0 24 24"><path fill="currentColor" d="M4.98 3.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5zM3 9.75h4V21H3V9.75zm7 0h3.8v1.6h.06c.53-1 1.83-2.06 3.77-2.06 4.03 0 4.77 2.65 4.77 6.1V21h-4v-5c0-1.2-.02-2.74-1.67-2.74-1.67 0-1.93 1.3-1.93 2.65V21h-4V9.75z"/></symbol>
+  <symbol id="i-db" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8"><ellipse cx="12" cy="5.5" rx="7.5" ry="2.8"/><path d="M4.5 5.5v13c0 1.5 3.4 2.8 7.5 2.8s7.5-1.3 7.5-2.8v-13M4.5 12c0 1.5 3.4 2.8 7.5 2.8s7.5-1.3 7.5-2.8"/></g></symbol>
+  <symbol id="i-copy" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" d="M9 9h10.5a1.5 1.5 0 0 1 1.5 1.5V20a1.5 1.5 0 0 1-1.5 1.5H10.5A1.5 1.5 0 0 1 9 20zM15 9V4.5A1.5 1.5 0 0 0 13.5 3H4.5A1.5 1.5 0 0 0 3 4.5v9A1.5 1.5 0 0 0 4.5 15H9"/></symbol>
+  <symbol id="i-factory" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" d="M3 21V10l5 3V10l5 3V10l5 3V4h3v17H3zm4-4h2m4 0h2"/></symbol>
+</svg>
+<a class="skip" href="#content">Skip to content</a>
+<nav class="nav" aria-label="Main">
+  <a class="name" href="../index.html">Luca Lamorte</a>
+  <div class="links"><a href="../index.html#experience">Experience</a><a href="../index.html#projects">Products</a><a href="../index.html#notes">Notes</a><a href="../index.html#contact">Contact</a></div>
+  <div class="icons">
+    <a href="mailto:lclamorte@gmail.com?subject=Let's%20connect!" aria-label="Email"><svg><use href="#i-mail"/></svg></a>
+    <a href="https://www.linkedin.com/in/lclamorte/" aria-label="LinkedIn" target="_blank" rel="noopener"><svg><use href="#i-linkedin"/></svg></a>
+  </div>
+</nav>
+<article class="article" id="top">
+  <span id="content"></span>
+  <a class="back" href="../index.html#experience">← Back to experience</a>
+
+  <header>
+    <svg class="art-logo icon" aria-hidden="true"><use href="#i-db"/></svg>
+    <span class="eyebrow">Data architecture · IBM · 2026 · present</span>
+    <h1>Data platform and AI agents</h1>
+    <p class="lede">The data architecture for a global food and beverage company, with AI agents on top so business teams can ask their data questions in plain language. An early write-up that grows as the work ships.</p>
+  </header>
+  <div class="built"><p>Built with</p><ul><li>Snowflake</li><li>dbt</li><li>Cortex Agents</li><li>Cortex Analyst</li><li>Cortex Search</li><li>Semantic views</li></ul></div>
+
+  <h2>The goal</h2>
+  <p>Business questions should be answered from one governed model of the data, not from spreadsheets that disagree. The warehouse is designed first and the agents are built on top of it, so every answer traces back to the same definitions.</p>
+
+  <h2>How the data will flow</h2>
+  <div class="flow" aria-label="Data flow"><div class="step">Business systems<small>the sources the business already runs on</small></div><div class="step code">dbt star schemas<small>facts and dimensions</small></div><div class="step code">Semantic views<small>one definition per metric</small></div><div class="step model">AI agents on Snowflake Cortex<small>Analyst answers from tables, Search answers from documents</small></div><div class="step">Business teams<small>the people who ask the questions</small></div></div>
+
+  <h2>Beyond the build</h2>
+  <ul><li><strong>Use cases:</strong> AI use cases are evaluated for business value, and the viable ones are shipped.</li><li><strong>People:</strong> requirements from business and technical teams are turned into working solutions.</li></ul>
+
+  <p class="note">Client data, schemas and internal details are not shown.</p>
+  <nav class="article-end" aria-label="More">
+    <a href="../index.html#experience">← Back to experience</a>
+    <a href="#top">↑ Back to top</a>
+    <a class="next" href="cdp.html"><small>Next case study</small>Composable CDP →</a>
+  </nav>
+</article>
+<footer>© 2026 Luca Lamorte · <a href="../index.html">Home</a> · <a href="https://www.linkedin.com/in/lclamorte/" target="_blank" rel="noopener">LinkedIn</a></footer>
+<script src="../snow.js"></script>
+<script src="article.js"></script>
+<script src="../cursor.js"></script>
+<script>
+  // Cada caso de estudio arranca desde su título, aunque el navegador recuerde dónde había quedado la lectura.
+  // Cada artículo abre en el título: sin restaurar la posición anterior, sin animar la subida y de nuevo al
+  // terminar de cargar y al volver con atrás o adelante, por si el navegador movió la página en el medio.
+  if (!location.hash || location.hash === '#top') {
+    if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+    // scrollIntoView también mueve el marco que la contiene, si la página se muestra dentro de otra.
+    const top = () => { const go = () => { scrollTo({ top: 0, left: 0, behavior: 'instant' }); (document.getElementById('top') || document.body).scrollIntoView({ block: 'start', behavior: 'instant' }); }; go(); requestAnimationFrame(go); };
+    top(); addEventListener('DOMContentLoaded', top); addEventListener('load', top); addEventListener('pageshow', top);
+  }
+</script>
+</body>
+</html>
