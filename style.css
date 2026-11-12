@@ -1177,7 +1177,7 @@ main > section#more { padding-bottom: 111px; }
 /* Todas las secciones usan el mismo ancho en pantallas grandes: etiqueta, título y contenido arrancan en el mismo
    borde en toda la página, y el bloque queda centrado. */
 @media (min-width: 1000px) {
-  main > section:not(.hero) { margin-inline: calc((min(1280px, 92vw) - 100%) / -2); }
+  main > section:not(.hero) { margin-inline: calc((min(1140px, 90vw) - 100%) / -2); }
 }
 /* La tarjeta sola de IBM ocupa el ancho, pero su dibujo no crece sin límite */
 @media (min-width: 1000px) { .flagship.solo .visual { width: 100%; max-width: 620px; margin-inline: auto; } .flagship.solo .visual svg { width: 100%; height: auto; } }
@@ -1193,3 +1193,6 @@ main > section#more { padding-bottom: 111px; }
 
 /* Los dibujos de las tarjetas no crecen más que el texto que acompañan: sin sensación de zoom en pantallas grandes */
 @media (min-width: 1000px) { .card .visual svg.viz { max-width: 620px; margin-inline: auto; display: block; } }
+
+/* En compu todo un poco más chico, a la escala que se ve en la vista previa: menos sensación de zoom */
+@media (min-width: 1000px) { html { font-size: 14px; } body { font-size: 14.5px; } }
