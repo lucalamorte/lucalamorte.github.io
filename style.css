@@ -857,7 +857,7 @@ html.is-scrolling.lg-liquid :is(.nav, .play-help, .pad button, .scroll-next, .bt
 html.is-scrolling .nav:not(.scrolled) { -webkit-backdrop-filter: none; backdrop-filter: none; }
 /* La entrada no anima desenfoque: desenfocar vidrio mientras la página se mueve es lo más caro. Solo fundido y
    un leve desplazamiento, que la placa de video mueve sin costo. */
-html.js .reveal .card, html.js .reveal .fold { filter: none; transition: opacity .8s var(--ease), transform .8s var(--ease); will-change: opacity, transform; }
+html.js .reveal .card, html.js .reveal .fold { filter: none; transition: opacity .5s var(--ease), transform .5s var(--ease); will-change: opacity, transform; }
 html.js .reveal.in .card, html.js .reveal.in .fold { will-change: auto; }
 /* El retrato se dibuja en una capa más grande que su cuadro, para que las rayas empujadas no choquen contra un
    borde. La disolución de los hombros la hace cada raya (portrait.js), así que esta capa no lleva máscara. */

@@ -361,7 +361,8 @@
     document.documentElement.classList.add('js');
     const seen = new IntersectionObserver(entries => entries.forEach(entry => {
       if (entry.isIntersecting) { entry.target.classList.add('in'); seen.unobserve(entry.target); }
-    }), { threshold: 0.12 });
+    // Se activa media pantalla antes de que la sección llegue: con la flecha ya está lista al llegar, no se ve cargar tarde.
+    }), { threshold: 0, rootMargin: '0px 0px 60% 0px' });
     document.querySelectorAll('.reveal').forEach(el => seen.observe(el));
   }
 
