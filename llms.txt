@@ -4,7 +4,7 @@
 
 ## Experience
 
-- **Senior Data Architect, IBM** (Nov 2026 to present), client Kraft Heinz: data platform architecture and AI agents that answer business questions in plain language.
+- **Senior Data Architect, AI Innovation, IBM** (Nov 2026 to present), client Kraft Heinz: data platform architecture and AI agents that answer business questions in plain language.
 - **Data Engineer, Kimberly-Clark** (Nov 2025 to Nov 2026): in-house Composable CDP on Snowflake for North America Marketing. 12+ source systems from AWS S3 and APIs, 65M Customer 360 profiles, a $260K/month vendor dependency retired and $5M in projected savings. CI/CD in Azure DevOps, data quality with Monte Carlo. [Case study](https://lucalamorte.github.io/projects/cdp.html)
 - **Solution Engineer, Kimberly-Clark** (Jul 2023 to Oct 2025): rollout of real-time machine data and digital twins in 10 plants across 5 countries, SAP and ERP data in Azure, one reporting layer in Power BI; 2 of the program's 3 projects were led, 3 plants at a time, on a team of 8 solution engineers, in a program of about 70 plants worldwide with $21.5M annual ROI. [Case study](https://lucalamorte.github.io/projects/smom.html)
 
