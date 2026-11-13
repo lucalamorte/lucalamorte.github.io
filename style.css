@@ -840,9 +840,10 @@ main > section:not(.hero):nth-of-type(even)::before { display: none; }
 .playing .glass-live { --rx: 0deg !important; --ry: 0deg !important; }
 
 /* ---------- entrada ---------- */
-/* Al llegar a una sección, cada tarjeta se materializa desde un desenfoque, una detrás de la otra. */
-html.js .reveal .card, html.js .reveal .fold { opacity: 0; transform: translateY(22px) scale(.985); filter: blur(8px);
-  transition: opacity .9s var(--ease), transform .9s var(--ease), filter .9s var(--ease); }
+/* Al llegar a una sección, cada tarjeta sube y aparece, una detrás de la otra. Sin desenfoque: animar un blur sobre
+   tarjetas de vidrio traba el scroll, sobre todo la primera vez que se pintan. */
+html.js .reveal .card, html.js .reveal .fold { opacity: 0; transform: translateY(16px);
+  transition: opacity .6s var(--ease), transform .6s var(--ease); }
 html.js .reveal.in .card, html.js .reveal.in .fold { opacity: 1; transform: none; filter: none; }
 html.js .reveal.in :is(.card, .fold):nth-child(2) { transition-delay: .08s; }
 html.js .reveal.in :is(.card, .fold):nth-child(3) { transition-delay: .16s; }
