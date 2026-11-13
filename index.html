@@ -421,13 +421,19 @@
   const stopAt = stop => (Array.isArray(stop) ? aim(stop[0], stop[stop.length - 1]) : aim(stop.firstElementChild, stop.lastElementChild));
   const upcoming = () => stops().find(stop => stopAt(stop) > scrollY + 40);
   const sync = () => { const s = upcoming(); next.hidden = !s; if (s) next.href = '#' + (Array.isArray(s) ? s[0].closest('section') : s).id; };
-  addEventListener('scroll', sync, { passive: true });
+  // Medir las paradas fuerza a recalcular la página: durante un scroll suave se hacía en cada cuadro y trababa la
+  // bajada. Ahora se mide una vez cuando el scroll se detiene.
+  let syncT = 0;
+  addEventListener('scroll', () => { clearTimeout(syncT); syncT = setTimeout(sync, 120); }, { passive: true });
   addEventListener('resize', sync);
   sync();
   next.addEventListener('click', event => {
     const s = upcoming();
     if (!s) return;
     event.preventDefault();
+    // La sección de destino aparece ya, sin esperar a entrar en pantalla: así no se ve cargar tarde al llegar.
+    const sec = Array.isArray(s) ? s[0].closest('section') : s;
+    sec && sec.classList.contains('reveal') && sec.classList.add('in');
     if (Array.isArray(s)) scrollTo({ top: stopAt(s) }); else center(s);
   });
 
