@@ -1197,3 +1197,6 @@ main > section#more { padding-bottom: 111px; }
 
 /* En compu todo un poco más chico, a la escala que se ve en la vista previa: menos sensación de zoom */
 @media (min-width: 1000px) { html { font-size: 14px; } body { font-size: 14.5px; } }
+
+/* Navegando con la flecha, nada entra con fundido: todo está ahí al llegar */
+html.arrowed .reveal, html.arrowed .reveal .card, html.arrowed .reveal .fold { opacity: 1 !important; transform: none; transition: none !important; }
