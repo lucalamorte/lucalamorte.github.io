@@ -437,10 +437,21 @@
     if (!document.documentElement.classList.contains('arrowed')) {
       document.documentElement.classList.add('arrowed');
       document.querySelectorAll('.reveal').forEach(el => el.classList.add('in'));
-      document.querySelectorAll('img[loading="lazy"]').forEach(img => { img.loading = 'eager'; });
+      warm();
     }
     if (Array.isArray(s)) scrollTo({ top: stopAt(s) }); else center(s);
   });
+  // Las imágenes de más abajo se bajan y se decodifican de a una cuando la página ya cargó y no hace nada. Si se
+  // pedían todas juntas al apretar la flecha, decodificarlas trababa la primera bajada.
+  let warmed = false;
+  function warm() {
+    if (warmed) return; warmed = true;
+    const queue = [...document.querySelectorAll('img[loading="lazy"]')];
+    const idle = window.requestIdleCallback || (f => setTimeout(f, 200));
+    const one = () => { const img = queue.shift(); if (!img) return; img.loading = 'eager'; (img.decode ? img.decode() : Promise.resolve()).catch(() => {}).then(() => idle(one)); };
+    idle(one);
+  }
+  addEventListener('load', () => setTimeout(warm, 1500));
 
   // El visor: una imagen del carrusel se abre grande, se pasa con flechas, teclado o dedo, y al cerrar el
   // carrusel queda en la imagen que se estaba mirando.

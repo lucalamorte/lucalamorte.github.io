@@ -337,11 +337,11 @@
   }
 
   let last = 0;
-  // El cielo es lento: a 30 cuadros por segundo se ve igual y deja la mitad del tiempo libre para la página. Mientras
-  // la página se está moviendo (scroll o la flecha) espera a que se calme, así el scroll tiene todo el cuadro.
+  // Quieto, el cielo es lento y a 30 cuadros por segundo se ve igual. Mientras la página se mueve se dibuja en cada
+  // cuadro: sigue al scroll, y si se queda atrás se ve a los saltos.
   function frame(t) {
     requestAnimationFrame(frame);
-    if (t - last < 31 || t - scrolledAt < 180 && t - last < 120) return;
+    if (t - scrolledAt > 180 && t - last < 31) return;
     const dt = Math.min(0.05, (t - last) / 1000 || 0); last = t; draw(t, dt);
   }
   build(); paintMask(); buildAgents();
