@@ -27,7 +27,7 @@
   const at = el => el.getBoundingClientRect().top + scrollY - pad();
   const end = () => root.scrollHeight - innerHeight - 4;
   const upcoming = () => (scrollY >= end() ? null : stops.find(el => at(el) > scrollY + Math.max(40, innerHeight * .2)) || null);
-  const top = link.innerHTML, down = '<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 6l5 5 5-5"/></svg>';
+  const top = link.innerHTML, down = '<span class="bob"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 6l5 5 5-5"/></svg></span>';
   let mode = '';
   const sync = () => {
     const next = upcoming() ? 'down' : 'top';

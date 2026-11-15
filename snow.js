@@ -5,26 +5,13 @@
 (() => {
   const small = matchMedia('(max-width: 760px)').matches;
   const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  // El vidrio líquido: un ruido suave y lento desplaza lo que se ve a través de las tarjetas. Solo Chromium sabe
-  // usar un filtro SVG como fondo de un elemento; en el resto no se agrega nada y queda el vidrio limpio.
-  // Apagado: recalcular la refracción de cada tarjeta en cada cuadro no deja llegar a 60 fps con el cielo en movimiento.
-  if (false) {
-    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    svg.setAttribute('width', '0'); svg.setAttribute('height', '0'); svg.setAttribute('aria-hidden', 'true');
-    svg.style.position = 'absolute';
-    svg.innerHTML = '<filter id="lg-refract" x="0" y="0" width="100%" height="100%" color-interpolation-filters="sRGB">'
-      + '<feTurbulence type="fractalNoise" baseFrequency="0.006 0.009" numOctaves="2" seed="7" result="n"/>'
-      + '<feGaussianBlur in="n" stdDeviation="3" result="s"/>'
-      + '<feDisplacementMap in="SourceGraphic" in2="s" scale="34" xChannelSelector="R" yChannelSelector="G"/></filter>';
-    document.body.append(svg);
-    document.documentElement.classList.add('lg-liquid');
-  }
   // El menú se vuelve vidrio recién cuando la página pasa por debajo.
   const nav = document.querySelector('.nav');
   if (nav) { const glass = () => nav.classList.toggle('scrolled', scrollY > 8); addEventListener('scroll', glass, { passive: true }); glass(); }
-  // Mientras la página se mueve, el vidrio pasa a su versión liviana (ver style.css).
-  let still_ = 0;
-  addEventListener('scroll', () => { document.documentElement.classList.add('is-scrolling'); clearTimeout(still_); still_ = setTimeout(() => document.documentElement.classList.remove('is-scrolling'), 180); }, { passive: true });
+  // Cuándo se movió la página por última vez: el cielo espera a que se calme para no competir con el scroll.
+  // Es una variable y no una clase en <html>, porque cambiar una clase ahí obliga a recalcular el estilo de toda la página.
+  let scrolledAt = 0;
+  addEventListener('scroll', () => { scrolledAt = performance.now(); }, { passive: true });
   // El vidrio responde al mouse: un reflejo que lo sigue y una inclinación chiquita hacia él.
   if (matchMedia('(hover: hover)').matches && !still) {
     // Los desplegables responden igual que las tarjetas; su reflejo va en el fondo, porque su ::before ya es el filo de luz.
@@ -258,7 +245,9 @@
     }
   }
   let pending = 0;
-  const repaint = () => { cancelAnimationFrame(pending); pending = requestAnimationFrame(() => { paintMask(); buildAgents(); if (still) draw(0, 0); }); };
+  // La máscara mide toda la página y la difumina: es caro. Mientras cargan imágenes y fuentes la página cambia de
+  // alto muchas veces seguidas; se repinta una sola vez cuando se calma.
+  const repaint = () => { clearTimeout(pending); pending = setTimeout(() => { paintMask(); buildAgents(); if (still) draw(0, 0); }, 250); };
 
   const cursor = { x: 0, y: 0, on: false };
   addEventListener('pointermove', event => { cursor.x = event.clientX; cursor.y = event.clientY; cursor.on = event.pointerType === 'mouse'; }, { passive: true });
@@ -348,7 +337,13 @@
   }
 
   let last = 0;
-  function frame(t) { const dt = Math.min(0.05, (t - last) / 1000 || 0); last = t; draw(t, dt); requestAnimationFrame(frame); }
+  // El cielo es lento: a 30 cuadros por segundo se ve igual y deja la mitad del tiempo libre para la página. Mientras
+  // la página se está moviendo (scroll o la flecha) espera a que se calme, así el scroll tiene todo el cuadro.
+  function frame(t) {
+    requestAnimationFrame(frame);
+    if (t - last < 31 || t - scrolledAt < 180 && t - last < 120) return;
+    const dt = Math.min(0.05, (t - last) / 1000 || 0); last = t; draw(t, dt);
+  }
   build(); paintMask(); buildAgents();
   addEventListener('resize', () => { build(); repaint(); });
   addEventListener('load', repaint);
@@ -373,4 +368,19 @@
     s.style.setProperty('--c', TINTS[Math.floor(Math.random() * TINTS.length)]); s.style.setProperty('--dx', `${(Math.random() - .5) * 14}px`);
     s.addEventListener('animationend', () => s.remove()); document.body.append(s);
   }, { passive: true });
+})();
+
+// Los dibujos animados (los paquetes que viajan por los pipelines) se mueven solo mientras se ven. Sus animaciones
+// corren en el hilo de la página y cada una obliga a recalcular el dibujo en cada cuadro: con cincuenta y tantas
+// andando fuera de la pantalla, la página se trababa al scrollear. Al volver a verse siguen desde donde estaban.
+(() => {
+  if (!('IntersectionObserver' in window) || !('pauseAnimations' in SVGSVGElement.prototype)) return;
+  const io = new IntersectionObserver(entries => entries.forEach(e => {
+    if (e.isIntersecting) e.target.unpauseAnimations(); else e.target.pauseAnimations();
+  }), { rootMargin: '200px 0px' });
+  const watch = () => document.querySelectorAll('svg').forEach(svg => {
+    if (svg.ownerSVGElement || !svg.querySelector('animate, animateMotion, animateTransform, set')) return;
+    svg.pauseAnimations(); io.observe(svg);
+  });
+  if (document.readyState === 'loading') addEventListener('DOMContentLoaded', watch); else watch();
 })();

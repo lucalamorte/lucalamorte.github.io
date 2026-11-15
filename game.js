@@ -74,110 +74,6 @@
   addEventListener('role-typed', () => { roleAt = performance.now(); });
   // Sin animación de escritura (movimiento reducido) no hay nada que esperar.
   // Si el título se terminó de escribir antes de que este archivo escuchara el aviso, se toma de la clase.
-  // Mientras nadie juega, Little Bit flota perdido en el espacio, sin gravedad, por detrás de la página: deriva
-  // despacio, gira apenas y rebota suave en los bordes de la pantalla, pidiendo ayuda. Vive en coordenadas de la ventana.
-  const drift = { x: 0, y: 0, vx: -16, vy: 11, a: 0, va: .18, since: 0, ready: false };
-  // En el celu flota más chico y más tenue: es un detalle del fondo, no tapa lo que se lee.
-  const FB = () => W < 768 ? .52 : 1.05, FA = () => W < 768 ? .9 : 1;
-  // Ya no flota por la página: el juego es solo a pedido, desde el botón Play.
-  const drifting = now => {
-    if (true || mode !== 'wait' || peekFrom() === null || now < peekFrom()) { drift.since = 0; return false; }
-    if (!drift.ready) { drift.ready = true; drift.x = W * .72; drift.y = H * .28; }
-    if (!drift.since) drift.since = now;
-    return true;
-  };
-  // Habla cada tanto: unos segundos con un globo y un rato callado, cambiando lo que dice.
-  const TALK = 5000, QUIET = 16000;
-  const asks = touch ? ['Help!', 'Tap me!', "I'm lost!", 'Psst… tap me.']
-    : ['Help!', 'Click me!', "I'm lost!", 'Psst… click me.'];
-  // Flota solo por los márgenes, a los costados del contenido, sin pasar por encima del texto. En pantallas anchas
-  // recorre todo el margen; en el celu, donde el margen es angosto, sube y baja pegado al borde.
-  // `lane` guarda el margen de ahora (de borde a borde), para que el globo quepa ahí.
-  let lane = null;
-  const gutter = (w, l, r) => {
-    const m = $('main'); if (!m) return null;
-    const mr = m.getBoundingClientRect(), cs = getComputedStyle(m), cl = mr.left + parseFloat(cs.paddingLeft) - 12, cr = mr.right - parseFloat(cs.paddingRight) + 12;
-    const right = drift.x + w / 2 > W / 2;
-    if (cl - l < w + 16 || r + w - cr < w + 16) { lane = null; return right ? [W - w - 4, W - w - 2] : [2, 4]; }
-    lane = right ? [cr, document.documentElement.clientWidth - 12] : [12, cl];
-    return right ? [cr, r] : [l, cl - w];
-  };
-  let textBoxes = [], textAt = 0;
-  const TEXT = 'main h1, main h2, main h3, main .eyebrow, main .role, main .hero p, main section > p, main .next-co, main .pr-group';
-  const moveDrift = dt => {
-    const now = performance.now();
-    if (now - textAt > 400) { textAt = now; textBoxes = [...document.querySelectorAll(TEXT)].filter(el => !el.closest('.card, .fold')).map(el => el.getBoundingClientRect()).filter(r => r.width && r.bottom > 0 && r.top < H); }
-    const w = S * FB(), pad = 18;
-    for (const r of lane || W < 768 ? [] : textBoxes) {
-      if (drift.x + w < r.left - pad || drift.x > r.right + pad || drift.y + w < r.top - pad || drift.y > r.bottom + pad) continue;
-      // Se aleja por el lado más corto, con suavidad.
-      const up = drift.y + w - (r.top - pad), down = r.bottom + pad - drift.y;
-      drift.vy = up < down ? -Math.abs(drift.vy) : Math.abs(drift.vy);
-      drift.y += (up < down ? -1 : 1) * Math.min(60 * dt, Math.min(up, down));
-    }
-    drift.x += drift.vx * dt; drift.y += drift.vy * dt; drift.a += drift.va * dt;
-    let l = 24, r = W - S * FB() - 24; const t = 90, b = H - S * FB() - 110;
-    const g = gutter(S * FB(), l, r); if (g) [l, r] = g;
-    // En el celu el margen es una franja de pocos píxeles: ahí se queda pegado al borde y solo sube y baja, sin
-    // rebotar de un lado al otro de la franja en cada cuadro (se veía trabado).
-    // Y no sube ni baja por el borde (parecía en caída libre): flota en su lugar, con un vaivén suave.
-    if (r - l < 6) {
-      // En el celu vive abajo de todo, donde no tapa lo que se lee: aparece en un lugar al azar de la franja de abajo
-      // (nunca en el medio, donde está la flecha), se queda un rato con un vaivén mínimo, se desvanece y al ratito
-      // reaparece en otro lugar.
-      const w = S * FB();
-      drift.vx = 0; drift.vy = 0;
-      // Cada aparición es un ciclo: espera, elige su lugar recién al aparecer (así el lugar es el de la pantalla que se ve
-      // en ese momento), se queda un rato y se desvanece.
-      if (!drift.cycle || (drift.cycle.placed && now > drift.cycle.end)) drift.cycle = { n: drift.cycle ? drift.cycle.n + 1 : 0, from: now + (drift.cycle ? 1200 + Math.random() * 1300 : 0) };
-      const c = drift.cycle;
-      if (!c.placed && now >= c.from && (drift.alpha ?? 0) < .05) {
-        // En la portada su lugar es fijo: debajo de la línea de presentación, a la izquierda de la flecha, con el techo
-        // del globo debajo de la línea. Aparece cuando ya se escribió el rol y pasó el tiempo de leer esa línea.
-        const sub = $('.hero .intro p:last-child'), sb = sub && sub.getBoundingClientRect();
-        const home = sb && sb.bottom > 0 && H - sb.bottom > w + 46 + 24 ? [sb.left + 8, sb.bottom + 46, true] : null;
-        const ready = roleAt !== null || matchMedia('(prefers-reduced-motion: reduce)').matches;
-        if (home && (!ready || now < roleAt + 2500)) c.from = now + 200;
-        else {
-          const spot = home || freeSpot(w);
-          // Sin lugar libre en esta pantalla: vuelve a probar en un ratito.
-          if (!spot) c.from = now + 1200;
-          else { Object.assign(c, { placed: true, from: now, docY: spot[1] + scrollY, end: now + 9000 + Math.random() * 5000 }); drift.x = spot[0]; drift.y = spot[1]; }
-        }
-      }
-      // Queda pegado a la página: al scrollear se mueve con lo que tiene al lado. Si sale de la pantalla o le queda
-      // algo para leer abajo, se va.
-      if (c.placed) {
-        c.y = c.docY - scrollY;
-        if (c.y < 70 || c.y > H - w - 20) c.end = Math.min(c.end, now);
-        else if (now < c.end - 600 && now - (c.checked || 0) > 300) { c.checked = now; if (!isFree(drift.x, c.y, w, true)) c.end = now + 600; }
-      }
-      const on = c.placed && now < c.end - 600;
-      drift.alpha = Math.max(0, Math.min(1, (drift.alpha ?? 0) + (on ? dt * 2.5 : -dt * 2.5)));
-      if (c.placed) drift.y = c.y + Math.sin(now / 1100) * 3;
-    }
-    else { if (!drift.vx) drift.vx = (Math.random() < .5 ? -1 : 1) * 26; if (!drift.vy) drift.vy = 11; if (drift.x < l || drift.x > r) { drift.vx *= -1; drift.x = Math.max(l, Math.min(r, drift.x)); } }
-    if (W >= 768 && (drift.y < t || drift.y > b)) { drift.vy *= -1; drift.y = Math.max(t, Math.min(b, drift.y)); }
-    if (Math.abs(drift.a) > .35) drift.va = -Math.sign(drift.a) * Math.abs(drift.va);
-  };
-  // Lo que se lee en la página: Little Bit flotando en el celu nunca se pone encima (ni él ni su globo).
-  const READS = 'h1, h2, h3, p, li, summary, .btn, .email, .visual, .pr-item, .pr-scene.on, .agent-note, .logo, .kind, .nums';
-  const readBoxes = () => [...document.querySelectorAll(READS)].map(el => el.getBoundingClientRect()).filter(q => q.width && q.bottom > 0 && q.top < H);
-  const isFree = (x, y, w, talk = false, boxes = readBoxes()) => {
-    // El globo va centrado arriba de él: se reserva su ancho a los dos lados.
-    const a = talk ? { l: x + w / 2 - 66, r: x + w / 2 + 66, t: y - 34, b: y + w + 8 } : { l: x - 2, r: x + w + 2, t: y - 4, b: y + w + 4 };
-    return !boxes.some(q => q.left < a.r && q.right > a.l && q.top < a.b && q.bottom > a.t);
-  };
-  // Dónde aparece: abajo a la derecha, en la esquina libre más baja (arriba interrumpe la lectura, abajo acompaña),
-  // con lugar para su globo sin tocar texto y sin salirse de la pantalla. Siempre con lugar para hablar.
-  const freeSpot = w => {
-    const boxes = readBoxes(), spots = [];
-    for (let y = 110; y < H - w - 30; y += 12) for (let x = 2; x + w / 2 + 66 < W - 4; x += 4) if (isFree(x, y, w, true, boxes)) spots.push([x, y, true]);
-    if (!spots.length) return null;
-    // Lo más abajo y a la derecha posible; entre los mejores, uno al azar para que no quede clavado siempre en el mismo píxel
-    const score = ([x, y]) => y + x * .6, best = Math.max(...spots.map(score)), top = spots.filter(q => score(q) > best - 24);
-    return top[Math.floor(Math.random() * top.length)];
-  };
   const peekFrom = () => {
     const h = $('.hero h1');
     if (!h || !h.classList.contains('typing')) return 0;
@@ -699,13 +595,6 @@
       ctx.globalAlpha = fade = 1;
       ctx.restore();
     } else if (level && P.on && !P.on.floor && !P.on.hidden && !P.on.crate) drawPlat(P.on, now);
-    if (mode === 'play' && P.rail && !P.rail.to && P.rail.dots && P.rail.dots.length) {
-      const r = P.rail, d = r.dots, n = r.at;
-      ctx.save(); ctx.lineCap = 'round'; ctx.strokeStyle = 'rgba(94,234,212,.35)'; ctx.lineWidth = 1;
-      ctx.beginPath(); ctx.moveTo(n.x, n.y); ctx.lineTo(n.x, d[d.length - 1].y); ctx.stroke();
-      d.forEach((p, k) => { ctx.beginPath(); ctx.arc(p.x, p.y, 3.5, 0, Math.PI * 2); ctx.fillStyle = k <= r.ri ? ACCENT : INK; ctx.strokeStyle = k <= r.ri ? ACCENT : MUTED; ctx.lineWidth = 1.5; ctx.fill(); ctx.stroke(); });
-      ctx.restore();
-    }
     // La estela del muñequito cuando atraviesa el retrato.
     if (level) drawTrail(now);
     if (gift && (mode === 'play' || mode === 'intro')) {
@@ -737,22 +626,7 @@
     // Esperando no se dibuja en ningún otro lado: hasta que se asoma, no está.
     // Esperando no está en la página: aparece solo cuando alguien toca Play.
     if (mode === 'wait') { /* escondido hasta que se pida */ }
-    else if (mode === 'wait' && drifting(now)) {
-      const cx = drift.x + S * FB() / 2, cy = scrollY + drift.y + S * FB() / 2;
-      ctx.save(); ctx.globalAlpha = FA() * Math.min(1, (now - drift.since) / 700) * (W < 768 ? drift.alpha ?? 1 : 1);
-      ctx.translate(cx, cy); ctx.rotate(drift.a); ctx.scale(FB(), FB());
-      drawPk(-S / 2, -S / 2, now); ctx.restore();
-    } else if (mode === 'wait') {
-      // Sube desde detrás de las letras, y después cada tanto da un saltito para espiar.
-      const rise = 1 - Math.min(1, (now - peekFrom()) / 650), up = (1 - (1 - rise) ** 3) * S * BIG;
-      const ws = { ...waitSpot() }; ws.y += up;
-      const hop = still ? 0 : (now % 1600 < 520 ? Math.sin((now % 1600) / 520 * Math.PI) * 12 : 0);
-      P.face = -1;
-      // El recorte solo existe mientras sube: ya arriba, nada lo corta (ni su brillo).
-      ctx.save(); if (rise > 0) { ctx.beginPath(); ctx.rect(ws.x - 80, ws.ledge - 160, S * BIG + 160, 160); ctx.clip(); }
-      ctx.translate(ws.x + S / 2, ws.y + S - hop); ctx.scale(BIG, BIG); ctx.translate(-(ws.x + S / 2), -(ws.y + S));
-      drawPk(ws.x, ws.y, now); ctx.restore();
-    } else if (mode !== 'done' && !endAt && seen(P.y)) {
+    else if (mode !== 'done' && !endAt && seen(P.y)) {
       const k = P.enter ? Math.min(1, P.enter.t) : 0, g = P.grow ? Math.min(1, (now - P.grow) / 350) : 1;
       if (g >= 1) P.grow = 0;
       const sc = P.enter ? 1 - k * .92 : .08 + .92 * (1 - (1 - g) ** 3), rot = P.enter ? k * k * Math.PI * 3 : (1 - g) * -Math.PI;
@@ -822,13 +696,7 @@
   // compuerta abierta sigue de largo; en una tarea se queda hasta que corre.
   const RAIL = 560;
   const onNode = n => { P.x = n.x - S / 2; P.y = n.y - S / 2; };
-  // How I work: cada regla es un puntito sobre la misma línea. Little Bit se para en una y con ↑ y ↓ va de regla en
-  // regla cuando quiere: no hay espera.
-  const ruleTabs = () => [...document.querySelectorAll('#how-i-work .pr-item')];
-  // Mientras el acordeón del celu se acomoda, cada regla se toma en su lugar final: así nada se pasa de largo y vuelve.
-  const ruleDots = n => { if (!(n.fold && n.task.id === 'how-i-work' && n.task.open)) return null; const tabs = ruleTabs(), st = tabs[0] && tabs[0].closest('.principles').settle, fin = !!st; return tabs.map((el, k) => { const b = fin ? st.at[k] : box(el); return { x: n.x, y: b.y + Math.min(b.h, 52) / 2 }; }); };
   const liveY = n => { if (!n.fold) return n.y; const b = box(n.task.querySelector('summary')); return b.y + b.h / 2; };
-  const showRuleTab = k => { const tab = ruleTabs()[k]; if (tab && !tab.classList.contains('on')) tab.click(); };
   // Las tarjetas de una parada: una sola, o todas las de la fila cuando la parada las junta.
   const cards = n => [n.task, ...(n.mates || [])];
   function railStep(dt, control, now) {
@@ -859,7 +727,7 @@
       if (r.dbt && u >= .5) { r.dbt = false; once('I ❤️ dbt. Raw in, clean out.'); }
       if (Math.random() < .7) trail.push({ x: P.x + S / 2 + (Math.random() - .5) * 6, y: P.y + S / 2 + (Math.random() - .5) * 6, vx: (Math.random() - .5) * 24, vy: (Math.random() - .5) * 24, t: 0, life: .5 + Math.random() * .5, r: 1.6 + Math.random() * 2.2, spin: Math.random() * 3, tint: tintOf(Math.random()) });
       if (u < 1) return;
-      const from = r.at, n = r.at = r.to, live = r.live; r.to = null; r.d = 0; r.live = null; r.ri = from && from.y > n.y ? -1 : 0; r.dots = null;
+      const from = r.at, n = r.at = r.to, live = r.live; r.to = null; r.d = 0; r.live = null;
       // Después del acordeón el nodo quedó medido con el otro desplegable: se queda donde terminó el tramo.
       // Un desplegable puede haber quedado medido con el otro abierto: al llegar, su nodo toma el lugar real del título.
       if (n.fold) n.y = liveY(n);
@@ -879,12 +747,6 @@
     const n = r.at;
     if (n.fold && !n.task.open) n.task.open = true;
     if (n.fold && !n.done) { n.done = true; n.task.classList.add('read'); const line = n.task.dataset.say || "↓ When you're done."; if (!said.has(line)) { said.add(line); say(line, 3500); } }
-    const dots = r.dots = ruleDots(n);
-    if (dots && dots.length) {
-      // Si llegó desde abajo (subiendo desde Education), arranca en la última regla.
-      r.ri = r.ri < 0 ? dots.length - 1 : Math.min(r.ri || 0, dots.length - 1); showRuleTab(r.ri);
-      P.x = n.x - S / 2; P.y += (dots[r.ri].y - S / 2 - P.y) * Math.min(1, dt * (W < 768 ? 5 : 10));
-    }
     if (n.task && !n.done) {
       if (r.readyFor !== n) { if (!settled(n)) return; r.readyFor = n; }
       cards(n).forEach(el => el.classList.add('lit'));
@@ -899,34 +761,12 @@
     r.fresh = false;
     const want = keys.left ? 'left' : keys.right ? 'right' : keys.jump ? 'up' : keys.down ? 'down' : queued;
     queued = null;
-    if (dots && dots.length && ((want === 'down' && r.ri < dots.length - 1) || (want === 'up' && r.ri > 0))) { r.ri += want === 'down' ? 1 : -1; r.fresh = true; return; }
     const m = want && n.links.find(q => dirOf(n, q) === want);
     if (!m) return;
     if (n.gate && m.y > n.y && !gateOpen(n)) { n.nudge = now; gateHint(n); return; }
     if (n.task) cards(n).forEach(el => el.classList.remove('lit'));
-    // Entre desplegables es un acordeón: uno se pliega mientras el otro se abre, en los dos sentidos, sin que la
-    // página quede nunca con los dos cerrados. La cámara espera quieta: si persiguiera las alturas a mitad de la
-    // animación, saltaría.
-    const swap = n.fold && m.fold;
-    // Entre How I work y Education el cambio es instantáneo y Little Bit queda quieto en pantalla: la página se acomoda
-    // en el mismo cuadro para que su destino (la regla 6 o el título de Education) quede a un saltito de 60 px. Así el
-    // tramo es siempre corto, en la compu y en el celu (donde la escena de la regla va debajo y cambia los altos), y
-    // después la cámara encuadra con un solo deslizamiento.
-    if (swap) {
-      swapUntil = now + 120;
-      if (swapping) { swapping.cancel(); swapping = null; }
-      [n, m].forEach(f => f.task.classList.remove('swap'));
-      const up = m.y < n.y, onScreen = P.y - scrollY;
-      if (up && m.task.id === 'how-i-work') showRuleTab(ruleTabs().length - 1);
-      n.task.open = false; m.task.open = true;
-      const d = up ? ruleDots(m) : null, dest = d && d.length ? d[d.length - 1].y : liveY(m);
-      scrollTo({ top: Math.max(0, dest - S / 2 - (onScreen + (up ? -60 : 60))), behavior: 'instant' }); expected = scrollY;
-      P.y = scrollY + onScreen;
-      r.live = { a: { x: n.x, y: P.y + S / 2 }, b: { x: m.x, y: dest } };
-    } else {
-      if (n.fold) n.task.open = false;
-      if (m.fold) m.task.open = true;
-    }
+    if (n.fold) n.task.open = false;
+    if (m.fold) m.task.open = true;
     r.to = m; r.d = 0; P.face = m.x < n.x ? -1 : m.x > n.x ? 1 : P.face;
   }
   // Si pasa un rato sin que el jugador haga nada, el muñequito le pide lo que falta. Nunca interrumpe lo que corre
@@ -1133,19 +973,15 @@
     if (rel > H * 0.62) target = P.y - H * 0.62;
     // En el DAG la cámara muestra centrado, debajo del menú, el cuadro del nodo hacia donde va el muñequito
     // (o su comienzo si no entra entero), para que se lea completo y no cortado.
-    // En las reglas de How I work también se centra el desplegable abierto, pero sin perder de vista a Little Bit.
     let framed = P.rail ? frameTarget(P.rail.to || P.rail.at) : null;
-    if (framed !== null && (P.rail.to || (P.rail.dots && P.rail.dots.length))) {
+    if (framed !== null && P.rail.to) {
       const room = Math.max(64 + 90, Math.min(H * 0.3, 190)), floorRoom = W < 760 ? 150 : 90;
       framed = Math.max(P.y - (H - floorRoom), Math.min(P.y - room, framed));
     }
     if (framed !== null) target = framed;
-    // En el celu, en las reglas de How I work, la escena va debajo de la regla elegida: la regla queda arriba, justo
-    // debajo del menú, y su escena entera a la vista sobre los controles de abajo.
     let ease = 7;
-    if (W < 768 && P.rail && !P.rail.to && P.rail.dots && P.rail.dots[P.rail.ri]) { target = P.rail.dots[P.rail.ri].y - 64 - 70; ease = 3; } // calmo: que se note el cambio de regla
-    // Igual en un desplegable sin reglas (Education): su título arriba, debajo del menú, y el contenido a la vista.
-    else if (W < 768 && P.rail && !P.rail.to && P.rail.at.fold && !P.rail.dots) target = box(P.rail.at.task.querySelector('summary')).y - 64 - 52;
+    // En el celu, en un desplegable: su título arriba, debajo del menú, y el contenido a la vista.
+    if (W < 768 && P.rail && !P.rail.to && P.rail.at.fold) target = box(P.rail.at.task.querySelector('summary')).y - 64 - 52;
     if (target === null) return;
     scrollTo(0, Math.max(0, scrollY + (target - scrollY) * Math.min(1, dt * ease)));
     expected = scrollY;
@@ -1203,11 +1039,12 @@
     snap.reads.forEach(k => { if (cards[k]) cards[k].classList.add('read'); });
     document.querySelectorAll('.reveal').forEach(el => { el.style.transition = 'none'; el.classList.add('in'); });
     void document.body.offsetHeight;
-    rebuild(); apply(snap); mode = 'idle';
+    rebuild(); apply(snap); mode = 'idle'; wake();
     // Si la partida estaba en pausa, vuelve a flotar como después de salir (no quieto donde quedó): un toque la retoma.
     if (snap.done) finish(); else if (snap.playing) start(); else { mode = 'play'; stop(); }
   }
   function start() {
+    wake();
     if (mode === 'play') return;
     relayout();
     document.querySelectorAll('.reveal').forEach(el => { el.style.transition = 'none'; el.classList.add('in'); });
@@ -1231,8 +1068,6 @@
   function stop() {
     if (mode !== 'play') return;
     mode = 'wait'; paused = true; keys = {}; labels = [];
-    drift.ready = true; drift.since = 0;
-    drift.x = Math.max(24, Math.min(W - S * FB() - 24, P.x)); drift.y = Math.max(90, Math.min(H - S * FB() - 110, P.y - scrollY));
     document.documentElement.style.scrollBehavior = '';
     document.body.classList.remove('playing'); pad.hidden = true;
   }
@@ -1250,7 +1085,7 @@
   // en el contacto, con un botón para jugar de nuevo.
   let note = null;
   function finish() {
-    endAt = 0; mode = 'done'; keys = {}; labels = [];
+    endAt = 0; mode = 'done'; wake(); keys = {}; labels = [];
     document.body.classList.remove('playing'); document.body.classList.add('ran'); pad.hidden = true;
     document.documentElement.style.scrollBehavior = '';
     if (!note) {
@@ -1275,7 +1110,7 @@
   }
   function endIntro() {
     intro = null; P.trail = []; if (window.__portraitPoke) window.__portraitPoke(null);
-    const spot = home(); P.x = spot.x; P.y = spot.y; P.vy = 0; mode = 'idle';
+    const spot = home(); P.x = spot.x; P.y = spot.y; P.vy = 0; mode = 'idle'; wake();
     // Apenas aterriza ya se juega: cuenta la misión y muestra con qué se mueve.
     // Unos segundos sin moverse para que la misión se lea: después aparecen las teclas para moverse.
     start(); P.squash = 1;
@@ -1288,7 +1123,7 @@
     if (touch) { pad.classList.remove('pulse'); void pad.offsetWidth; pad.classList.add('pulse'); }
   }
   // Abrir el mail (o apretar una flecha mientras espera) hace la entrada; después solo retoma el juego.
-  const activate = () => { if (mode === 'done') reset(); if (mode === 'wait') { if (paused) start(); else beginIntro(); } else if (mode !== 'intro') start(); };
+  const activate = () => { wake(); if (mode === 'done') reset(); if (mode === 'wait') { if (paused) start(); else beginIntro(); } else if (mode !== 'intro') start(); };
 
   // La entrada: sale disparado del sobre, cruza el retrato de punta a punta moviendo las rayas y cae sobre
   // el título. El camino es una curva suave que pasa por unos puntos fijos (Catmull-Rom).
@@ -1361,14 +1196,14 @@
   function beginIntro() {
     relayout();
     // Sale desde donde estaba flotando y pasa por la cara antes de aterrizar en el título.
-    const ws = drifting(performance.now()) ? { x: drift.x + S * FB() / 2 - S / 2, y: scrollY + drift.y + S * FB() / 2 - S / 2 } : waitSpot();
+    const ws = waitSpot();
     hint.classList.remove('on');
     // Sin movimiento, o si la cara no está a la vista, aterriza directo.
     const face = portrait && box(portrait);
     if (!face) { endIntro(); return; }
     const away = face.b < scrollY || face.y > scrollY + innerHeight;
     if (still) { if (away) scrollTo({ top: 0, behavior: 'instant' }); endIntro(); return; }
-    P.x = ws.x; P.y = ws.y; mode = 'intro';
+    P.x = ws.x; P.y = ws.y; mode = 'intro'; wake();
     // Desde lejos vuela de verdad: la página sube a la vez, de forma pareja, y termina justo cuando él llega a la cara.
     if (away) { planIntro(scrollY, [ws.x, Math.max(80, Math.min(innerHeight - 120, ws.y - scrollY))]); return; }
     planIntro();
@@ -1380,29 +1215,12 @@
     else if (level && mode !== 'wait' && mode !== 'done') { if (pendingBuild) remeasure(); step(dt, now, mode === 'play' && now >= lockUntil); if (mode === 'play') { follow(dt); nudge(now); } }
     if (P.trail.length && mode !== 'intro') P.trail.shift();
     draw(now);
-    // El botón invisible sobre el muñequito: para tocarlo en el celu o llegar con Tab.
-    const floating = drifting(now);
-    if (floating && !still) moveDrift(dt);
-    const ws = floating ? { x: drift.x + S * FB() / 2 - S / 2, y: scrollY + drift.y + S * FB() - S } : waitSpot(), waiting = mode === 'wait', showHit = mode === 'idle', big = S * (floating ? FB() : BIG) + 24;
-    if (mode === 'wait') hint.textContent = floating ? asks[(W < 768 && drift.cycle ? drift.cycle.n : Math.floor(Math.max(0, now - drift.since - 900) / (TALK + QUIET))) % asks.length] : (touch ? "Hi, I'm Little Bit. Tap me!" : "Hi, I'm Little Bit. Click me!");
-    document.body.classList.toggle('pk-floating', floating);
+    // El botón invisible sobre el muñequito, para tocarlo en el celu o llegar con Tab: solo cuando está quieto en el nivel.
+    const showHit = mode === 'idle';
     hit.style.display = showHit ? '' : 'none';
-    // Se mueven con translate (fracciones de píxel en la placa de video), no con left/top, que saltan de a un píxel.
-    if (waiting) Object.assign(hit.style, { left: '0px', top: '0px', translate: `${ws.x + S / 2 - big / 2}px ${ws.y + S + 6 - big}px`, width: `${big}px`, height: `${big}px` });
-    else if (showHit) Object.assign(hit.style, { left: '0px', top: '0px', translate: `${P.x - 10}px ${P.y - 10}px`, width: '44px', height: '44px' });
-    // El globito mientras espera, y la misión sobre el muñequito al aterrizar.
-    const said = now - drift.since - 300, asking = floating && said > 0 && (W < 768 ? (drift.alpha ?? 0) > .95 && drift.cycle && now - Math.max(drift.cycle.from, drift.since + 300) < 5500 : said % (TALK + QUIET) < TALK); // en el celu habla al aparecer // en el celu, 4 s cada 16: se ve, pero no molesta
-    hint.classList.toggle('on', false && peekFrom() !== null && now >= peekFrom() + 300 && (floating ? asking : ws.y > scrollY && ws.y < scrollY + H));
-    if (waiting) {
-      // Al costado si entra; en pantallas angostas, arriba del muñequito.
-      const side = !floating && ws.x + S * BIG + 230 < W;
-      hint.classList.toggle('lane', floating && !!lane);
-      hint.style.maxWidth = floating && lane ? `${lane[1] - lane[0]}px` : '';
-      hint.classList.toggle('side', side);
-      hint.style.left = '0px'; hint.style.top = '0px';
-      const hw = hint.offsetWidth, lo = floating && lane ? lane[0] : 8, hi = floating && lane ? lane[1] : W - 8;
-      hint.style.translate = `${side ? ws.x + S / 2 + S * (floating ? FB() : BIG) / 2 + 14 : Math.max(lo + hw / 2, Math.min(hi - hw / 2, ws.x + S / 2))}px ${side ? ws.y + S - S * (floating ? FB() : BIG) / 2 : ws.y + S - S * (floating ? FB() : BIG) - 14}px`;
-    }
+    // Se mueve con translate (fracciones de píxel en la placa de video), no con left/top, que saltan de a un píxel.
+    if (showHit) Object.assign(hit.style, { left: '0px', top: '0px', translate: `${P.x - 10}px ${P.y - 10}px`, width: '44px', height: '44px' });
+    hint.classList.remove('on');
     help.classList.toggle('on', !!level && (mode === 'play' || mode === 'idle'));
     const lost = mode === 'play' && camFree && (P.y + S < scrollY + 40 || P.y > scrollY + H - 40);
     awaySince = lost ? awaySince || now : 0;
@@ -1412,8 +1230,13 @@
     const talk = mode === 'play' && !!talkSteps && now >= talkFrom;
     mission.classList.toggle('on', talk);
     if (talk) { mission.style.left = `${Math.max(170, Math.min(W - 170, P.x + S / 2))}px`; mission.style.top = `${P.y - 16}px`; }
+    // Sin jugar no hay nada que dibujar: el ciclo se duerme hasta que alguien toque Play. Así la página no gasta un
+    // cuadro de trabajo por cada cuadro de pantalla mientras se lee o se scrollea.
+    if (mode === 'wait') { sleeping = true; return; }
     requestAnimationFrame(frame);
   }
+  let sleeping = false;
+  function wake() { if (!sleeping) return; sleeping = false; last = performance.now(); requestAnimationFrame(frame); }
 
   // ---------- controles ----------
   // Un toque guardado mientras el muñequito habla: así ninguna tecla se pierde.
@@ -1486,7 +1309,7 @@
   document.addEventListener('visibilitychange', relayout);
 
   // Para probarlo desde afuera.
-  window.__pk = { railAt: id => { const n = level.nodes.find(q => q.fold && q.task.id === id); P.rail = { at: n, to: null, d: 0 }; P.dive = null; onNode(n); return !!n; }, rail: () => P.rail && { at: level.nodes.indexOf(P.rail.at), moving: !!P.rail.to, ri: P.rail.ri, dots: P.rail.dots && P.rail.dots.length, y: Math.round(P.y), on: document.querySelector("#how-i-work .pr-item.on .tx b")?.textContent }, intro: () => intro && { ms: intro.ms, points: (intro.points || []).map(p => p.map(Math.round)) }, introAt: k => { const e = intro.lens ? k * k * (3 - 2 * k) : 1 - Math.pow(1 - k, 1.6), [x, y] = along(intro.points, e, intro.lens), c = intro.from ? Math.min(1, k / intro.k0) : 1, sc = intro.from ? intro.from * (1 - c * c * (3 - 2 * c)) : 0; return [Math.round(x), Math.round(y), Math.round(sc)]; }, drift: () => ({ ...drift }), free: () => freeSpot(S * FB()),  level: () => level, activate, state: () => ({ lock: Math.round(lockUntil - performance.now()), keys: Object.keys(keys).filter(k => keys[k]).join(), labels: labels.map(l => l.text.slice(0, 20)).join('|'), dive: !!P.dive, enter: P.enter && +P.enter.t.toFixed(2), mode, x: Math.round(P.x), y: Math.round(P.y), form: P.form, ride: !!P.ride, won, on: P.on && (P.on.kind || (P.on.floor ? 'floor' : 'ledge')), scrollY }), start, stop, keys: k => Object.assign(keys, k), place: (x, y) => { P.x = x; P.y = y; P.vy = 0; }, sim: (ms, lock) => { let t = performance.now(); for (let k = 0; k < ms / 16; k++) { t += 16; step(0.016, t, mode === 'play' && (!lock || t >= lockUntil)); if (mode === 'play') follow(0.016); } return window.__pk.state(); } };
+  window.__pk = { railAt: id => { const n = level.nodes.find(q => q.fold && q.task.id === id); P.rail = { at: n, to: null, d: 0 }; P.dive = null; onNode(n); return !!n; }, rail: () => P.rail && { at: level.nodes.indexOf(P.rail.at), moving: !!P.rail.to, y: Math.round(P.y) }, intro: () => intro && { ms: intro.ms, points: (intro.points || []).map(p => p.map(Math.round)) }, introAt: k => { const e = intro.lens ? k * k * (3 - 2 * k) : 1 - Math.pow(1 - k, 1.6), [x, y] = along(intro.points, e, intro.lens), c = intro.from ? Math.min(1, k / intro.k0) : 1, sc = intro.from ? intro.from * (1 - c * c * (3 - 2 * c)) : 0; return [Math.round(x), Math.round(y), Math.round(sc)]; }, level: () => level, activate, state: () => ({ lock: Math.round(lockUntil - performance.now()), keys: Object.keys(keys).filter(k => keys[k]).join(), labels: labels.map(l => l.text.slice(0, 20)).join('|'), dive: !!P.dive, enter: P.enter && +P.enter.t.toFixed(2), mode, x: Math.round(P.x), y: Math.round(P.y), form: P.form, ride: !!P.ride, won, on: P.on && (P.on.kind || (P.on.floor ? 'floor' : 'ledge')), scrollY }), start, stop, keys: k => Object.assign(keys, k), place: (x, y) => { P.x = x; P.y = y; P.vy = 0; }, sim: (ms, lock) => { let t = performance.now(); for (let k = 0; k < ms / 16; k++) { t += 16; step(0.016, t, mode === 'play' && (!lock || t >= lockUntil)); if (mode === 'play') follow(0.016); } return window.__pk.state(); } };
 
   relayout();
   if (document.readyState === 'complete') restore(); else addEventListener('load', restore);

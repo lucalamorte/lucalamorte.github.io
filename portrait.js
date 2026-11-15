@@ -181,7 +181,12 @@
     return c;
   }));
   const stamp = (x, y, r, k) => { const d = r / .3; ctx.drawImage(sparks[k], x - d / 2, y - d / 2, d, d); };
+  let drawnAt = 0;
   function frame(time) {
+    // Quieta (armada y sin cursor encima) la cara solo titila, y tan despacio que 15 cuadros por segundo se ven igual
+    // que 60 y cuestan la cuarta parte.
+    if (formed && !pointer.active && !playing && time - drawnAt < 64) { requestAnimationFrame(frame); return; }
+    drawnAt = time;
     const t = time / 1000;
     if (born === null) born = time;
     if (!still) age = (time - born) / 1000;
@@ -222,12 +227,14 @@
       else stamp(x, y, step * (.2 + p.tone * .16 + lit * .12), look);
     }
     ctx.globalAlpha = 1;
-    if (!still || moving || pointer.active) requestAnimationFrame(frame);
+    // Fuera de pantalla no se dibuja: la cara es lo más caro de la página y nadie la está mirando.
+    if (onScreen && (!still || moving || pointer.active)) requestAnimationFrame(frame);
     else running = false;
   }
 
-  let running = false;
-  function wake() { if (!running) { running = true; requestAnimationFrame(frame); } }
+  let running = false, onScreen = true;
+  function wake() { if (!running && onScreen) { running = true; requestAnimationFrame(frame); } }
+  if ('IntersectionObserver' in window) new IntersectionObserver(([e]) => { onScreen = e.isIntersecting; if (onScreen) wake(); }, { rootMargin: '100px' }).observe(canvas);
   canvas.addEventListener('pointermove', wake);
   canvas.addEventListener('pointerdown', wake);
   if (toggle) toggle.addEventListener('click', wake);
