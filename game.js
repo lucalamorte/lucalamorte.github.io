@@ -26,7 +26,7 @@
   // La misión, con las teclas para moverse, en un globo sobre el muñequito.
   const mission = document.createElement('div');
   mission.className = 'pk-say'; mission.setAttribute('role', 'status');
-  const MISSION = "I'm Little Bit. Help me find the <code>contacts</code> table!";
+  const MISSION = "I'm Little Bit. Help me find the <code>dim_contact</code> table!";
   // Lo que hay que leer sí o sí va en este globo y se pasa con su botón (o con Enter o espacio), nunca por tiempo.
   // Mientras está abierto, Little Bit no se mueve.
   let talkSteps = null, talkIdx = 0, talkFrom = 0;
@@ -42,7 +42,7 @@
   // El panel fijo con los controles y el botón para reiniciar; aparece cuando el juego ya empezó.
   const help = document.createElement('div');
   help.className = 'play-help';
-  help.innerHTML = '<span class="goal">Goal: get me to the <code>contacts</code> table.</span><span><kbd>←</kbd><kbd>→</kbd> move</span><span><kbd>↑</kbd> jump</span><span><kbd>↓</kbd> down</span><button type="button" class="restart">↺ Restart</button><button type="button" class="exit">✕ exit</button>';
+  help.innerHTML = '<span class="goal">Goal: get me to the <code>dim_contact</code> table.</span><span><kbd>←</kbd><kbd>→</kbd> move</span><span><kbd>↑</kbd> jump</span><span><kbd>↓</kbd> down</span><button type="button" class="restart">↺ Restart</button><button type="button" class="exit">✕ exit</button>';
   // Si se sigue leyendo la página y Little Bit queda fuera de pantalla un rato, avisa desde una esquina: volver con él
   // o salir del juego. No interrumpe la lectura: no mueve la página hasta que se elige.
   const away = document.createElement('div');
@@ -98,7 +98,7 @@
   const bubbles = [];
   // En los globos, las flechas son teclas y los nombres de tablas van como código, igual que en la misión.
   const chips = text => text.replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[c])
-    .replace(/[↑↓←→]/g, k => `<kbd>${k}</kbd>`).replace(/\b(contacts|[a-z]+_[a-z_]+)\b/g, '<code>$1</code>');
+    .replace(/[↑↓←→]/g, k => `<kbd>${k}</kbd>`).replace(/\b([a-z]+_[a-z_]+)\b/g, '<code>$1</code>');
   let tip = null;
   const say = (line, ms = 2000) => {
     const now = performance.now(), cue = /^([↑↓←→]) (.*)$/.exec(line), text = cue ? cue[2] : line;
@@ -334,7 +334,7 @@
     const table = !beside ? { x: Math.max(hatch.x + hatch.w + 70, bounds.r - tw - 12), y: boxB + 66, w: tw, h: th, fill: 0, below: true } : tx === null ? { x: (W - tw) / 2, y: btn.b + 40, w: tw, h: th, fill: 0 } : { x: tx, y: btn.b - th, w: tw, h: th, fill: 0 };
     things.push({ draw: now => drawTable(table, now) });
     // Un cartel de ruta chico, entre Monte Carlo y los botones: al salir de la revisión, la punta indica para dónde seguir.
-    const mcR = level_mc ? level_mc.x + level_mc.w : null, sw = 76, tip = 9, sh = 18;
+    const mcR = level_mc ? level_mc.x + level_mc.w : null, sw = 92, tip = 9, sh = 18;
     if (mcR !== null && btn.x - mcR > sw + tip + 40) {
       const sx = mcR + (btn.x - mcR - sw - tip) / 2, ground = btn.b, sy = ground - 44, mid = sx + sw / 2;
       things.push({ draw: () => {
@@ -342,7 +342,7 @@
         ctx.shadowColor = 'rgba(94,234,212,.45)'; ctx.shadowBlur = 6; ctx.fillStyle = INK; ctx.lineWidth = 1.5; ctx.lineJoin = 'round';
         ctx.lineWidth = 1.2; ctx.beginPath(); ctx.moveTo(sx + 4, sy); ctx.lineTo(sx + sw, sy); ctx.lineTo(sx + sw + tip, sy + sh / 2); ctx.lineTo(sx + sw, sy + sh); ctx.lineTo(sx + 4, sy + sh); ctx.arcTo(sx, sy + sh, sx, sy + sh - 4, 4); ctx.lineTo(sx, sy + 4); ctx.arcTo(sx, sy, sx + 4, sy, 4); ctx.closePath(); ctx.fill(); ctx.stroke();
         ctx.shadowBlur = 0; ctx.lineJoin = 'miter';
-        text('contacts', mid + 1, sy + 13, ACCENT, 'center', '500 10px "JetBrains Mono", monospace');
+        text('dim_contact', mid + 1, sy + 13, ACCENT, 'center', '500 10px "JetBrains Mono", monospace');
       } });
     }
     ledge(table.x, table.y, tw, { hidden: true });
@@ -471,7 +471,7 @@
     const e = endAt ? (now - endAt) / 1000 : 0, fill = ease(e, 0, 0.9), morph = ease(e, 2.8, 1.2), rise = ease(e, 4.2, 0.9);
     const row = t.h / 4;
     ctx.strokeStyle = 'rgba(94,234,212,.5)'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.roundRect(t.x, t.y, t.w, t.h, 6); ctx.stroke();
-    text(morph > 0.5 ? 'report' : 'contacts', t.x, t.y - 8, MUTED);
+    text(morph > 0.5 ? 'report' : 'dim_contact', t.x, t.y - 8, MUTED);
     ctx.globalAlpha = 1 - morph;
     ctx.strokeStyle = 'rgba(148,163,184,.25)'; ctx.lineWidth = 1;
     for (let k = 1; k < 4; k++) { ctx.beginPath(); ctx.moveTo(t.x, t.y + row * k); ctx.lineTo(t.x + t.w, t.y + row * k); ctx.stroke(); }
@@ -1093,7 +1093,7 @@
       note.className = 'agent-note'; note.setAttribute('role', 'status');
       $('#contact .cta').after(note);
     }
-    note.innerHTML = `<span class="agent-dot" aria-hidden="true"></span><p><b>Little Bit · agent</b>Thanks for the ride! I found <code>contacts</code> and saved a row for you. Luca is just one message away.<small>number of rows inserted: 1</small></p><button type="button" class="again">↺ Play again</button>`;
+    note.innerHTML = `<span class="agent-dot" aria-hidden="true"></span><p><b>Little Bit · agent</b>Thanks for the ride! I found <code>dim_contact</code> and saved a row for you. Luca is just one message away.<small>number of rows inserted: 1</small></p><button type="button" class="again">↺ Play again</button>`;
     note.hidden = false;
     note.querySelector('.again').addEventListener('click', restart);
     const hi = $('#contact .btn'); hi.classList.remove('wiggle'); void hi.offsetWidth; hi.classList.add('wiggle');
