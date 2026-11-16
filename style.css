@@ -767,13 +767,10 @@ html.js .reveal.in :is(.card, .fold):nth-child(3) { transition-delay: .16s; }
 html.js .reveal.in :is(.card, .fold):nth-child(4) { transition-delay: .24s; }
 html.js .reveal.in .glass-live, html.js .reveal.in .glass-live:hover { transition-delay: 0s; transform: perspective(1100px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)) translateY(var(--lift, 0px)); }
 @media (prefers-reduced-motion: reduce) { html.js .reveal .card { opacity: 1; transform: none; filter: none; } .glass-live { --rx: 0deg !important; --ry: 0deg !important; } }
-/* Mientras se scrollea, el vidrio usa solo el desenfoque, que es liviano; la refracción vuelve apenas se detiene.
-   Así el scroll no pierde cuadros. */
-
 /* La entrada no anima desenfoque: desenfocar vidrio mientras la página se mueve es lo más caro. Solo fundido y
-   un leve desplazamiento, que la placa de video mueve sin costo. */
-html.js .reveal .card { filter: none; transition: opacity .5s var(--ease), transform .5s var(--ease); will-change: opacity, transform; }
-html.js .reveal.in .card { will-change: auto; }
+   un leve desplazamiento, que la placa de video mueve sin costo. Sin will-change: con él, cada tarjeta tenía su capa
+   hasta aparecer y la perdía al aparecer, y la primera flecha, que muestra todas juntas, las rearmaba todas a la vez. */
+html.js .reveal .card { filter: none; transition: opacity .5s var(--ease), transform .5s var(--ease); }
 /* El retrato se dibuja en una capa más grande que su cuadro, para que las rayas empujadas no choquen contra un
    borde. La disolución de los hombros la hace cada raya (portrait.js), así que esta capa no lleva máscara. */
 .portrait { position: relative; }
