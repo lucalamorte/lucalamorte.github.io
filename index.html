@@ -420,13 +420,21 @@
       .filter((s, k, list) => !k || s.at - list[k - 1].at > innerHeight * 0.25).map(s => s.stop);
   };
   const stopAt = stop => (Array.isArray(stop) ? aim(stop[0], stop[stop.length - 1]) : aim(stop.firstElementChild, stop.lastElementChild));
-  const upcoming = () => stops().find(stop => stopAt(stop) > scrollY + 40);
+  // Las paradas se miden una sola vez y se guardan en coordenadas de la página: no cambian al scrollear, solo cuando
+  // cambia la página (tamaño de ventana, imágenes que terminan de cargar, un desplegable que se abre). Medirlas en
+  // cada pausa del scroll obligaba a recalcular la página entre dos giros de la ruedita.
+  let plan = null;
+  const replan = () => { plan = null; };
+  const upcoming = () => (plan || (plan = stops().map(stop => ({ stop, at: stopAt(stop) })))).find(p => p.at > scrollY + 40)?.stop;
+  addEventListener('resize', replan); addEventListener('load', replan);
+  document.querySelectorAll('details').forEach(d => d.addEventListener('toggle', replan));
+  if ('ResizeObserver' in window) new ResizeObserver(replan).observe(document.body);
   const sync = () => { const s = upcoming(); next.hidden = !s; if (s) next.href = '#' + (Array.isArray(s) ? s[0].closest('section') : s).id; };
   // Medir las paradas fuerza a recalcular la página: durante un scroll suave se hacía en cada cuadro y trababa la
   // bajada. Ahora se mide una vez cuando el scroll se detiene.
   let syncT = 0;
   addEventListener('scroll', () => { clearTimeout(syncT); syncT = setTimeout(sync, 120); }, { passive: true });
-  addEventListener('resize', sync);
+  addEventListener('resize', () => { replan(); sync(); });
   sync();
   next.addEventListener('click', event => {
     const s = upcoming();

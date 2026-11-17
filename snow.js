@@ -17,13 +17,23 @@
     // Los desplegables responden igual que las tarjetas; su reflejo va en el fondo, porque su ::before ya es el filo de luz.
     document.querySelectorAll('.card, .agent-note, .art-visual, .fold summary').forEach(el => {
       el.classList.add(el.matches('summary') ? 'glass-tilt' : 'glass-live');
-      el.addEventListener('pointermove', event => {
-        const r = el.getBoundingClientRect(), x = (event.clientX - r.left) / r.width, y = (event.clientY - r.top) / r.height;
+      // La tarjeta se mide al entrar y no en cada movimiento (medir obliga a recalcular la página), y el reflejo se
+      // actualiza una vez por cuadro aunque el mouse mande más eventos.
+      let r = null, cx = 0, cy = 0, queued = 0;
+      const apply = () => {
+        queued = 0; if (!r) return;
+        const x = (cx - r.left) / r.width, y = (cy - r.top) / r.height;
         el.style.setProperty('--mx', `${x * 100}%`); el.style.setProperty('--my', `${y * 100}%`);
         el.style.setProperty('--ry', `${(x - 0.5) * 3}deg`); el.style.setProperty('--rx', `${(0.5 - y) * 3}deg`);
-        el.classList.add('glint');
+      };
+      el.addEventListener('pointerenter', () => { r = el.getBoundingClientRect(); el.classList.add('glint'); });
+      // Si la página se movió, se vuelve a medir con el próximo movimiento del mouse, no durante el scroll.
+      addEventListener('scroll', () => { r = null; }, { passive: true });
+      el.addEventListener('pointermove', event => {
+        if (!r) r = el.getBoundingClientRect();
+        cx = event.clientX; cy = event.clientY; if (!queued) queued = requestAnimationFrame(apply);
       });
-      el.addEventListener('pointerleave', () => { el.classList.remove('glint'); el.style.setProperty('--rx', '0deg'); el.style.setProperty('--ry', '0deg'); });
+      el.addEventListener('pointerleave', () => { r = null; cancelAnimationFrame(queued); queued = 0; el.classList.remove('glint'); el.style.setProperty('--rx', '0deg'); el.style.setProperty('--ry', '0deg'); });
     });
   }
   const canvas = document.createElement('canvas');
