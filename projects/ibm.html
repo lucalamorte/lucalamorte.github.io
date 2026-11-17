@@ -29,7 +29,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../style.css">
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Data model and AI agents","description":"Early write-up: the data model and semantic views behind Kraft Heinz's Cortex AI Agents.","url":"https://lucalamorte.github.io/projects/ibm.html","image":"https://lucalamorte.github.io/assets/og/home-8.jpg","author":{"@type":"Person","@id":"https://lucalamorte.github.io/#luca","name":"Luca Lamorte","url":"https://lucalamorte.github.io/"},"about":["Snowflake","Cortex AI Agents","Cortex Analyst","Semantic views"],"keywords":"Snowflake, Cortex AI Agents, Cortex Analyst, Semantic views","datePublished":"2026","inLanguage":"en"}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Data model and AI agents","description":"Early write-up: the data model and semantic views behind Kraft Heinz's Cortex AI Agents.","url":"https://lucalamorte.github.io/projects/ibm.html","image":"https://lucalamorte.github.io/assets/og/home-8.jpg","author":{"@type":"Person","@id":"https://lucalamorte.github.io/#luca","name":"Luca Lamorte","url":"https://lucalamorte.github.io/"},"about":["Snowflake","dbt","Cortex AI Agents","Cortex Analyst","Semantic views"],"keywords":"Snowflake, dbt, Cortex AI Agents, Cortex Analyst, Semantic views","datePublished":"2026","inLanguage":"en"}</script>
 </head>
 <body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
@@ -58,13 +58,13 @@
     <h1>Data model and AI agents</h1>
     <p class="lede">The data model and semantic views behind Kraft Heinz's Cortex AI Agents. The project is in progress, so this write-up grows as it ships.</p>
   </header>
-  <div class="built"><p>Built with</p><ul><li>Snowflake</li><li>Cortex AI Agents</li><li>Cortex Analyst</li><li>Semantic views</li></ul></div>
+  <div class="built"><p>Built with</p><ul><li>Snowflake</li><li>dbt</li><li>Cortex AI Agents</li><li>Cortex Analyst</li><li>Semantic views</li></ul></div>
 
   <h2>The goal</h2>
   <p>An agent's numbers have to match the dashboards the teams already use. If the agent and a dashboard disagree, nobody trusts either of them.</p>
 
   <h2>How the data flows</h2>
-  <div class="flow" aria-label="Data flow"><div class="step">Retail sales and product labels<small>already in Snowflake: what sells, and what each label says</small></div><div class="step code">Data model<small>facts and dimensions that put both sources side by side</small></div><div class="step code">Semantic views<small>joins, metric definitions, synonyms and verified queries</small></div><div class="step model">Cortex AI Agents<small>Cortex Analyst writes the SQL from the semantic views</small></div><div class="step">R&amp;D and brand teams<small>the people who ask the questions</small></div></div>
+  <div class="flow" aria-label="Data flow"><div class="step">Retail sales and product labels<small>already in Snowflake: what sells, and what each label says</small></div><div class="step code">Data model<small>facts and dimensions in dbt that put both sources side by side</small></div><div class="step code">Semantic views<small>joins, metric definitions, synonyms and verified queries</small></div><div class="step model">Cortex AI Agents<small>Cortex Analyst writes the SQL from the semantic views</small></div><div class="step">R&amp;D and brand teams<small>the people who ask the questions</small></div></div>
 
   <h2>Beyond the build</h2>
   <ul><li><strong>Use cases:</strong> AI use cases are evaluated for business value, and the viable ones are shipped.</li><li><strong>Production:</strong> agents are taken from sandbox to production together with the business owners and the data owners.</li></ul>
