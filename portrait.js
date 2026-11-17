@@ -229,7 +229,7 @@
     }
     ctx.globalAlpha = 1;
     // Fuera de pantalla no se dibuja: la cara es lo más caro de la página y nadie la está mirando.
-    settling = moving;
+    settling = moving || rows.some(row => Math.abs(row.x) + Math.abs(row.y) > .5);
     if (onScreen && (!still || moving || pointer.active)) requestAnimationFrame(frame);
     else running = false;
   }

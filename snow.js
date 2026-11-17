@@ -302,7 +302,8 @@
           const ddx = f.x + f.dx - cursor.x, ddy = f.y + f.dy - cursor.y, d = Math.hypot(ddx, ddy);
           if (d < 120) { const k = (1 - d / 120) * 60 * dt; f.dx += ddx / (d || 1) * k; f.dy += ddy / (d || 1) * k; }
         }
-        f.dx *= 0.96; f.dy *= 0.96;
+        // El freno va según el tiempo y no por cuadro: igual a 30 que a 60 cuadros por segundo.
+        const damp = Math.pow(0.96, dt * 60); f.dx *= damp; f.dy *= damp;
       }
       const x = f.x + f.dx + Math.sin(t / 1000 * 0.6 + f.phase) * f.sway, y = f.y + f.dy;
       const near = cursor.on ? Math.max(0, 1 - Math.hypot(x - cursor.x, y - cursor.y) / 160) : 0;
