@@ -181,11 +181,12 @@
     return c;
   }));
   const stamp = (x, y, r, k) => { const d = r / .3; ctx.drawImage(sparks[k], x - d / 2, y - d / 2, d, d); };
-  let drawnAt = 0;
+  let drawnAt = 0, settling = false;
   function frame(time) {
-    // Quieta (armada y sin cursor encima) la cara solo titila, y tan despacio que 15 cuadros por segundo se ven igual
-    // que 60 y cuestan la cuarta parte.
-    if (formed && !pointer.active && !playing && time - drawnAt < 64) { requestAnimationFrame(frame); return; }
+    // Quieta (armada, sin cursor encima y con todas las estrellas en su lugar) la cara solo titila, y tan despacio
+    // que 15 cuadros por segundo se ven igual que 60. Mientras vuelven a su lugar va a ritmo completo: avanzan un
+    // paso por cuadro, y a 15 cuadros volvían en cámara lenta.
+    if (formed && !pointer.active && !playing && !settling && time - drawnAt < 64) { requestAnimationFrame(frame); return; }
     drawnAt = time;
     const t = time / 1000;
     if (born === null) born = time;
@@ -228,6 +229,7 @@
     }
     ctx.globalAlpha = 1;
     // Fuera de pantalla no se dibuja: la cara es lo más caro de la página y nadie la está mirando.
+    settling = moving;
     if (onScreen && (!still || moving || pointer.active)) requestAnimationFrame(frame);
     else running = false;
   }
