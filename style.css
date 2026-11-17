@@ -1105,3 +1105,6 @@ main > section#more { padding-bottom: 111px; }
 
 /* Navegando con la flecha, nada entra con fundido: todo está ahí al llegar */
 html.arrowed .reveal, html.arrowed .reveal .card { opacity: 1 !important; transform: none; transition: none !important; }
+
+/* Prueba de fluidez (?sinvidrio): sin desenfoque detrás del vidrio */
+html.sin-vidrio * { -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }

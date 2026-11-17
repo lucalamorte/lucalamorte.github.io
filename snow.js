@@ -350,8 +350,12 @@
   let last = 0;
   // Quieto, el cielo es lento y a 30 cuadros por segundo se ve igual. Mientras la página se mueve se dibuja en cada
   // cuadro: sigue al scroll, y si se queda atrás se ve a los saltos.
+  // Prueba de fluidez: ?sincielo deja el cielo quieto (se redibuja solo al scrollear), ?sinvidrio saca el desenfoque.
+  const test = new URLSearchParams(location.search);
+  if (test.has('sinvidrio')) document.documentElement.classList.add('sin-vidrio');
   function frame(t) {
     requestAnimationFrame(frame);
+    if (test.has('sincielo') && t - scrolledAt > 180 && last) return;
     if (t - scrolledAt > 180 && t - last < 31) return;
     const dt = Math.min(0.05, (t - last) / 1000 || 0); last = t; draw(t, dt);
   }
