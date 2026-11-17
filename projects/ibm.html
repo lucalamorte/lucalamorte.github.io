@@ -4,12 +4,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Data model and AI agents · Luca Lamorte</title>
-<meta name="description" content="Early write-up: the data model and semantic views behind Kraft Heinz&#x27;s Cortex AI Agents.">
+<meta name="description" content="AI agents that Kraft Heinz&#x27;s R&amp;D and brand teams ask in plain language, built on a dbt data model and Snowflake semantic views.">
 <link rel="canonical" href="https://lucalamorte.github.io/projects/ibm.html">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Luca Lamorte">
 <meta property="og:title" content="Data model and AI agents · Luca Lamorte">
-<meta property="og:description" content="Early write-up: the data model and semantic views behind Kraft Heinz&#x27;s Cortex AI Agents.">
+<meta property="og:description" content="AI agents that Kraft Heinz&#x27;s R&amp;D and brand teams ask in plain language, built on a dbt data model and Snowflake semantic views.">
 <meta property="og:url" content="https://lucalamorte.github.io/projects/ibm.html">
 <meta property="og:image" content="https://lucalamorte.github.io/assets/og/home-8.jpg">
 <meta property="og:image:alt" content="Data model and AI agents · Luca Lamorte">
@@ -18,7 +18,7 @@
 <meta property="og:locale" content="en_US">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Data model and AI agents · Luca Lamorte">
-<meta name="twitter:description" content="Early write-up: the data model and semantic views behind Kraft Heinz&#x27;s Cortex AI Agents.">
+<meta name="twitter:description" content="AI agents that Kraft Heinz&#x27;s R&amp;D and brand teams ask in plain language, built on a dbt data model and Snowflake semantic views.">
 <meta name="twitter:image" content="https://lucalamorte.github.io/assets/og/home-8.jpg">
 <meta name="author" content="Luca Lamorte">
 <meta name="theme-color" content="#0b1120">
@@ -29,7 +29,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../style.css">
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Data model and AI agents","description":"Early write-up: the data model and semantic views behind Kraft Heinz's Cortex AI Agents.","url":"https://lucalamorte.github.io/projects/ibm.html","image":"https://lucalamorte.github.io/assets/og/home-8.jpg","author":{"@type":"Person","@id":"https://lucalamorte.github.io/#luca","name":"Luca Lamorte","url":"https://lucalamorte.github.io/"},"about":["Snowflake","dbt","Cortex AI Agents","Cortex Analyst","Semantic views"],"keywords":"Snowflake, dbt, Cortex AI Agents, Cortex Analyst, Semantic views","datePublished":"2026","inLanguage":"en"}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"Data model and AI agents","description":"AI agents that Kraft Heinz's R&D and brand teams ask in plain language, built on a dbt data model and Snowflake semantic views.","url":"https://lucalamorte.github.io/projects/ibm.html","image":"https://lucalamorte.github.io/assets/og/home-8.jpg","author":{"@type":"Person","@id":"https://lucalamorte.github.io/#luca","name":"Luca Lamorte","url":"https://lucalamorte.github.io/"},"about":["Snowflake","dbt","Cortex AI Agents","Cortex Analyst","Semantic views"],"keywords":"Snowflake, dbt, Cortex AI Agents, Cortex Analyst, Semantic views","datePublished":"2026","inLanguage":"en"}</script>
 </head>
 <body>
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
@@ -56,18 +56,18 @@
     <svg class="art-logo icon" aria-hidden="true"><use href="#i-db"/></svg>
     <span class="eyebrow">AI Innovation · IBM · client: Kraft Heinz · 2026 · present</span>
     <h1>Data model and AI agents</h1>
-    <p class="lede">The data model and semantic views behind Kraft Heinz's Cortex AI Agents.</p>
+    <p class="lede">AI agents that Kraft Heinz's R&amp;D and brand teams can ask, in plain language, about ingredients, nutrition and competitors.</p>
   </header>
   <div class="built"><p>Built with</p><ul><li>Snowflake</li><li>dbt</li><li>Cortex AI Agents</li><li>Cortex Analyst</li><li>Semantic views</li></ul></div>
 
   <h2>The goal</h2>
-  <p>An agent's numbers have to match the dashboards the teams already use. If the agent and a dashboard disagree, nobody trusts either of them.</p>
+  <p>A question like “which competitors still use artificial dyes, and how do they sell?” needs two kinds of data at once: what each label says, and how much of each product sells. The goal is for the teams to ask it themselves and get the same number their dashboards would show.</p>
 
   <h2>How the data flows</h2>
-  <div class="flow" aria-label="Data flow"><div class="step">Retail sales and product labels<small>already in Snowflake: what sells, and what each label says</small></div><div class="step code">Data model<small>facts and dimensions in dbt that put both sources side by side</small></div><div class="step code">Semantic views<small>joins, metric definitions, synonyms and verified queries</small></div><div class="step model">Cortex AI Agents<small>Cortex Analyst writes the SQL from the semantic views</small></div><div class="step">R&amp;D and brand teams<small>the people who ask the questions</small></div></div>
+  <div class="flow" aria-label="Data flow"><div class="step">Retail sales and product labels<small>both already in Snowflake</small></div><div class="step code">Data model<small>facts and dimensions in dbt that put both sources side by side</small></div><div class="step code">Semantic views<small>what each metric means, how tables join, synonyms and verified queries</small></div><div class="step model">Cortex AI Agents<small>turn the question into SQL with Cortex Analyst</small></div><div class="step">R&amp;D and brand teams<small>get the answer and the query behind it</small></div></div>
 
-  <h2>Beyond the build</h2>
-  <ul><li><strong>Use cases:</strong> AI use cases are evaluated for business value, and the viable ones are shipped.</li><li><strong>Production:</strong> agents are taken from sandbox to production together with the business owners and the data owners.</li></ul>
+  <h2>Also part of the work</h2>
+  <ul><li>Deciding which AI use cases are worth building, and shipping the viable ones.</li><li>Taking agents from sandbox to production with the business owners and the data owners.</li></ul>
 
   <p class="note">Client data, schemas and internal details are not shown.</p>
   <nav class="article-end" aria-label="More">
