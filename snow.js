@@ -356,7 +356,8 @@
   function frame(t) {
     requestAnimationFrame(frame);
     if (test.has('sincielo') && t - scrolledAt > 180 && last) return;
-    if (t - scrolledAt > 180 && t - last < 31) return;
+    // En reposo el cielo va a 30 cuadros, salvo mientras cruza la estrella fugaz: a esa velocidad se notaría a saltos.
+    if (t - scrolledAt > 180 && !comet && t - last < 31) return;
     const dt = Math.min(0.05, (t - last) / 1000 || 0); last = t; draw(t, dt);
   }
   build(); paintMask(); buildAgents();
