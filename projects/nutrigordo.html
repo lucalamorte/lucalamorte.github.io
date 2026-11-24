@@ -84,7 +84,7 @@
     <div class="arrow"></div>
     <div class="step model">The model interprets the message<small>voice notes are transcribed first; the reply is a list of typed actions validated against schemas</small></div>
     <div class="arrow"></div>
-    <div class="step code">Code checks and saves every action<small>in Supabase Postgres: dates, duplicates and undo; branded products are looked up on the web</small></div>
+    <div class="step code">Code checks and saves every action<small>in Supabase Postgres with row-level security per user: dates, duplicates and undo; branded products are looked up on the web</small></div>
     <div class="arrow"></div>
     <div class="step">Reply with buttons<small>Undo, Save as is, answers to tap</small></div>
   </div>
@@ -97,9 +97,6 @@
   <div class="fix"><div class="was">A complaint undid a whole voice note</div><p>“110 calories for one cookie is impossible” was read as undo, and a whole lunch disappeared. Undo now needs a second check.</p></div>
   <div class="fix"><div class="was">A product with several sizes got a random one</div><p>A can of soda was worth 66 or 106 kcal depending on which size the search found. Now the size is asked, with the real sizes as buttons.</p></div>
   <p>Both are tests now. Fast tests block every deploy; real conversations are replayed against the model only where the code changed.</p>
-
-  <h2>Stack</h2>
-  <p>Telegram webhook, one FastAPI process on Render, OpenAI with outputs validated by Pydantic, and Supabase with row-level security per user.</p>
 
   <p class="note">The code is private. The web demo is a guided walkthrough of a real day with the assistant and does not need Telegram or an account.</p>
   <nav class="article-end" aria-label="More">

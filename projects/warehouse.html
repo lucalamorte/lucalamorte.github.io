@@ -67,7 +67,7 @@
   <div class="flow" aria-label="Agent flow"><div class="step">A question<small>which campaign won Q3?</small></div><div class="step model">The agent picks a tool<small>Cortex Agents decides between tables and documents</small></div><div class="step code">Cortex Analyst<small>turns the question into SQL over a semantic model</small></div><div class="step code">Cortex Search<small>finds the passages that answer it in documents</small></div><div class="step">The answer, with its source<small>the table or the document behind every number</small></div></div>
 
   <h2>Design rules</h2>
-  <ul><li><strong>The model reads, the code decides:</strong> numbers come from SQL over the semantic model, never from the model's memory.</li><li><strong>One definition per metric:</strong> the semantic model is the only place where a metric is defined.</li><li><strong>Always cite:</strong> an answer without a source is not shown.</li></ul>
+  <ul><li><strong>Numbers from SQL:</strong> every number comes from SQL over the semantic model, never from the model's memory.</li><li><strong>One definition per metric:</strong> the semantic model is the only place where a metric is defined.</li><li><strong>Always cite:</strong> an answer without a source is not shown.</li></ul>
 
   <p class="note">Built on sample data.</p>
   <nav class="article-end" aria-label="More">
